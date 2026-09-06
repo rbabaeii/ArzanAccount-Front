@@ -1,0 +1,486 @@
+"use client";
+
+import React, { useState } from "react";
+import NextLink from "next/link";
+import { usePathname } from "next/navigation";
+import { useStore } from "@/context/StoreContext";
+import { useAuth, UserRole } from "@/context/AuthContext";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Boxes,
+  Percent,
+  FolderTree,
+  Coins,
+  Settings,
+  BarChart3,
+  ScrollText,
+  RefreshCw,
+  ShoppingBag,
+  ExternalLink,
+  Wallet,
+  Menu,
+  X,
+  CheckCircle2,
+  Users,
+  Shield,
+  ShieldAlert,
+  LogOut,
+  User,
+  Lock,
+  ArrowRight,
+} from "lucide-react";
+
+interface NavItem {
+  title: string;
+  href: string;
+  icon: React.ReactNode;
+  badge?: string;
+  badgeColor?: string;
+}
+
+interface NavGroup {
+  groupTitle: string;
+  items: NavItem[];
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const { settings, isLoadingSync, syncWithIrMarket, orders } = useStore();
+  const { user, isAuthenticated, isAdmin, isLoading: isAuthLoading, logout, openLoginModal } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [syncToast, setSyncToast] = useState(false);
+
+  const handleSync = async () => {
+    await syncWithIrMarket();
+    setSyncToast(true);
+    setTimeout(() => setSyncToast(false), 3500);
+  };
+
+  const pendingOrdersCount = orders.filter((o) => o.status === "processing").length;
+
+  const getRoleBadge = (role?: string) => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return "مدیر ارشد سامانه";
+      case "CATALOG_MANAGER":
+        return "مدیر کاتالوگ و انبار";
+      case "FINANCE_ADMIN":
+        return "مدیر مالی و تخفیف‌ها";
+      case "SUPPORT_ADMIN":
+        return "مدیر پشتیبانی و سفارشات";
+      default:
+        return "مدیر سیستم";
+    }
+  };
+
+  const isItemVisible = (itemHref: string) => {
+    if (user?.role === "SUPER_ADMIN") return true;
+    if (itemHref === "/admin") return true;
+    if (user?.role === "CATALOG_MANAGER") {
+      return ["/admin/products", "/admin/inventory", "/admin/categories"].includes(itemHref);
+    }
+    if (user?.role === "FINANCE_ADMIN") {
+      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics"].includes(itemHref);
+    }
+    if (user?.role === "SUPPORT_ADMIN") {
+      return ["/admin/orders"].includes(itemHref);
+    }
+    return false;
+  };
+
+  const isCurrentRouteAllowed = () => {
+    if (user?.role === "SUPER_ADMIN") return true;
+    if (pathname === "/admin") return true;
+    if (user?.role === "CATALOG_MANAGER") {
+      return ["/admin/products", "/admin/inventory", "/admin/categories"].some((p) => pathname.startsWith(p));
+    }
+    if (user?.role === "FINANCE_ADMIN") {
+      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics"].some((p) => pathname.startsWith(p));
+    }
+    if (user?.role === "SUPPORT_ADMIN") {
+      return ["/admin/orders"].some((p) => pathname.startsWith(p));
+    }
+    return false;
+  };
+
+  const catalogNavGroups: NavGroup[] = [
+    {
+      groupTitle: "بخش‌های کلیدی و کاتالوگ",
+      items: [
+        {
+          title: "مرکز فرماندهی (داشبورد)",
+          href: "/admin",
+          icon: <LayoutDashboard className="w-4 h-4" />,
+        },
+        {
+          title: "مدیریت کاتالوگ و محصولات",
+          href: "/admin/products",
+          icon: <Package className="w-4 h-4" />,
+        },
+        {
+          title: "مدیریت جامع سفارشات",
+          href: "/admin/orders",
+          badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} در انتظار` : orders.length > 0 ? orders.length.toString() : undefined,
+          badgeColor: pendingOrdersCount > 0 ? "bg-amber-400 text-teal-950 font-bold" : "bg-white/20 text-white",
+          icon: <ShoppingCart className="w-4 h-4" />,
+        },
+        {
+          title: "انبار و کنترل موجودی",
+          href: "/admin/inventory",
+          icon: <Boxes className="w-4 h-4" />,
+        },
+        {
+          title: "دسته‌بندی‌ها",
+          href: "/admin/categories",
+          icon: <FolderTree className="w-4 h-4" />,
+        },
+      ].filter((item) => isItemVisible(item.href)),
+    },
+    {
+      groupTitle: "عملیات، مدیریت و امنیت",
+      items: [
+        {
+          title: "کاربران و مدیران (RBAC)",
+          href: "/admin/users",
+          icon: <Users className="w-4 h-4" />,
+        },
+        {
+          title: "تنظیمات ارز و قیمت‌گذاری",
+          href: "/admin/settings/currency",
+          icon: <Coins className="w-4 h-4" />,
+        },
+        {
+          title: "تخفیف‌ها و کوپن‌ها",
+          href: "/admin/discounts",
+          icon: <Percent className="w-4 h-4" />,
+        },
+        {
+          title: "گزارشات و هوش تجاری",
+          href: "/admin/analytics",
+          icon: <BarChart3 className="w-4 h-4" />,
+        },
+        {
+          title: "لاگ فعالیت‌ها و ردپای سیستم",
+          href: "/admin/logs",
+          icon: <ScrollText className="w-4 h-4" />,
+        },
+        {
+          title: "تنظیمات عمومی سیستم",
+          href: "/admin/settings",
+          icon: <Settings className="w-4 h-4" />,
+        },
+      ].filter((item) => isItemVisible(item.href)),
+    },
+  ].filter((group) => group.items.length > 0);
+
+  const formattedTomanRate = new Intl.NumberFormat("fa-IR").format(
+    Math.round(settings.usdToRialRate / 10)
+  );
+
+  const walletToman = new Intl.NumberFormat("fa-IR").format(
+    Math.round((settings.walletBalanceUsd * settings.usdToRialRate) / 10)
+  );
+
+  // 1. Loading State
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-teal-200 text-xs font-bold animate-pulse">در حال اعتبارسنجی سطح دسترسی مدیر...</p>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated State
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-teal-950 to-slate-900 flex flex-col items-center justify-center p-4 text-center">
+        <div className="max-w-md w-full bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-8 shadow-2xl text-white">
+          <div className="w-16 h-16 bg-amber-400/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-amber-400/30">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h1 className="text-xl font-black mb-2">ورود به کنترل سنتر مدیریت</h1>
+          <p className="text-xs text-teal-200/80 mb-6 leading-relaxed">
+            دسترسی به کنترل سنتر نیازمند احراز هویت با شماره پرسنل یا مدیر سیستم است.
+          </p>
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 text-xs text-right space-y-2">
+            <div className="text-teal-300 font-bold">اطلاعات ورود تستی مدیران:</div>
+            <div className="flex justify-between items-center text-[11px] text-teal-100">
+              <span>مدیر کل سامانه:</span>
+              <span className="font-mono font-bold bg-teal-900/60 px-2 py-0.5 rounded">09181111111</span>
+            </div>
+            <div className="flex justify-between items-center text-[11px] text-teal-100">
+              <span>کد تأیید یکبارمصرف:</span>
+              <span className="font-mono font-bold text-amber-300 bg-amber-900/40 px-2 py-0.5 rounded">11111</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={openLoginModal}
+              className="w-full bg-brand-accent hover:bg-amber-500 text-teal-950 font-black text-xs py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+            >
+              <Shield className="w-4 h-4" />
+              <span>ورود با شماره موبایل مدیریت</span>
+            </button>
+
+            <NextLink
+              href="/"
+              className="w-full bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>بازگشت به فروشگاه</span>
+            </NextLink>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Authenticated but regular USER (403 Forbidden)
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 text-center">
+        <div className="max-w-md w-full bg-white/10 backdrop-blur-md border border-rose-500/30 rounded-3xl p-8 shadow-2xl text-white">
+          <div className="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-rose-500/30">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h1 className="text-xl font-black mb-2 text-rose-300">خطای دسترسی ۴۰۳</h1>
+          <p className="text-xs text-neutral-300 mb-4 leading-relaxed">
+            شماره شما (<span className="font-mono font-bold text-white" dir="ltr">{user?.phone}</span>) به عنوان
+            <span className="text-amber-300 font-bold px-1.5 py-0.5 mx-1 bg-amber-400/10 rounded">خریدار عادی</span>
+            ثبت شده است و اجازه دسترسی به کنترل سنتر مدیران را ندارد.
+          </p>
+
+          <div className="p-3 bg-white/5 rounded-xl text-[11px] text-neutral-300 mb-6 border border-white/10 text-right">
+            <span>برای ورود به پنل، با شماره مدیر ارشد </span>
+            <strong className="text-amber-300 font-mono">09181111111</strong>
+            <span> و کد تایید </span>
+            <strong className="text-amber-300 font-mono">11111</strong>
+            <span> وارد شوید.</span>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                logout();
+                openLoginModal();
+              }}
+              className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>خروج و ورود مجدد با شماره مدیر</span>
+            </button>
+
+            <NextLink
+              href="/"
+              className="w-full bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+            >
+              <ShoppingBag className="w-4 h-4 text-teal-300" />
+              <span>بازگشت به ویترین فروشگاه</span>
+            </NextLink>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-admin-bg flex flex-col md:flex-row text-admin-text">
+      {/* Mobile Top Header */}
+      <div className="md:hidden bg-admin-primary text-white p-4 flex items-center justify-between shadow-md">
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-1.5 hover:bg-white/10 rounded-lg"
+          aria-label="باز کردن منو"
+        >
+          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+        <span className="font-black text-sm">کنترل سنتر ارزان اکانت</span>
+        <NextLink href="/" className="p-1.5 hover:bg-white/10 rounded-lg" title="فروشگاه">
+          <ShoppingBag className="w-5 h-5" />
+        </NextLink>
+      </div>
+
+      {/* Sidebar (HypeStore Teal Horizon Theme) */}
+      <aside
+        className={`fixed md:sticky top-0 z-50 h-screen w-72 bg-gradient-to-b from-teal-950 to-brand-primary text-white flex flex-col justify-between p-5 transition-all duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"
+        }`}
+      >
+        <div className="overflow-y-auto scrollbar-none pr-1">
+          {/* Logo & Brand */}
+          <div className="flex items-center gap-3 pb-5 border-b border-white/10">
+            <div className="w-10 h-10 rounded-xl bg-white text-brand-primary flex items-center justify-center font-black text-xl shadow-md">
+              ار
+            </div>
+            <div>
+              <h2 className="font-black text-sm tracking-tight">HypeStore Control Center</h2>
+              <span className="text-[10px] text-teal-300 font-medium">پنل مدیریت ارزان اکانت</span>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="mt-5 space-y-4 text-xs">
+            {catalogNavGroups.map((group, gIdx) => (
+              <div key={gIdx} className="space-y-1">
+                <span className="text-[10px] font-bold text-teal-300/80 px-3 tracking-wider block mb-1.5 uppercase">
+                  {group.groupTitle}
+                </span>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <NextLink
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsSidebarOpen(false)}
+                      className={`flex items-center justify-between px-3.5 py-2 rounded-xl font-semibold transition-all ${
+                        isActive
+                          ? "bg-brand-primaryContainer text-white shadow-sm border border-teal-400/30"
+                          : "text-teal-100 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        <span>{item.title}</span>
+                      </div>
+                      {item.badge && (
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                            item.badgeColor || "bg-white/20 text-white"
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </NextLink>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* Sidebar Footer Info & Current Admin Profile */}
+        <div className="pt-4 border-t border-white/10 space-y-3">
+          {/* Admin Profile Card */}
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-teal-400 text-teal-950 font-black text-xs flex items-center justify-center shrink-0">
+                {user?.name ? user.name.slice(0, 1) : <Shield className="w-4 h-4" />}
+              </div>
+              <div className="truncate text-right">
+                <div className="text-xs font-bold text-white truncate">{user?.name || user?.phone}</div>
+                <div className="text-[10px] text-teal-300 font-semibold">{getRoleBadge(user?.role)}</div>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              title="خروج از حساب مدیریت"
+              className="p-1.5 text-teal-300 hover:text-rose-400 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between text-[11px] text-teal-200">
+              <span className="flex items-center gap-1">
+                <Wallet className="w-3.5 h-3.5 text-brand-accent" />
+                موجودی irMarket
+              </span>
+              <span className="font-mono font-bold text-white">${settings.walletBalanceUsd}</span>
+            </div>
+            <span className="text-[10px] text-teal-300 block mt-1">
+              معادل: {walletToman} تومان
+            </span>
+          </div>
+
+          <NextLink
+            href="/"
+            className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors"
+          >
+            <span>مشاهده ویترین فروشگاه</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </NextLink>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="hidden md:flex h-16 bg-white border-b border-admin-borderLight px-8 items-center justify-between sticky top-0 z-30 shadow-2xs">
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-2 bg-teal-50/70 border border-teal-100 px-3 py-1.5 rounded-lg">
+              <span className="text-teal-800">نرخ پایه دلار:</span>
+              <span className="font-bold text-brand-primary font-mono">{formattedTomanRate} تومان</span>
+            </div>
+
+            <div className="text-neutral-400">
+              <span>آخرین همگام‌سازی کاتالوگ: {settings.lastSyncTime}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Sync Button */}
+            <button
+              onClick={handleSync}
+              disabled={isLoadingSync}
+              className="flex items-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs disabled:opacity-70"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSync ? "animate-spin" : ""}`} />
+              <span>{isLoadingSync ? "در حال استعلام از irMarket..." : "همگام‌سازی با API مرجع"}</span>
+            </button>
+
+            {/* Back to store */}
+            <NextLink
+              href="/"
+              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black border border-neutral-200 px-3 py-2 rounded-xl"
+            >
+              <ShoppingBag className="w-4 h-4 text-neutral-500" />
+              <span>مشاهده سایت</span>
+            </NextLink>
+          </div>
+        </header>
+
+        {/* Sync Toast */}
+        {syncToast && (
+          <div className="fixed bottom-6 left-6 z-50 bg-emerald-700 text-white px-5 py-3 rounded-xl shadow-xl text-xs flex items-center gap-2 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
+            <span>محصولات، آخرین قیمت‌های دلاری و موجودی از irMarket با موفقیت همگام شدند!</span>
+          </div>
+        )}
+
+        {/* Page Body with Route Guard Check */}
+        <main className="flex-1 p-4 sm:p-8 overflow-x-hidden">
+          {isCurrentRouteAllowed() ? (
+            children
+          ) : (
+            <div className="max-w-xl mx-auto my-12 bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm text-center">
+              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <ShieldAlert className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-black text-neutral-900 mb-2">محدودیت سطح دسترسی</h2>
+              <p className="text-xs text-neutral-600 mb-6 leading-relaxed">
+                سطح کاربری شما (<span className="font-bold text-teal-800">{getRoleBadge(user?.role)}</span>) اجازه دسترسی به این بخش را ندارد. این بخش تنها توسط مدیران با سطح دسترسی بالاتر قابل مشاهده است.
+              </p>
+              <NextLink
+                href="/admin"
+                className="inline-flex items-center gap-2 bg-brand-primary text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-brand-primaryDark transition-all"
+              >
+                <span>بازگشت به داشبورد مدیریت</span>
+              </NextLink>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}

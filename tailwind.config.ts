@@ -1,0 +1,83 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        // Storefront Sefid & Teal Tokens
+        store: {
+          bg: "#f8fafc",
+          primary: "#005a71",
+          secondary: "#212529",
+          muted: "#64748b",
+          border: "#e2e8f0",
+          borderLight: "#f1f5f9",
+          accent: "#d97706",
+        },
+        // Cohesive Stitch Palette (Teal Primary + Amber Complementary)
+        brand: {
+          primary: "#005a71",
+          primaryDark: "#004153",
+          primaryContainer: "#0e7490",
+          primaryLight: "#e0f2fe",
+          secondary: "#21667d",
+          accent: "#d97706",
+          accentHover: "#b45309",
+          accentLight: "#fef3c7",
+          dark: "#0f172a",
+          muted: "#475569",
+          mutedLight: "#94a3b8",
+          surface: "#ffffff",
+          surfaceDim: "#f8fafc",
+          surfaceTeal: "#f0fdfa",
+          border: "#e2e8f0",
+          borderTeal: "#ccfbf1",
+          borderDark: "#cbd5e1",
+        },
+        // Admin Specific UI tokens
+        admin: {
+          primary: "#005a71",
+          primaryDark: "#004153",
+          primaryContainer: "#0e7490",
+          secondary: "#21667d",
+          bg: "#f8fafc",
+          surface: "#ffffff",
+          container: "#f1f5f9",
+          containerHighest: "#e2e8f0",
+          text: "#0f172a",
+          textMuted: "#475569",
+          border: "#e2e8f0",
+          borderLight: "#f1f5f9",
+          danger: "#ba1a1a",
+          success: "#15803d",
+          warning: "#b45309",
+        },
+      },
+      fontFamily: {
+        sans: [
+          "var(--font-vazirmatn)",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "'Segoe UI'",
+          "Roboto",
+          "Vazirmatn",
+          "sans-serif",
+        ],
+      },
+      boxShadow: {
+        card: "0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04)",
+        cardHover: "0 10px 25px -5px rgba(0, 90, 113, 0.1), 0 8px 10px -6px rgba(0, 90, 113, 0.05)",
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;

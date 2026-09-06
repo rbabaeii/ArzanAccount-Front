@@ -1,0 +1,220 @@
+"use client";
+
+import React, { useState } from "react";
+import Header from "@/components/store/Header";
+import Footer from "@/components/store/Footer";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { useStore } from "@/context/StoreContext";
+import Link from "next/link";
+import {
+  FolderTree,
+  Search,
+  ArrowLeft,
+  Sparkles,
+  Bot,
+  Film,
+  Headphones,
+  Share2,
+  Package,
+  Layers,
+  ChevronLeft,
+} from "lucide-react";
+
+export default function CategoriesArchivePage() {
+  const { categories, activeProducts, products } = useStore();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const getCategoryIcon = (iconName: string) => {
+    switch (iconName) {
+      case "Bot":
+        return <Bot className="w-5 h-5" />;
+      case "Film":
+        return <Film className="w-5 h-5" />;
+      case "Headphones":
+        return <Headphones className="w-5 h-5" />;
+      case "Share2":
+        return <Share2 className="w-5 h-5" />;
+      default:
+        return <Sparkles className="w-5 h-5" />;
+    }
+  };
+
+  // Map categories with active and total counts
+  const categoriesWithStats = categories.map((cat) => {
+    const activeCount = activeProducts.filter((p) => p.categoryId === cat.id).length;
+    const totalCount = products.filter((p) => p.categoryId === cat.id).length;
+    return {
+      ...cat,
+      activeCount,
+      totalCount,
+    };
+  });
+
+  // Filter categories by search
+  const filteredCategories = categoriesWithStats.filter((cat) => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+    return (
+      cat.title.toLowerCase().includes(term) ||
+      cat.slug.toLowerCase().includes(term) ||
+      (cat.description && cat.description.toLowerCase().includes(term))
+    );
+  });
+
+  return (
+    <div className="flex flex-col min-h-screen bg-brand-surfaceDim">
+      {/* SEO Breadcrumb Schema */}
+      <BreadcrumbJsonLd
+        items={[
+          { name: "صفحه اصلی", url: "https://arzanaccount.ir" },
+          { name: "دسته‌بندی‌ها", url: "https://arzanaccount.ir/categories" },
+        ]}
+      />
+
+      <Header />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-brand-muted">
+          <Link href="/" className="hover:text-brand-primary transition-colors">
+            صفحه اصلی
+          </Link>
+          <span>/</span>
+          <span className="text-brand-dark font-bold">تمام دسته‌بندی‌ها</span>
+        </nav>
+
+        {/* Hero / Header Card */}
+        <div className="bg-gradient-to-br from-teal-950 via-brand-primary to-brand-primaryDark text-white rounded-3xl p-6 sm:p-10 shadow-lg relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#2dd4bf_1px,transparent_1px)] [background-size:20px_20px]" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-200 text-xs font-semibold border border-white/15">
+                <FolderTree className="w-3.5 h-3.5 text-brand-accent" />
+                <span>آرشیو جامع دسته‌بندی‌های دیجیتال</span>
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                دسته‌بندی‌های تخصصی ارزان اکانت
+              </h1>
+
+              <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed">
+                دسترسی منظم و تفکیک‌شده به ۳۳ شاخه کاتالوگ شامل اشتراک‌های هوش مصنوعی، سرویس‌های ویدیویی، موزیک، شبکه‌های اجتماعی و ابزارهای پرمیوم بین‌المللی با بهترین قیمت ارزی و تحویل فوری.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 text-center sm:text-right shrink-0">
+              <div className="px-3 py-1">
+                <span className="text-2xl sm:text-3xl font-black text-brand-accent font-mono block">
+                  {categories.length}
+                </span>
+                <span className="text-[11px] text-teal-200">دسته‌بندی فعال</span>
+              </div>
+              <div className="hidden sm:block w-px h-10 bg-white/20"></div>
+              <div className="px-3 py-1">
+                <span className="text-2xl sm:text-3xl font-black text-white font-mono block">
+                  +{activeProducts.length}
+                </span>
+                <span className="text-[11px] text-teal-200">سرویس آماده تحویل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Search & Filter Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-brand-border shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="w-full sm:max-w-md relative">
+            <input
+              type="text"
+              placeholder="جستجو در نام دسته (مثلاً هوش مصنوعی، تلگرام، استریم، Spotify...)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-brand-surfaceDim border border-brand-border focus:border-brand-primary rounded-xl py-2.5 pr-10 pl-4 text-xs outline-none transition-all"
+            />
+            <Search className="w-4 h-4 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+          </div>
+
+          <div className="flex items-center gap-3 text-xs text-brand-muted self-end sm:self-auto">
+            <span>تعداد نتایج: <strong className="font-mono text-brand-dark">{filteredCategories.length}</strong> دسته</span>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="text-brand-primary hover:underline text-xs font-semibold"
+              >
+                پاک کردن فیلتر
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Categories Grid */}
+        {filteredCategories.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {filteredCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/category/${cat.slug}`}
+                className="bg-white border border-brand-border hover:border-brand-primary p-5 rounded-2xl shadow-card hover:shadow-cardHover transition-all flex flex-col justify-between group hover:-translate-y-0.5"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-teal-50 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors flex items-center justify-center shadow-2xs">
+                      {getCategoryIcon(cat.icon)}
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full font-mono ${
+                        cat.activeCount > 0
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-neutral-100 text-neutral-500"
+                      }`}
+                    >
+                      {cat.activeCount > 0 ? `${cat.activeCount} سرویس فعال` : "سفارشی"}
+                    </span>
+                  </div>
+
+                  <h3 className="font-black text-sm text-brand-dark group-hover:text-brand-primary transition-colors">
+                    {cat.title}
+                  </h3>
+
+                  <span className="text-[11px] text-neutral-400 font-mono block mt-0.5 dir-ltr text-right">
+                    /{cat.slug}
+                  </span>
+
+                  <p className="text-xs text-brand-muted mt-2.5 line-clamp-2 leading-relaxed">
+                    {cat.description || "سرویس‌های اورجینال با تضمین سلامت اکانت و تحویل فوری آنلاین."}
+                  </p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center justify-between text-xs font-bold text-brand-primary group-hover:text-brand-primaryDark">
+                  <span>مشاهده اشتراک‌ها</span>
+                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white border border-dashed border-brand-border rounded-3xl p-16 text-center shadow-card space-y-3">
+            <Package className="w-12 h-12 text-neutral-300 mx-auto" />
+            <h3 className="text-base font-bold text-brand-dark">
+              دسته‌بندی متناسب با عبارت «{searchTerm}» یافت نشد
+            </h3>
+            <p className="text-xs text-brand-muted">
+              لطفاً املای کلمه را بررسی کنید یا دسته‌بندی مورد نظر را از فهرست پاکسازی جستجو بیابید.
+            </p>
+            <button
+              onClick={() => setSearchTerm("")}
+              className="mt-2 bg-brand-primary text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-brand-primaryDark transition-colors shadow-xs"
+            >
+              نمایش همه ۳۳ دسته‌بندی
+            </button>
+          </div>
+        )}
+
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
