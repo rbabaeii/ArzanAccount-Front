@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import ImageUploader from "@/components/ui/ImageUploader";
 import Pagination from "@/components/ui/Pagination";
+import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function AdminProductsPage() {
   const {
@@ -49,11 +50,14 @@ export default function AdminProductsPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editCategoryId, setEditCategoryId] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editPersianDescription, setEditPersianDescription] = useState("");
   const [editBadge, setEditBadge] = useState("");
 
   const [editCostPriceUsd, setEditCostPriceUsd] = useState<number>(0);
   const [editRetailPriceUsd, setEditRetailPriceUsd] = useState<number>(0);
   const [editMargin, setEditMargin] = useState<number>(15);
+  const [editSalePriceToman, setEditSalePriceToman] = useState<string>("");
+  const [editDiscountPercent, setEditDiscountPercent] = useState<string>("");
 
   const [editImage, setEditImage] = useState("");
 
@@ -82,11 +86,14 @@ export default function AdminProductsPage() {
     setEditTitle(product.customTitle || product.name);
     setEditCategoryId(product.categoryId || (categories[0]?.id ?? ""));
     setEditDescription(product.description || "");
+    setEditPersianDescription(product.persianDescription || "");
     setEditBadge(product.badge || "");
 
     setEditCostPriceUsd(product.costPriceUsd);
     setEditRetailPriceUsd(product.retailPriceUsd ?? product.costPriceUsd);
     setEditMargin(product.customMarginPercent ?? settings.defaultMarginPercent);
+    setEditSalePriceToman(product.salePriceToman ? String(product.salePriceToman) : "");
+    setEditDiscountPercent(product.discountPercent ? String(product.discountPercent) : "");
 
     setEditImage(product.image || "");
 
@@ -116,10 +123,13 @@ export default function AdminProductsPage() {
         customTitle: editTitle,
         categoryId: editCategoryId,
         description: editDescription,
+        persianDescription: editPersianDescription,
         badge: editBadge,
         costPriceUsd: editCostPriceUsd,
         retailPriceUsd: editRetailPriceUsd,
         customMarginPercent: editMargin,
+        salePriceToman: editSalePriceToman && Number(editSalePriceToman) > 0 ? Number(editSalePriceToman) : null,
+        discountPercent: editDiscountPercent && Number(editDiscountPercent) > 0 ? Number(editDiscountPercent) : null,
         image: editImage,
         requiresEmail: editRequiresEmail,
         requiresPassword: editRequiresPassword,
@@ -196,42 +206,42 @@ export default function AdminProductsPage() {
       ? Math.round(((modalPublicRetailToman - modalFinalToman) / modalPublicRetailToman) * 100)
       : 0;
 
-  const modalFormattedToman = new Intl.NumberFormat("fa-IR").format(modalFinalToman);
-  const modalFormattedCostToman = new Intl.NumberFormat("fa-IR").format(modalCostToman);
-  const modalFormattedPublicToman = new Intl.NumberFormat("fa-IR").format(modalPublicRetailToman);
-  const modalFormattedProfitToman = new Intl.NumberFormat("fa-IR").format(modalProfitToman);
+  const modalFormattedToman = formatPrice(modalFinalToman);
+  const modalFormattedCostToman = formatPrice(modalCostToman);
+  const modalFormattedPublicToman = formatPrice(modalPublicRetailToman);
+  const modalFormattedProfitToman = formatPrice(modalProfitToman);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text">مدیریت و ویرایش کامل محصولات</h1>
-          <p className="text-xs text-admin-textMuted mt-1">
-            مشاهده کل کاتالوگ irMarket، ویرایش ۱۰۰٪ مشخصات و تصاویر، و تعیین قیمت‌ها و سود اختصاصی
+          <h1 className="text-2xl font-black text-admin-text dark:text-white">مدیریت و ویرایش کامل محصولات</h1>
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
+            مشاهده کل کاتالوگ irMarket، ویرایش مشخصات و تصاویر، و تعیین قیمت‌ها و سود اختصاصی
           </p>
         </div>
 
-        <div className="text-xs text-admin-textMuted bg-white border border-admin-borderLight px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-2xs">
+        <div className="text-xs text-admin-textMuted dark:text-slate-400 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-2xs">
           <span>
-            تعداد کل محصولات: <strong className="text-black">{products.length}</strong>
+            تعداد کل محصولات: <strong className="text-black dark:text-white font-mono">{products.length}</strong>
           </span>
           <span>|</span>
-          <span className="text-emerald-700 font-semibold">
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
             فعال در سایت: {products.filter((p) => p.isActive).length}
           </span>
         </div>
       </div>
 
       {toastMessage && (
-        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 animate-fadeIn">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 dark:border-emerald-800 animate-fadeIn">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-admin-borderLight shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Search */}
         <div className="flex-1 relative">
           <input
@@ -242,62 +252,65 @@ export default function AdminProductsPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2 pr-9 pl-4 text-xs outline-none"
+            className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 pr-9 pl-4 outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:border-brand-primary dark:focus:border-teal-400"
           />
-          <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-neutral-400 dark:text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-1 bg-admin-bg p-1 rounded-lg border border-admin-borderLight text-xs">
+        {/* Status Filters */}
+        <div className="flex items-center gap-1 bg-admin-bg dark:bg-slate-800 p-1 rounded-lg border border-admin-borderLight dark:border-slate-700 text-xs">
           <button
+            type="button"
             onClick={() => {
               setStatusFilter("all");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
               statusFilter === "all"
-                ? "bg-white text-admin-primary shadow-xs font-bold"
-                : "text-neutral-500"
+                ? "bg-white dark:bg-slate-700 text-brand-dark dark:text-white shadow-xs"
+                : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             همه
           </button>
           <button
+            type="button"
             onClick={() => {
               setStatusFilter("active");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
               statusFilter === "active"
-                ? "bg-emerald-600 text-white shadow-xs font-bold"
-                : "text-neutral-500"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             فقط فعال‌ها
           </button>
           <button
+            type="button"
             onClick={() => {
               setStatusFilter("inactive");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
               statusFilter === "inactive"
-                ? "bg-neutral-700 text-white shadow-xs font-bold"
-                : "text-neutral-500"
+                ? "bg-amber-600 text-white shadow-xs"
+                : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             غیرفعال‌ها
           </button>
         </div>
 
-        {/* Category Dropdown */}
+        {/* Category Select */}
         <select
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
             setCurrentPage(1);
           }}
-          className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
+          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200"
         >
           <option value="all">همه دسته‌بندی‌ها ({categories.length})</option>
           {categories.map((c) => (
@@ -309,11 +322,11 @@ export default function AdminProductsPage() {
       </div>
 
       {/* High Density Products Table */}
-      <div className="bg-white border border-admin-borderLight rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-admin-container/50 border-b border-admin-borderLight dark:border-slate-800 text-xs font-bold text-admin-text dark:text-slate-200">
+              <tr className="bg-admin-container/50 dark:bg-slate-800/80 border-b border-admin-borderLight dark:border-slate-800 text-xs font-bold text-admin-text dark:text-slate-200">
                 <th className="py-3 px-4 w-16">کد مرجع</th>
                 <th className="py-3 px-4">عنوان نمایشی و نام در API</th>
                 <th className="py-3 px-4">دسته‌بندی</th>
@@ -332,33 +345,37 @@ export default function AdminProductsPage() {
                 return (
                   <tr
                     key={product.id}
-                    className={`hover:bg-teal-50/30 dark:hover:bg-slate-800/50 transition-colors ${
-                      !product.isActive ? "bg-neutral-50/60 dark:bg-slate-900/40 opacity-80" : ""
-                    }`}
+                    className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors"
                   >
-                    {/* Code */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-500 dark:text-slate-400">
+                    {/* External ID */}
+                    <td className="py-3.5 px-4 font-mono font-bold text-slate-500 dark:text-slate-400">
                       #{product.externalId}
                     </td>
 
-                    {/* Title */}
-                    <td className="py-3.5 px-4 max-w-sm">
-                      <div className="flex items-center gap-2">
-                        {product.image && (
+                    {/* Titles & Image */}
+                    <td className="py-3.5 px-4 max-w-xs">
+                      <div className="flex items-center gap-3">
+                        {product.image ? (
                           <img
                             src={product.image}
-                            alt=""
-                            className="w-7 h-7 rounded object-cover border border-neutral-200 dark:border-slate-700 shrink-0"
+                            alt={product.customTitle}
+                            className="w-10 h-10 rounded-lg object-cover border border-admin-borderLight dark:border-slate-700 shrink-0"
                           />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-slate-800 text-neutral-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                            <ImageIcon className="w-5 h-5" />
+                          </div>
                         )}
                         <div>
-                          <div className="font-bold text-neutral-900 dark:text-white leading-snug">
-                            {product.customTitle}
+                          <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                            {product.customTitle || product.name}
                           </div>
-                          <div className="text-[11px] text-neutral-400 dark:text-slate-400 font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-                            <span>{product.name}</span>
+                          <div className="text-[11px] text-neutral-400 dark:text-slate-500 font-mono line-clamp-1 mt-0.5">
+                            {product.name}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
                             {product.badge && (
-                              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 px-1.5 py-0.2 rounded text-[10px] font-sans font-semibold">
+                              <span className="text-admin-primary dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-1 py-0.2 rounded text-[10px] font-bold">
                                 {product.badge}
                               </span>
                             )}
@@ -415,10 +432,20 @@ export default function AdminProductsPage() {
 
                     {/* Selling Toman & Profit */}
                     <td className="py-3.5 px-4">
-                      <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                        {price.formattedToman}
-                        <span className="text-[10px] font-normal text-neutral-400 dark:text-slate-500 mr-1">تومان</span>
+                      <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-1.5">
+                        <span>{price.formattedToman}</span>
+                        <span className="text-[10px] font-normal text-neutral-400 dark:text-slate-500 mr-0.5">تومان</span>
+                        {price.isOnSale && (
+                          <span className="text-[10px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900 px-1.5 py-0.2 rounded font-bold">
+                            حراج
+                          </span>
+                        )}
                       </div>
+                      {price.isOnSale && (
+                        <div className="text-[10px] text-neutral-400 dark:text-slate-500 line-through">
+                          {price.formattedOriginalToman} ت
+                        </div>
+                      )}
                       <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
                         <span
                           className={`px-1.5 py-0.2 rounded font-bold ${
@@ -430,53 +457,46 @@ export default function AdminProductsPage() {
                           {price.marginPercent}٪ سود
                         </span>
                         <span className="text-neutral-400 dark:text-slate-500 font-mono">
-                          (+{new Intl.NumberFormat("fa-IR").format(price.profitToman)} ت)
+                          (+{formatPrice(price.profitToman)} ت)
                         </span>
                       </div>
                     </td>
 
-                    {/* Toggle Switch */}
+                    {/* Active Status Switch */}
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => toggleProductActive(product.id)}
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          product.isActive ? "bg-emerald-600" : "bg-neutral-300"
-                        }`}
-                        title={
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                           product.isActive
-                            ? "کلیک برای غیرفعال‌سازی"
-                            : "کلیک برای فعال‌سازی در سایت"
-                        }
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100"
+                            : "bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-200"
+                        }`}
                       >
                         <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                            product.isActive ? "-translate-x-5" : "translate-x-0"
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            product.isActive ? "bg-emerald-500" : "bg-neutral-400 dark:bg-slate-500"
                           }`}
                         />
+                        <span>{product.isActive ? "فعال در ویترین" : "غیرفعال"}</span>
                       </button>
-                      <span className="block text-[10px] font-semibold mt-1 text-neutral-500">
-                        {product.isActive ? "فعال در سایت" : "مخفی"}
-                      </span>
                     </td>
 
-                    {/* Actions */}
+                    {/* Operations */}
                     <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleOpenEdit(product)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-admin-primary hover:bg-admin-bg rounded-md border border-admin-borderLight transition-colors font-semibold"
-                          title="ویرایش کامل مشخصات، قیمت و عکس"
+                          className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-300 border border-brand-border dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                          <span>ویرایش کامل</span>
+                          <span>ویرایش</span>
                         </button>
-
                         {product.isActive && (
                           <Link
                             href={`/products/${product.id}`}
                             target="_blank"
-                            className="p-1.5 text-neutral-500 hover:text-black hover:bg-neutral-100 rounded-md border border-neutral-200 transition-colors"
-                            title="مشاهده در فروشگاه"
+                            className="p-1.5 text-neutral-400 hover:text-brand-dark dark:hover:text-white transition-colors"
+                            title="مشاهده صفحه محصول در سایت"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
@@ -486,17 +506,20 @@ export default function AdminProductsPage() {
                   </tr>
                 );
               })}
+
+              {paginatedProducts.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-neutral-400 dark:text-slate-500">
+                    هیچ محصولی با معیارهای جستجو یافت نشد.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-
-        {filteredProducts.length === 0 && (
-          <div className="p-8 text-center text-xs text-neutral-400">
-            هیچ محصولی با معیارهای جستجوی شما یافت نشد.
-          </div>
-        )}
       </div>
 
+      {/* Pagination */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
@@ -516,40 +539,40 @@ export default function AdminProductsPage() {
 
       {/* Comprehensive Product Edit Modal (5 Tabs) */}
       {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl border border-admin-border max-w-3xl w-full p-6 space-y-5 animate-fadeIn my-8">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-admin-border dark:border-slate-800 max-w-3xl w-full p-6 space-y-5 animate-fadeIn my-8 text-neutral-800 dark:text-slate-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-admin-borderLight">
+            <div className="flex items-center justify-between pb-4 border-b border-admin-borderLight dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-admin-primary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-admin-primary dark:text-teal-400 flex items-center justify-center">
                   <Package className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-base text-admin-text">
+                  <h3 className="font-black text-base text-admin-text dark:text-white">
                     ویرایش جامع محصول #{editingProduct.externalId}
                   </h3>
-                  <span className="text-xs text-neutral-400 font-mono">
+                  <span className="text-xs text-neutral-400 dark:text-slate-500 font-mono">
                     {editingProduct.name}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setEditingProduct(null)}
-                className="p-1.5 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-black transition-colors"
+                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-admin-borderLight pb-2 overflow-x-auto text-xs">
+            <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-2 overflow-x-auto text-xs">
               <button
                 type="button"
                 onClick={() => setActiveTab("general")}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
                   activeTab === "general"
-                    ? "bg-admin-primary text-white shadow-xs"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <Info className="w-3.5 h-3.5" />
@@ -561,12 +584,12 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("pricing")}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
                   activeTab === "pricing"
-                    ? "bg-admin-primary text-white shadow-xs"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <Coins className="w-3.5 h-3.5" />
-                <span>قیمت و حاشیه سود</span>
+                <span>قیمت و تخفیف محصول</span>
               </button>
 
               <button
@@ -574,8 +597,8 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("media")}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
                   activeTab === "media"
-                    ? "bg-admin-primary text-white shadow-xs"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
@@ -587,8 +610,8 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("requirements")}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
                   activeTab === "requirements"
-                    ? "bg-admin-primary text-white shadow-xs"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
@@ -600,8 +623,8 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("visibility")}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
                   activeTab === "visibility"
-                    ? "bg-admin-primary text-white shadow-xs"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -614,27 +637,27 @@ export default function AdminProductsPage() {
               {activeTab === "general" && (
                 <div className="space-y-4 animate-fadeIn">
                   <div>
-                    <label className="block font-bold text-neutral-800 mb-1.5">
+                    <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                       عنوان نمایشی در فروشگاه (فارسی):
                     </label>
                     <input
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none font-bold text-neutral-900"
+                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none font-bold text-neutral-900 dark:text-white"
                       required
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         دسته‌بندی در سایت:
                       </label>
                       <select
                         value={editCategoryId}
                         onChange={(e) => setEditCategoryId(e.target.value)}
-                        className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800 dark:text-slate-200"
                       >
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -645,7 +668,7 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         برچسب ویژه (Badge):
                       </label>
                       <input
@@ -653,13 +676,13 @@ export default function AdminProductsPage() {
                         placeholder="مثلاً: پرفروش، تحویل آنی، بدون قطعی..."
                         value={editBadge}
                         onChange={(e) => setEditBadge(e.target.value)}
-                        className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800 dark:text-slate-200"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-neutral-800 mb-1.5">
+                    <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                       توضیحات جامع محصول (سئو و اطلاعات خریدار):
                     </label>
                     <textarea
@@ -667,13 +690,27 @@ export default function AdminProductsPage() {
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
                       placeholder="توضیحات کامل درباره این اکانت، پلن، مدت اعتبار و نکات مهم استفاده..."
-                      className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800 leading-relaxed resize-none"
+                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800 dark:text-slate-200 leading-relaxed resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+                      <span>توضیحات اختصاصی محصول به فارسی (داخلی):</span>
+                      <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">ثبت در دیتابیس (در ویترین فروشگاه نمایش داده نمی‌شود)</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editPersianDescription}
+                      onChange={(e) => setEditPersianDescription(e.target.value)}
+                      placeholder="متن کامل توضیحات فارسی برای یادداشت داخلی و آرشیو ادمین..."
+                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none text-neutral-800 dark:text-slate-200 leading-relaxed resize-none"
                     />
                   </div>
                 </div>
               )}
 
-              {/* TAB 2: PRICING & PROFIT */}
+              {/* TAB 2: PRICING & PROFIT & PRODUCT-SPECIFIC DISCOUNT */}
               {activeTab === "pricing" && (
                 <div className="space-y-5 animate-fadeIn">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -752,12 +789,52 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
+                  {/* Product-Specific Direct Discount Section */}
+                  <div className="p-4 bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-300">
+                      <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span>تخفیف مستقیم روی این محصول (اختیاری):</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800/80 dark:text-slate-300">
+                      می‌توانید برای این محصول خاص درصد تخفیف موقت (مثلاً ۳۰٪) یا قیمت فروش مقطوع با تخفیف تعیین کنید تا در فروشگاه با برچسب حراج عرضه شود.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-semibold text-neutral-800 dark:text-slate-200 mb-1">
+                          درصد تخفیف مستقیم (%):
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="95"
+                          placeholder="مثلاً: 30"
+                          value={editDiscountPercent}
+                          onChange={(e) => setEditDiscountPercent(e.target.value)}
+                          className="w-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-slate-700 focus:border-amber-500 rounded-lg py-2 px-3 text-xs font-mono outline-none text-slate-800 dark:text-slate-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-neutral-800 dark:text-slate-200 mb-1">
+                          یا قیمت مقطوع با تخفیف (تومان):
+                        </label>
+                        <input
+                          type="number"
+                          step="1000"
+                          placeholder="مثلاً: 250000"
+                          value={editSalePriceToman}
+                          onChange={(e) => setEditSalePriceToman(e.target.value)}
+                          className="w-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-slate-700 focus:border-amber-500 rounded-lg py-2 px-3 text-xs font-mono outline-none text-slate-800 dark:text-slate-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Comprehensive Dual Pricing Live Preview */}
                   <div className="p-4 bg-teal-50/70 dark:bg-slate-800/90 border border-teal-200 dark:border-slate-700 rounded-xl space-y-4">
                     <div className="flex items-center justify-between text-xs text-teal-950 dark:text-teal-300 font-bold border-b border-teal-200/60 dark:border-slate-700 pb-2.5">
-                      <span>پیش‌نمایش زنده قیمت دوگانه و سود:</span>
+                      <span>پیش‌نمایش زنده قیمت و سود:</span>
                       <span className="font-mono text-[11px] text-teal-700 dark:text-teal-400">
-                        نرخ تبدیل: {new Intl.NumberFormat("fa-IR").format(Math.round(settings.usdToRialRate / 10))} تومان / دلار
+                        نرخ تبدیل: {formatPrice(Math.round(settings.usdToRialRate / 10))} تومان / دلار
                       </span>
                     </div>
 
@@ -832,12 +909,12 @@ export default function AdminProductsPage() {
               {/* TAB 4: REQUIREMENTS & INVENTORY */}
               {activeTab === "requirements" && (
                 <div className="space-y-4 animate-fadeIn">
-                  <span className="block font-bold text-neutral-800">
+                  <span className="block font-bold text-neutral-800 dark:text-slate-200">
                     فیلدهای اجباری برای خریدار هنگام ثبت سفارش:
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label className="flex items-center gap-3 p-3 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editRequiresEmail}
@@ -845,12 +922,12 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-admin-primary focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">الزام ورود ایمیل</span>
-                        <span className="text-[10px] text-neutral-400">برای ارسال مشخصات اکانت یا اینوایت</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">الزام ورود ایمیل</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">برای ارسال مشخصات اکانت یا اینوایت</span>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editRequiresPassword}
@@ -858,12 +935,12 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-admin-primary focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">الزام ورود رمز عبور</span>
-                        <span className="text-[10px] text-neutral-400">برای فعال‌سازی روی اکانت خود مشتری</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">الزام ورود رمز عبور</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">برای فعال‌سازی روی اکانت خود مشتری</span>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editRequiresLink}
@@ -871,12 +948,12 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-admin-primary focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">الزام لینک مقصد</span>
-                        <span className="text-[10px] text-neutral-400">برای سرویس‌های فالوور، لایک یا ویو SMM</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">الزام لینک مقصد</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">برای سرویس‌های فالوور، لایک یا ویو SMM</span>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editRequiresComments}
@@ -884,21 +961,21 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-admin-primary focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">الزام توضیحات / کامنت</span>
-                        <span className="text-[10px] text-neutral-400">درخواست متن سفارشی خریدار</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">الزام توضیحات / کامنت</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">درخواست متن سفارشی خریدار</span>
                       </div>
                     </label>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         واحد محاسبه قیمت:
                       </label>
                       <select
                         value={editPricingUnit}
                         onChange={(e) => setEditPricingUnit(e.target.value as any)}
-                        className="w-full bg-admin-bg border border-admin-borderLight rounded-lg py-2.5 px-3 text-xs outline-none"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg py-2.5 px-3 text-xs outline-none"
                       >
                         <option value="unit">تکی / هر عدد (Unit)</option>
                         <option value="per_1000">تعرفه در هر ۱۰۰۰ عدد (SMM)</option>
@@ -906,7 +983,7 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         حداقل تعداد خرید:
                       </label>
                       <input
@@ -914,12 +991,12 @@ export default function AdminProductsPage() {
                         min="1"
                         value={editMinQty}
                         onChange={(e) => setEditMinQty(Number(e.target.value))}
-                        className="w-full bg-admin-bg border border-admin-borderLight rounded-lg py-2.5 px-3 text-xs outline-none"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg py-2.5 px-3 text-xs outline-none font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         حداکثر تعداد خرید:
                       </label>
                       <input
@@ -927,7 +1004,7 @@ export default function AdminProductsPage() {
                         min="1"
                         value={editMaxQty}
                         onChange={(e) => setEditMaxQty(Number(e.target.value))}
-                        className="w-full bg-admin-bg border border-admin-borderLight rounded-lg py-2.5 px-3 text-xs outline-none"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg py-2.5 px-3 text-xs outline-none font-mono"
                       />
                     </div>
                   </div>
@@ -938,7 +1015,7 @@ export default function AdminProductsPage() {
               {activeTab === "visibility" && (
                 <div className="space-y-4 animate-fadeIn">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editIsActive}
@@ -946,12 +1023,12 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">فعال در سایت</span>
-                        <span className="text-[10px] text-neutral-400">نمایش در کاتالوگ فروشگاه</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">فعال در سایت</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">نمایش در کاتالوگ فروشگاه</span>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editIsFeatured}
@@ -961,13 +1038,13 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-1.5">
                         <Star className="w-3.5 h-3.5 text-amber-500" />
                         <div>
-                          <span className="font-bold text-neutral-800 block">محصول ویژه</span>
-                          <span className="text-[10px] text-neutral-400">نمایش در ردیف برگزیده‌ها</span>
+                          <span className="font-bold text-neutral-800 dark:text-slate-200 block">محصول ویژه</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-slate-500">نمایش در ردیف برگزیده‌ها</span>
                         </div>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer hover:bg-teal-50/40 transition-colors">
+                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer hover:bg-teal-50/40 dark:hover:bg-slate-700/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={editIsFlashDeal}
@@ -977,15 +1054,15 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-1.5">
                         <Flame className="w-3.5 h-3.5 text-red-500" />
                         <div>
-                          <span className="font-bold text-neutral-800 block">شگفت‌انگیز روز</span>
-                          <span className="text-[10px] text-neutral-400">نمایش در باکس پیشنهاد داغ</span>
+                          <span className="font-bold text-neutral-800 dark:text-slate-200 block">شگفت‌انگیز روز</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-slate-500">نمایش در باکس پیشنهاد داغ</span>
                         </div>
                       </div>
                     </label>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg border border-admin-borderLight rounded-xl cursor-pointer">
+                    <label className="flex items-center gap-3 p-3.5 bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl cursor-pointer">
                       <input
                         type="checkbox"
                         checked={editInStock}
@@ -993,13 +1070,13 @@ export default function AdminProductsPage() {
                         className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
                       />
                       <div>
-                        <span className="font-bold text-neutral-800 block">موجود در انبار</span>
-                        <span className="text-[10px] text-neutral-400">امکان ثبت سفارش توسط کاربر</span>
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 block">موجود در انبار</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500">امکان ثبت سفارش توسط کاربر</span>
                       </div>
                     </label>
 
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
                         موجودی انبار (تعداد):
                       </label>
                       <input
@@ -1007,7 +1084,7 @@ export default function AdminProductsPage() {
                         min="0"
                         value={editStockCount}
                         onChange={(e) => setEditStockCount(Number(e.target.value))}
-                        className="w-full bg-admin-bg border border-admin-borderLight rounded-lg py-2.5 px-3 text-xs outline-none font-mono"
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-neutral-800 dark:text-slate-200 rounded-lg py-2.5 px-3 text-xs outline-none font-mono"
                       />
                     </div>
                   </div>
@@ -1015,18 +1092,18 @@ export default function AdminProductsPage() {
               )}
 
               {/* Modal Actions Footer */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-admin-borderLight">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-admin-borderLight dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2.5 rounded-xl text-neutral-600 hover:bg-neutral-100 font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800 font-semibold transition-colors"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-admin-primary hover:bg-admin-primaryDark text-white font-bold shadow-md transition-all disabled:opacity-70"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-admin-primary dark:bg-teal-600 hover:bg-admin-primaryDark dark:hover:bg-teal-700 text-white font-bold shadow-md transition-all disabled:opacity-70"
                 >
                   <Save className="w-4 h-4" />
                   <span>{isSaving ? "در حال ذخیره..." : "ذخیره تغییرات محصول"}</span>

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice, formatNumber } from "@/lib/format";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import {
@@ -210,7 +212,7 @@ export default function AdminUsersPage() {
       default:
         return {
           label: "خریدار عادی",
-          classes: "bg-neutral-100 text-neutral-700 border-neutral-200",
+          classes: "bg-neutral-100 dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border-neutral-200",
         };
     }
   };
@@ -296,10 +298,10 @@ export default function AdminUsersPage() {
       {/* Header & Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text">
+          <h1 className="text-2xl font-black text-admin-text dark:text-white">
             مدیریت نقش‌ها، مدیران و ماتریس دسترسی‌ها (RBAC)
           </h1>
-          <p className="text-xs text-admin-textMuted mt-1">
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
             تعریف و انتساب نقش‌های سیستمی، نظارت بر پرسنل و خریداران، وضعیت احراز هویت دو مرحله‌ای (2FA) و ماتریس دسترسی به ماژول‌های سامانه
           </p>
         </div>
@@ -322,13 +324,13 @@ export default function AdminUsersPage() {
 
       {/* KPI Cards (Stitch Style) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-admin-borderLight shadow-xs flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-teal-50 text-brand-primary flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[11px] text-admin-textMuted font-semibold">کل حساب‌های کاربری</span>
-            <div className="text-2xl font-black text-admin-text font-mono mt-0.5">
+            <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.totalUsers}
             </div>
             <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">
@@ -337,13 +339,13 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-admin-borderLight shadow-xs flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[11px] text-admin-textMuted font-semibold">کادر مدیریت و پرسنل</span>
-            <div className="text-2xl font-black text-admin-text font-mono mt-0.5">
+            <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.totalAdmins}
             </div>
             <span className="text-[10px] text-amber-700 font-semibold block mt-0.5">
@@ -352,13 +354,13 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-admin-borderLight shadow-xs flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
             <KeyRound className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[11px] text-admin-textMuted font-semibold">احراز هویت دو مرحله‌ای</span>
-            <div className="text-2xl font-black text-admin-text font-mono mt-0.5">
+            <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.twoFactorCount}
             </div>
             <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">
@@ -367,13 +369,13 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-admin-borderLight shadow-xs flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
             <Lock className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[11px] text-admin-textMuted font-semibold">سطوح نقش‌های سیستم</span>
-            <div className="text-2xl font-black text-admin-text font-mono mt-0.5">
+            <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               ۵ نقش
             </div>
             <span className="text-[10px] text-purple-600 font-semibold block mt-0.5">
@@ -384,7 +386,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-admin-borderLight shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Search */}
         <div className="flex-1 relative">
           <input
@@ -395,7 +397,7 @@ export default function AdminUsersPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 pr-9 pl-4 text-xs outline-none"
+            className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 pr-9 pl-4 text-xs outline-none"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
         </div>
@@ -407,7 +409,7 @@ export default function AdminUsersPage() {
             setSelectedRole(e.target.value);
             setCurrentPage(1);
           }}
-          className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
+          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200"
         >
           <option value="all">همه نقش‌ها</option>
           <option value="SUPER_ADMIN">مدیر ارشد (Super Admin)</option>
@@ -424,7 +426,7 @@ export default function AdminUsersPage() {
             setSelectedStatus(e.target.value);
             setCurrentPage(1);
           }}
-          className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
+          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200"
         >
           <option value="all">همه وضعیت‌ها</option>
           <option value="ACTIVE">حساب فعال</option>
@@ -433,7 +435,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Users & Staff Table */}
-      <div className="bg-white border border-admin-borderLight rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
         <div className="p-4 border-b border-admin-borderLight flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-admin-primary" />
@@ -449,7 +451,7 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse text-xs">
             <thead>
-              <tr className="bg-admin-container/50 border-b border-admin-borderLight font-bold text-admin-text">
+              <tr className="bg-admin-container/50 dark:bg-slate-800/80 border-b border-admin-borderLight dark:border-slate-800 font-bold text-admin-text dark:text-slate-200">
                 <th className="py-3 px-4">کاربر و اطلاعات تماس</th>
                 <th className="py-3 px-4">نقش سیستمی</th>
                 <th className="py-3 px-4">احراز هویت 2FA</th>
@@ -459,12 +461,12 @@ export default function AdminUsersPage() {
                 <th className="py-3 px-4 text-center">عملیات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-admin-borderLight">
+            <tbody className="divide-y divide-admin-borderLight dark:divide-slate-800">
               {paginatedUsers.map((u) => {
                 const badge = getRoleBadge(u.role);
 
                 return (
-                  <tr key={u.id} className="hover:bg-teal-50/20 transition-colors">
+                  <tr key={u.id} className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors">
                     {/* User info */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
@@ -477,7 +479,7 @@ export default function AdminUsersPage() {
                           className="w-9 h-9 rounded-full object-cover border border-neutral-200 shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-neutral-900">{u.name}</div>
+                          <div className="font-bold text-neutral-900 dark:text-white">{u.name}</div>
                           <div className="text-[11px] text-neutral-400 font-mono flex items-center gap-2 mt-0.5">
                             {u.email && <span>{u.email}</span>}
                             {u.phone && <span>• {u.phone}</span>}
@@ -503,15 +505,15 @@ export default function AdminUsersPage() {
                           فعال (امن)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400 bg-neutral-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                           غیرفعال
                         </span>
                       )}
                     </td>
 
                     {/* Wallet */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-700">
-                      {new Intl.NumberFormat("fa-IR").format(u.walletBalanceToman || 0)}{" "}
+                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-700 dark:text-slate-300">
+                      {formatPrice(u.walletBalanceToman || 0)}{" "}
                       <span className="text-[10px] font-sans text-neutral-400">تومان</span>
                     </td>
 
@@ -540,7 +542,7 @@ export default function AdminUsersPage() {
                       <select
                         value={u.role}
                         onChange={(e) => handleChangeRole(u.id, e.target.value)}
-                        className="bg-neutral-50 border border-neutral-300 text-neutral-800 rounded-md py-1 px-2 text-[11px] outline-none"
+                        className="bg-neutral-50 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 text-neutral-800 dark:text-slate-100 rounded-md py-1 px-2 text-[11px] outline-none"
                       >
                         <option value="SUPER_ADMIN">مدیر ارشد</option>
                         <option value="CATALOG_MANAGER">مدیر کاتالوگ</option>
@@ -554,7 +556,7 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => handleDeleteUser(u)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
                         title="حذف کاربر"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -592,7 +594,7 @@ export default function AdminUsersPage() {
       />
 
       {/* RBAC Matrix Table (Stitch Architecture) */}
-      <div className="bg-white border border-admin-borderLight rounded-xl p-6 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-xl p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-brand-primary" />
@@ -612,7 +614,7 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto pt-2">
           <table className="w-full text-right border-collapse text-xs">
             <thead>
-              <tr className="bg-admin-bg border-b border-admin-borderLight font-bold text-admin-text">
+              <tr className="bg-admin-bg dark:bg-slate-800/80 border-b border-admin-borderLight dark:border-slate-800 font-bold text-admin-text dark:text-slate-200">
                 <th className="py-3 px-4">عنوان دسترسی و عملیات</th>
                 <th className="py-3 px-4 text-center">مدیر ارشد (Super)</th>
                 <th className="py-3 px-4 text-center">مدیر کاتالوگ</th>
@@ -623,8 +625,8 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-admin-borderLight">
               {rbacMatrix.map((item, idx) => (
-                <tr key={idx} className="hover:bg-neutral-50 transition-colors">
-                  <td className="py-3 px-4 font-medium text-neutral-800">
+                <tr key={idx} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="py-3 px-4 font-medium text-neutral-800 dark:text-slate-100">
                     {item.module}
                   </td>
                   <td className="py-3 px-4 text-center">
@@ -672,7 +674,7 @@ export default function AdminUsersPage() {
       {/* Modal: Create User / Admin */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-admin-border max-w-lg w-full p-6 space-y-5 animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-admin-border dark:border-slate-800 max-w-lg w-full p-6 space-y-5 animate-fadeIn text-slate-800 dark:text-slate-100">
             <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-admin-primary" />
@@ -682,7 +684,7 @@ export default function AdminUsersPage() {
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 hover:bg-neutral-100 rounded-md text-neutral-400 hover:text-black"
+                className="p-1 hover:bg-neutral-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-md text-neutral-400 hover:text-black dark:hover:text-white dark:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -690,7 +692,7 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-neutral-700 mb-1">
+                <label className="block font-semibold text-neutral-700 dark:text-slate-300 mb-1">
                   نام و نام خانوادگی:
                 </label>
                 <input
@@ -698,14 +700,14 @@ export default function AdminUsersPage() {
                   placeholder="مثلاً: محمد کریمی"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-700 mb-1">
+                  <label className="block font-semibold text-neutral-700 dark:text-slate-300 mb-1">
                     شماره موبایل:
                   </label>
                   <input
@@ -713,12 +715,12 @@ export default function AdminUsersPage() {
                     placeholder="09121234567"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left text-slate-800 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-neutral-700 mb-1">
+                  <label className="block font-semibold text-neutral-700 dark:text-slate-300 mb-1">
                     آدرس ایمیل:
                   </label>
                   <input
@@ -726,20 +728,20 @@ export default function AdminUsersPage() {
                     placeholder="user@domain.com"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left text-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-700 mb-1">
+                  <label className="block font-semibold text-neutral-700 dark:text-slate-300 mb-1">
                     نقش و سطح دسترسی سازمانی:
                   </label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as any)}
-                    className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none font-semibold"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none font-semibold text-slate-800 dark:text-slate-100"
                   >
                     <option value="SUPER_ADMIN">مدیر ارشد (Super Admin)</option>
                     <option value="CATALOG_MANAGER">مدیر کاتالوگ و انبار</option>
@@ -750,7 +752,7 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-neutral-700 mb-1">
+                  <label className="block font-semibold text-neutral-700 dark:text-slate-300 mb-1">
                     رمز عبور موقت:
                   </label>
                   <input
@@ -758,12 +760,12 @@ export default function AdminUsersPage() {
                     placeholder="••••••••"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs outline-none font-mono dir-ltr text-left text-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 p-3 bg-teal-50 border border-teal-200 rounded-xl cursor-pointer">
+              <label className="flex items-center gap-3 p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl cursor-pointer">
                 <input
                   type="checkbox"
                   checked={new2FA}
@@ -771,10 +773,10 @@ export default function AdminUsersPage() {
                   className="w-4 h-4 rounded text-admin-primary focus:ring-0"
                 />
                 <div>
-                  <span className="font-bold text-teal-950 block">
+                  <span className="font-bold text-teal-950 dark:text-teal-200 block">
                     الزام احراز هویت دو مرحله‌ای (2FA)
                   </span>
-                  <span className="text-[10px] text-teal-700">
+                  <span className="text-[10px] text-teal-700 dark:text-teal-400">
                     برای امنیت بالا توصیه می‌شود برای تمام پرسنل فعال گردد.
                   </span>
                 </div>
@@ -784,7 +786,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-neutral-600 hover:bg-neutral-100 font-semibold"
+                  className="px-4 py-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:hover:bg-slate-800 dark:bg-slate-800 font-semibold"
                 >
                   انصراف
                 </button>

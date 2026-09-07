@@ -40,7 +40,13 @@ export default function ProductCard({ product }: { product: Product }) {
               {product.badge}
             </span>
           )}
-          {product.isFlashDeal && (
+          {price.isOnSale && (
+            <span className="text-[10px] font-extrabold bg-rose-600 text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
+              <Zap className="w-2.5 h-2.5" />
+              حراج ویژه
+            </span>
+          )}
+          {product.isFlashDeal && !price.isOnSale && (
             <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
               <Zap className="w-2.5 h-2.5" />
               تخفیف ویژه
@@ -51,7 +57,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Stock / Unit indicator */}
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
           <span className="text-[10px] font-medium bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs text-brand-dark dark:text-slate-200 px-2 py-0.5 rounded-md border border-brand-border dark:border-slate-700 shadow-2xs">
-            {price.isPerThousand ? "تعرفه در ۱۰۰۰ عدد" : "تحویل فوری"}
+            {price.isPerThousand ? "تعرفه در 1,000 عدد" : "تحویل فوری"}
           </span>
         </div>
 
@@ -94,7 +100,16 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Price & CTA */}
         <div className="pt-3 border-t border-brand-border dark:border-slate-800 flex items-end justify-between gap-2">
           <div>
-            {price.discountPercent > 0 ? (
+            {price.isOnSale && price.formattedOriginalToman ? (
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[10px] text-neutral-400 dark:text-slate-500 line-through font-mono">
+                  {price.formattedOriginalToman}
+                </span>
+                <span className="text-[9px] bg-rose-600 text-white font-bold px-1.5 py-0.2 rounded shadow-2xs">
+                  حراج ویژه
+                </span>
+              </div>
+            ) : price.discountPercent > 0 ? (
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-[10px] text-neutral-400 dark:text-slate-500 line-through font-mono">
                   {price.formattedPublicRetailToman}
@@ -105,11 +120,13 @@ export default function ProductCard({ product }: { product: Product }) {
               </div>
             ) : (
               <span className="text-[10px] text-neutral-400 dark:text-slate-500 block font-medium">
-                قیمت روز با تخفیف:
+                قیمت روز:
               </span>
             )}
             <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-lg sm:text-xl font-black text-brand-dark dark:text-white tracking-tight">
+              <span className={`text-lg sm:text-xl font-black tracking-tight ${
+                price.isOnSale ? "text-rose-600 dark:text-rose-400" : "text-brand-dark dark:text-white"
+              }`}>
                 {price.formattedToman}
               </span>
               <span className="text-[11px] text-brand-muted dark:text-slate-400 font-semibold">تومان</span>

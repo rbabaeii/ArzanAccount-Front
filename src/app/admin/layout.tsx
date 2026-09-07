@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { formatPrice } from "@/lib/format";
 import {
   LayoutDashboard,
   Package,
@@ -180,11 +181,9 @@ export default function AdminLayout({
     },
   ].filter((group) => group.items.length > 0);
 
-  const formattedTomanRate = new Intl.NumberFormat("fa-IR").format(
-    Math.round(settings.usdToRialRate / 10)
-  );
+  const formattedTomanRate = formatPrice(Math.round(settings.usdToRialRate / 10));
 
-  const walletToman = new Intl.NumberFormat("fa-IR").format(
+  const walletToman = formatPrice(
     Math.round((settings.walletBalanceUsd * settings.usdToRialRate) / 10)
   );
 
@@ -470,13 +469,13 @@ export default function AdminLayout({
           {isCurrentRouteAllowed() ? (
             children
           ) : (
-            <div className="max-w-xl mx-auto my-12 bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm text-center">
-              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="max-w-xl mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl p-8 border border-neutral-200 dark:border-slate-800 shadow-sm text-center">
+              <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-200 dark:border-rose-900/60">
                 <ShieldAlert className="w-7 h-7" />
               </div>
-              <h2 className="text-lg font-black text-neutral-900 mb-2">محدودیت سطح دسترسی</h2>
-              <p className="text-xs text-neutral-600 mb-6 leading-relaxed">
-                سطح کاربری شما (<span className="font-bold text-teal-800">{getRoleBadge(user?.role)}</span>) اجازه دسترسی به این بخش را ندارد. این بخش تنها توسط مدیران با سطح دسترسی بالاتر قابل مشاهده است.
+              <h2 className="text-lg font-black text-neutral-900 dark:text-white mb-2">محدودیت سطح دسترسی</h2>
+              <p className="text-xs text-neutral-600 dark:text-slate-300 mb-6 leading-relaxed">
+                سطح کاربری شما (<span className="font-bold text-teal-800 dark:text-teal-300">{getRoleBadge(user?.role)}</span>) اجازه دسترسی به این بخش را ندارد. این بخش تنها توسط مدیران با سطح دسترسی بالاتر قابل مشاهده است.
               </p>
               <NextLink
                 href="/admin"

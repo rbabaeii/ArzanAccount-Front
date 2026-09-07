@@ -15,12 +15,15 @@ import {
   User,
   LogOut,
   ChevronDown,
+  ChevronLeft,
   Shield,
   Wallet,
+  Layers,
 } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function Header() {
   const { categories, settings, cart } = useStore();
@@ -29,8 +32,9 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
-  const formattedUsdRate = new Intl.NumberFormat("fa-IR").format(
+  const formattedUsdRate = formatPrice(
     Math.round(settings.usdToRialRate / 10)
   );
 
@@ -67,13 +71,13 @@ export default function Header() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2 text-teal-100 text-[11px] sm:text-xs">
             <Zap className="w-3.5 h-3.5 text-brand-accent shrink-0 animate-pulse" />
-            <span>تحویل آنلاین و آنی کلیه اکانت‌ها | احراز هویت پیامکی با کد تایید آزمایشی ۱۱۱۱۱</span>
+            <span>تحویل آنلاین و آنی کلیه اکانت‌ها | احراز هویت پیامکی با کد تایید آزمایشی 11111</span>
           </div>
 
           <div className="flex items-center gap-4 text-teal-200 text-[11px]">
-            <span className="hidden md:inline">
+            {isAdmin && <span className="hidden md:inline">
               نرخ مرجع دلار: <strong className="text-white font-mono">{formattedUsdRate}</strong> تومان
-            </span>
+            </span>}
             <Link
               href="/orders"
               className="hover:text-white transition-colors flex items-center gap-1 text-teal-100"
@@ -122,7 +126,7 @@ export default function Header() {
             <div className="flex flex-col">
               <span className="text-xl font-black tracking-tight text-brand-dark dark:text-white flex items-center gap-1.5">
                 ارزان اکانت
-                <span className="text-[10px] bg-brand-accentLight text-brand-accent font-bold px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-400/30">
+                <span className="text-[10px] bg-brand-accentLight dark:bg-amber-950/60 text-brand-accent dark:text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-400/30">
                   تحویل آنی
                 </span>
               </span>
@@ -262,24 +266,89 @@ export default function Header() {
       </div>
 
       {/* Categories Bar */}
-      <nav className="bg-white dark:bg-slate-900/90 border-t border-brand-border dark:border-slate-800 px-4 overflow-x-auto scrollbar-none transition-colors">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 py-2.5 text-xs font-semibold text-brand-muted dark:text-slate-400 whitespace-nowrap">
-          <Link href="/products" className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400">
-            <span>کاتالوگ محصولات</span>
-          </Link>
-          <Link href="/categories" className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-1 rounded-md">
-            <span>همه دسته‌بندی‌ها</span>
-          </Link>
-          <span className="text-neutral-200 dark:text-slate-700">|</span>
-          {categories.map((cat) => (
+      <nav className="bg-white dark:bg-slate-900/90 border-t border-brand-border dark:border-slate-800 px-4 transition-colors">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-2 text-xs font-semibold text-brand-muted dark:text-slate-400">
+          <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-0.5">
+            {/* Categories Dropdown */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 font-bold hover:bg-teal-100 dark:hover:bg-teal-900/60 transition-all border border-teal-200/60 dark:border-teal-800/60 shadow-2xs"
+              >
+                <Layers className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+                <span>دسته‌بندی‌ها</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Dropdown Flyout */}
+              {categoryDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setCategoryDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-h-96 overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-slate-800 p-2 z-40 animate-fadeIn divide-y divide-neutral-100 dark:divide-slate-800">
+                    <div className="p-2.5 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
+                      <span>همه دسته‌بندی‌ها ({categories.length})</span>
+                      <Link
+                        href="/categories"
+                        onClick={() => setCategoryDropdownOpen(false)}
+                        className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                      >
+                        <span>صفحه دسته‌ها</span>
+                        <ChevronLeft className="w-3 h-3" />
+                      </Link>
+                    </div>
+
+                    <div className="py-1.5 space-y-0.5">
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/category/${cat.slug}`}
+                          onClick={() => setCategoryDropdownOpen(false)}
+                          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-teal-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
+                        >
+                          <span className="font-medium">{cat.title}</span>
+                          <ChevronLeft className="w-3.5 h-3.5 text-neutral-300 dark:text-slate-600" />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <Link
-              key={cat.id}
-              href={`/category/${cat.slug}`}
-              className="hover:text-brand-primary dark:hover:text-teal-300 hover:bg-teal-50 dark:hover:bg-slate-800 px-2 py-1 rounded-md transition-colors"
+              href="/products"
+              className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 shrink-0 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800"
             >
-              {cat.title}
+              <span>کاتالوگ محصولات</span>
             </Link>
-          ))}
+
+            <span className="text-neutral-300 dark:text-slate-700 hidden sm:inline">|</span>
+
+            {/* Top 4 Featured Categories Direct Pills */}
+            <div className="flex items-center gap-2">
+              {categories.slice(0, 4).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/category/${cat.slug}`}
+                  className="hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50/80 dark:hover:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap text-neutral-600 dark:text-slate-300 text-xs font-medium"
+                >
+                  {cat.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <Link
+            href="/categories"
+            className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:underline shrink-0 bg-teal-50/50 dark:bg-teal-950/40 px-2.5 py-1 rounded-lg"
+          >
+            <span>آرشیو دسته‌ها</span>
+            <ChevronLeft className="w-3 h-3" />
+          </Link>
         </div>
       </nav>
 

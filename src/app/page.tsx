@@ -15,22 +15,49 @@ import {
   Share2,
   HelpCircle,
   Flame,
+  Search,
+  SlidersHorizontal,
+  ArrowUpDown,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import Pagination from "@/components/ui/Pagination";
+import { formatNumber } from "@/lib/format";
 
 export default function HomePage() {
-  const { activeProducts, categories } = useStore();
+  const { activeProducts, categories, calculateProductPrice } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [productSearch, setProductSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"popular" | "newest" | "price_asc" | "price_desc" | "rating" | "on_sale">("popular");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
   const flashDeals = activeProducts.filter((p) => p.isFlashDeal);
 
-  const filteredProducts =
-    selectedCategory === "all"
-      ? activeProducts
-      : activeProducts.filter((p) => p.categoryId === selectedCategory);
+  const filteredProducts = activeProducts
+    .filter((p) => {
+      const matchCat = selectedCategory === "all" || p.categoryId === selectedCategory;
+      const matchSearch =
+        !productSearch.trim() ||
+        p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        p.customTitle.toLowerCase().includes(productSearch.toLowerCase()) ||
+        p.description?.toLowerCase().includes(productSearch.toLowerCase());
+      const matchStock = !inStockOnly || p.inStock;
+      const price = calculateProductPrice(p);
+      const matchSale = sortBy !== "on_sale" || Boolean(price.isOnSale || p.isFlashDeal);
+      return matchCat && matchSearch && matchStock && matchSale;
+    })
+    .sort((a, b) => {
+      const priceA = calculateProductPrice(a).toman;
+      const priceB = calculateProductPrice(b).toman;
+      if (sortBy === "price_asc") return priceA - priceB;
+      if (sortBy === "price_desc") return priceB - priceA;
+      if (sortBy === "rating") return b.rating - a.rating;
+      if (sortBy === "newest") return b.externalId - a.externalId;
+      if (sortBy === "on_sale") return (b.isFlashDeal ? 1 : 0) - (a.isFlashDeal ? 1 : 0);
+      return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0) || b.reviewCount - a.reviewCount;
+    });
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const paginatedProducts = filteredProducts.slice(
@@ -122,20 +149,20 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x-reverse divide-x divide-brand-border dark:divide-slate-800">
             <div className="space-y-1">
-              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">+۱۴,۵۰۰</span>
-              <p className="text-[11px] text-brand-muted dark:text-slate-500">سفارش موفق تحویل‌شده</p>
+              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">+14,500</span>
+              <p className="text-[11px] text-brand-muted dark:text-slate-400">سفارش موفق تحویل‌شده</p>
             </div>
             <div className="space-y-1">
-              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">۲ دقیقه</span>
-              <p className="text-[11px] text-brand-muted dark:text-slate-500">میانگین زمان صدور لایسنس</p>
+              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">2 دقیقه</span>
+              <p className="text-[11px] text-brand-muted dark:text-slate-400">میانگین زمان صدور لایسنس</p>
             </div>
             <div className="space-y-1">
-              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">٪۹۹.۴</span>
-              <p className="text-[11px] text-brand-muted dark:text-slate-500">رضایت خریداران و دولوپرها</p>
+              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">99.4%</span>
+              <p className="text-[11px] text-brand-muted dark:text-slate-400">رضایت خریداران و دولوپرها</p>
             </div>
             <div className="space-y-1">
-              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">۲۴/۷</span>
-              <p className="text-[11px] text-brand-muted dark:text-slate-500">پشتیبانی تلگرام و آنلاین</p>
+              <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">24/7</span>
+              <p className="text-[11px] text-brand-muted dark:text-slate-400">پشتیبانی تلگرام و آنلاین</p>
             </div>
           </div>
         </div>
@@ -347,6 +374,134 @@ export default function HomePage() {
               </select>
             </div>
           )}
+        </div>
+
+        {/* Search, Sort, and In-Stock Toolbar */}
+        <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-3.5 mb-8 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+          {/* Quick Search */}
+          <div className="relative flex-1 max-w-md">
+            <input
+              type="text"
+              placeholder="جستجو در نام و توضیحات این اشتراک‌ها..."
+              value={productSearch}
+              onChange={(e) => {
+                setProductSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-slate-50 dark:bg-slate-800/70 border border-brand-border dark:border-slate-700 rounded-xl py-2 pr-9 pl-3 text-xs outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:border-brand-primary dark:focus:border-teal-400 transition-all"
+            />
+            <Search className="w-4 h-4 text-neutral-400 dark:text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
+            {productSearch && (
+              <button
+                onClick={() => {
+                  setProductSearch("");
+                  setCurrentPage(1);
+                }}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-neutral-200 dark:bg-slate-700 text-neutral-600 dark:text-slate-300 rounded px-1.5 py-0.5"
+              >
+                پاک کردن
+              </button>
+            )}
+          </div>
+
+          {/* Sort Pills & In-Stock Switch */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/80 p-1 rounded-xl border border-brand-border dark:border-slate-700/60 overflow-x-auto scrollbar-none">
+              <button
+                onClick={() => {
+                  setSortBy("popular");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                  sortBy === "popular"
+                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                محبوب‌ترین
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy("newest");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                  sortBy === "newest"
+                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                جدیدترین
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy("price_asc");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                  sortBy === "price_asc"
+                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                ارزان‌ترین
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy("price_desc");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                  sortBy === "price_desc"
+                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                گران‌ترین
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy("rating");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                  sortBy === "rating"
+                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                امتیاز بالا
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy("on_sale");
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap flex items-center gap-1 ${
+                  sortBy === "on_sale"
+                    ? "bg-amber-500 text-slate-950 font-black shadow-2xs"
+                    : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                }`}
+              >
+                <Tag className="w-3 h-3" />
+                <span>حراج و تخفیف‌دار</span>
+              </button>
+            </div>
+
+            {/* In-Stock Toggle */}
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none">
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={(e) => {
+                  setInStockOnly(e.target.checked);
+                  setCurrentPage(1);
+                }}
+                className="w-3.5 h-3.5 accent-brand-primary rounded"
+              />
+              <span className="text-[11px]">فقط کالاهای موجود</span>
+            </label>
+          </div>
         </div>
 
         {/* Products Grid */}

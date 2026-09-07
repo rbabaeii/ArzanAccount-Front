@@ -30,9 +30,12 @@ export interface Product {
   customMarginPercent?: number;
   categoryId: string;
   description: string;
+  persianDescription?: string;
   badge?: string;
   image?: string;
   specs?: { label: string; value: string }[];
+  salePriceToman?: number;
+  discountPercent?: number;
 }
 
 export interface CartItem {
@@ -75,6 +78,7 @@ export interface Coupon {
   usageCount: number;
   maxUsage: number;
   isActive: boolean;
+  categoryId?: string;
 }
 
 export interface AuditLog {

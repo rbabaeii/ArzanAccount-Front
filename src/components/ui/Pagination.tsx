@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { toPersianDigits } from "@/lib/date";
+import { formatNumber } from "@/lib/format";
 
 interface PaginationProps {
   currentPage: number;
@@ -82,15 +82,15 @@ export default function Pagination({
         <div className="text-neutral-500 dark:text-slate-400 font-medium order-2 sm:order-1">
           نمایش{" "}
           <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
-            {toPersianDigits(startItem)}
+            {formatNumber(startItem)}
           </span>{" "}
           تا{" "}
           <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
-            {toPersianDigits(endItem)}
+            {formatNumber(endItem)}
           </span>{" "}
           از{" "}
           <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
-            {toPersianDigits(totalItems)}
+            {formatNumber(totalItems)}
           </span>{" "}
           {itemName}
         </div>
@@ -142,7 +142,7 @@ export default function Pagination({
                     : "border border-neutral-200 dark:border-slate-800 text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 hover:text-brand-primary dark:hover:text-teal-300"
                 }`}
               >
-                {toPersianDigits(pageNum)}
+                {pageNum}
               </button>
             );
           })}
@@ -176,7 +176,7 @@ export default function Pagination({
           >
             {pageSizeOptions.map((sz) => (
               <option key={sz} value={sz}>
-                {toPersianDigits(sz)}
+                {sz}
               </option>
             ))}
           </select>

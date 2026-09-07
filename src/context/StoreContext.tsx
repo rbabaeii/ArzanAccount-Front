@@ -11,6 +11,7 @@ import {
   initialAuditLogs,
 } from "@/data/mockData";
 import { api } from "@/lib/api";
+import { formatPrice, formatNumber, toEnglishDigits } from "@/lib/format";
 
 export interface CalculatedPrice {
   rial: number;
@@ -27,6 +28,9 @@ export interface CalculatedPrice {
   marginPercent: number;
   isCustomMarginActive: boolean;
   isPerThousand: boolean;
+  isOnSale: boolean;
+  originalToman: number;
+  formattedOriginalToman: string;
 }
 
 interface StoreContextType {
@@ -47,6 +51,7 @@ interface StoreContextType {
   toggleProductActive: (id: string) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   addCategory: (category: Omit<Category, "id">) => Promise<void>;
+  updateCategory: (id: string, updates: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   updateSettings: (updates: Partial<SystemSettings>) => Promise<void>;
   calculateProductPrice: (product: Product) => CalculatedPrice;
@@ -94,6 +99,9 @@ function mapBackendProduct(bp: any): Product {
     customMarginPercent: bp.customMarginPercent ?? undefined,
     categoryId: bp.categoryId || "cat-other",
     description: bp.description || "سرویس اورجینال با تحویل خودکار و گارانتی کامل",
+    persianDescription: bp.persianDescription || undefined,
+    salePriceToman: bp.salePriceToman,
+    discountPercent: bp.discountPercent,
     badge: bp.isFlashDeal ? "تخفیف ویژه" : bp.isFeatured ? "ویژه" : undefined,
     image:
       bp.image ||
@@ -177,10 +185,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             action: log.action,
             details: log.details,
             user: log.user,
-            timestamp: new Intl.DateTimeFormat("fa-IR", {
-              dateStyle: "short",
-              timeStyle: "short",
-            }).format(new Date(log.createdAt)),
+            timestamp: toEnglishDigits(
+              new Intl.DateTimeFormat("fa-IR", {
+                dateStyle: "short",
+                timeStyle: "short",
+              }).format(new Date(log.createdAt))
+            ),
             type: (log.type as any) || "sync",
           }))
         );
@@ -258,10 +268,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             action: log.action,
             details: log.details,
             user: log.user,
-            timestamp: new Intl.DateTimeFormat("fa-IR", {
-              dateStyle: "short",
-              timeStyle: "short",
-            }).format(new Date(log.createdAt)),
+            timestamp: toEnglishDigits(
+              new Intl.DateTimeFormat("fa-IR", {
+                dateStyle: "short",
+                timeStyle: "short",
+              }).format(new Date(log.createdAt))
+            ),
             type: (log.type as any) || "product_toggle",
           }))
         );
@@ -321,6 +333,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Update Category
+  const updateCategory = async (id: string, updates: Partial<Category>) => {
+    setCategories((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
+    try {
+      await api.updateCategory(id, updates);
+    } catch (error) {
+      console.error("Error updating category on backend:", error);
+    }
+  };
+
   // Update Settings (USD Rate & Margin)
   const updateSettings = async (updates: Partial<SystemSettings>) => {
     setSettings((prev) => ({ ...prev, ...updates }));
@@ -374,28 +398,55 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    const calculatedRegularToman = finalToman;
+    const hasSalePrice = Boolean(
+      product.salePriceToman &&
+      product.salePriceToman > 0 &&
+      product.salePriceToman < calculatedRegularToman
+    );
+
+    const hasSalePercent = Boolean(
+      product.discountPercent &&
+      product.discountPercent > 0 &&
+      product.discountPercent < 100
+    );
+
+    const hasSale = hasSalePrice || hasSalePercent;
+
+    if (hasSalePrice) {
+      finalToman = product.salePriceToman!;
+    } else if (hasSalePercent) {
+      finalToman = Math.round(calculatedRegularToman * (1 - product.discountPercent! / 100));
+    }
+
     const finalRial = finalToman * 10;
     const profitToman = Math.max(0, finalToman - costToman);
-    const discountPercent =
-      publicRetailToman > finalToman
-        ? Math.round(((publicRetailToman - finalToman) / publicRetailToman) * 100)
-        : 0;
+    const discountPercent = hasSalePercent
+      ? Math.round(product.discountPercent!)
+      : hasSalePrice
+      ? Math.round(((calculatedRegularToman - finalToman) / calculatedRegularToman) * 100)
+      : publicRetailToman > finalToman
+      ? Math.round(((publicRetailToman - finalToman) / publicRetailToman) * 100)
+      : 0;
 
     return {
       rial: finalRial,
       toman: finalToman,
-      formattedToman: new Intl.NumberFormat("fa-IR").format(finalToman),
+      formattedToman: formatPrice(finalToman),
       usdPrice: product.costPriceUsd,
       costToman,
-      formattedCostToman: new Intl.NumberFormat("fa-IR").format(costToman),
+      formattedCostToman: formatPrice(costToman),
       retailPriceUsd,
       publicRetailToman,
-      formattedPublicRetailToman: new Intl.NumberFormat("fa-IR").format(publicRetailToman),
+      formattedPublicRetailToman: formatPrice(publicRetailToman),
       profitToman,
       discountPercent,
       marginPercent: margin,
       isCustomMarginActive,
       isPerThousand: product.pricingUnit === "per_1000",
+      isOnSale: hasSale,
+      originalToman: calculatedRegularToman,
+      formattedOriginalToman: formatPrice(calculatedRegularToman),
     };
   };
 
@@ -449,6 +500,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (!found) {
       return { success: false, message: "کد تخفیف وارد شده معتبر نیست یا منقضی شده است." };
     }
+
+    // Category restriction check
+    if (found.categoryId && found.categoryId !== "all") {
+      const eligibleItem = cart.some((item) => item.product.categoryId === found.categoryId);
+      if (!eligibleItem) {
+        const catName = categories.find((c) => c.id === found.categoryId)?.title || "دسته‌بندی خاص";
+        return {
+          success: false,
+          message: `این کد تخفیف اختصاصی است و تنها برای محصولات دسته «${catName}» معتبر می‌باشد.`,
+        };
+      }
+    }
+
     setAppliedCoupon(found);
     return { success: true, message: `کد تخفیف %${found.discountPercent} با موفقیت اعمال شد.` };
   };
@@ -473,7 +537,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
       action: `ثبت سفارش جدید #${newOrder.orderNumber}`,
-      details: `سفارش به مبلغ ${new Intl.NumberFormat("fa-IR").format(newOrder.totalPriceToman)} تومان ثبت شد.`,
+      details: `سفارش به مبلغ ${formatPrice(newOrder.totalPriceToman)} تومان ثبت شد.`,
       user: newOrder.customerEmail,
       timestamp: "هم‌اکنون",
       type: "order",
@@ -536,6 +600,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         toggleProductActive,
         updateProduct,
         addCategory,
+        updateCategory,
         deleteCategory,
         updateSettings,
         calculateProductPrice,

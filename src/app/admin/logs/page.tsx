@@ -32,7 +32,7 @@ export default function AdminLogsPage() {
       case "product_toggle":
         return <ToggleLeft className="w-4 h-4 text-indigo-600" />;
       default:
-        return <ScrollText className="w-4 h-4 text-neutral-500" />;
+        return <ScrollText className="w-4 h-4 text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white" />;
     }
   };
 
@@ -41,23 +41,23 @@ export default function AdminLogsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text">
+          <h1 className="text-2xl font-black text-admin-text dark:text-white">
             لاگ فعالیت‌ها و ردپای سیستم (Audit Logs)
           </h1>
-          <p className="text-xs text-admin-textMuted mt-1">
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
             ثبت کلیه عملیات‌های همگام‌سازی، تغییرات نرخ دلار، ثبت سفارشات و فعال‌سازی محصولات
           </p>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-admin-borderLight text-xs">
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-admin-borderLight dark:border-slate-800 text-xs">
           <button
             onClick={() => {
               setFilterType("all");
               setCurrentPage(1);
             }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "all" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
+              filterType === "all" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             همه رویدادها
@@ -68,7 +68,7 @@ export default function AdminLogsPage() {
               setCurrentPage(1);
             }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "sync" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
+              filterType === "sync" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             همگام‌سازی
@@ -79,7 +79,7 @@ export default function AdminLogsPage() {
               setCurrentPage(1);
             }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "rate_change" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
+              filterType === "rate_change" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             تغییر نرخ ارز
@@ -90,7 +90,7 @@ export default function AdminLogsPage() {
               setCurrentPage(1);
             }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "order" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
+              filterType === "order" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             سفارشات
@@ -99,24 +99,24 @@ export default function AdminLogsPage() {
       </div>
 
       {/* Logs Timeline */}
-      <div className="bg-white border border-admin-borderLight rounded-2xl p-6 shadow-card space-y-4">
-        <div className="divide-y divide-admin-borderLight">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
+        <div className="divide-y divide-admin-borderLight dark:divide-slate-800">
           {paginatedLogs.map((log) => (
             <div key={log.id} className="py-4 flex items-start gap-4 text-xs">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0 border border-teal-100">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/60">
                 {getTypeIcon(log.type)}
               </div>
 
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <h4 className="font-bold text-admin-text text-sm">{log.action}</h4>
+                  <h4 className="font-bold text-admin-text dark:text-white text-sm">{log.action}</h4>
                   <span className="text-[11px] text-neutral-400 font-mono">{log.timestamp}</span>
                 </div>
-                <p className="text-xs text-admin-textMuted mt-1 leading-relaxed">
+                <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1 leading-relaxed">
                   {log.details}
                 </p>
                 <span className="text-[10px] text-neutral-400 block mt-1.5">
-                  توسط: <strong className="text-neutral-600">{log.user}</strong>
+                  توسط: <strong className="text-neutral-600 dark:text-slate-300">{log.user}</strong>
                 </span>
               </div>
             </div>

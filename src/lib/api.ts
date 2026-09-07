@@ -4,7 +4,8 @@
  */
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? "/api/v1" : "http://127.0.0.1:4000/api/v1");
 
 interface ApiResponse<T> {
   success: boolean;
@@ -109,9 +110,15 @@ export const api = {
   // Categories
   getCategories: () => request<any[]>("/catalog/categories"),
 
-  createCategory: (data: { title: string; titleFa?: string; slug: string; description?: string }) =>
+  createCategory: (data: { title: string; titleFa?: string; slug: string; description?: string; icon?: string; orderIndex?: number }) =>
     request<any>("/catalog/categories", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateCategory: (id: string, data: { title?: string; titleFa?: string; slug?: string; description?: string; icon?: string; orderIndex?: number }) =>
+    request<any>(`/catalog/categories/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 

@@ -4,8 +4,11 @@
 
 const PERSIAN_DIGITS = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
 
+import { toEnglishDigits } from "./format";
+
 export function toPersianDigits(input: string | number): string {
-  return String(input).replace(/[0-9]/g, (digit) => PERSIAN_DIGITS[parseInt(digit, 10)]);
+  // Requirement: All numbers across the website must be in English digits
+  return toEnglishDigits(input);
 }
 
 export function toPersianDate(inputDate?: string | number | Date | null): string {
@@ -21,9 +24,9 @@ export function toPersianDate(inputDate?: string | number | Date | null): string
       day: "numeric",
     });
 
-    return formatter.format(date);
+    return toEnglishDigits(formatter.format(date));
   } catch {
-    return String(inputDate);
+    return toEnglishDigits(String(inputDate));
   }
 }
 
@@ -42,8 +45,8 @@ export function toPersianDateTime(inputDate?: string | number | Date | null): st
       minute: "2-digit",
     });
 
-    return formatter.format(date);
+    return toEnglishDigits(formatter.format(date));
   } catch {
-    return String(inputDate);
+    return toEnglishDigits(String(inputDate));
   }
 }

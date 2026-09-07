@@ -56,6 +56,17 @@ jdp-container {
   background: #adb5bd;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
