@@ -18,6 +18,7 @@ import {
   Check,
   Minus,
 } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 interface UserItem {
   id: string;
@@ -48,6 +49,10 @@ export default function AdminUsersPage() {
     twoFactorCount: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -91,6 +96,12 @@ export default function AdminUsersPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const paginatedUsers = users.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Actions
   const handleToggleStatus = async (user: UserItem) => {
@@ -380,7 +391,10 @@ export default function AdminUsersPage() {
             type="text"
             placeholder="جستجو در نام کاربر، آدرس ایمیل یا شماره موبایل..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 pr-9 pl-4 text-xs outline-none"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -389,7 +403,10 @@ export default function AdminUsersPage() {
         {/* Role Filter */}
         <select
           value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
+          onChange={(e) => {
+            setSelectedRole(e.target.value);
+            setCurrentPage(1);
+          }}
           className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
         >
           <option value="all">همه نقش‌ها</option>
@@ -403,7 +420,10 @@ export default function AdminUsersPage() {
         {/* Status Filter */}
         <select
           value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          onChange={(e) => {
+            setSelectedStatus(e.target.value);
+            setCurrentPage(1);
+          }}
           className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
         >
           <option value="all">همه وضعیت‌ها</option>
@@ -440,7 +460,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-admin-borderLight">
-              {users.map((u) => {
+              {paginatedUsers.map((u) => {
                 const badge = getRoleBadge(u.role);
 
                 return (
@@ -553,6 +573,23 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={users.length}
+        itemsPerPage={itemsPerPage}
+        itemName="کاربر"
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onItemsPerPageChange={(limit) => {
+          setItemsPerPage(limit);
+          setCurrentPage(1);
+        }}
+        pageSizeOptions={[10, 15, 30, 50]}
+      />
 
       {/* RBAC Matrix Table (Stitch Architecture) */}
       <div className="bg-white border border-admin-borderLight rounded-xl p-6 shadow-xs space-y-4">

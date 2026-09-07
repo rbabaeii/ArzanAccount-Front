@@ -3,13 +3,22 @@
 import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { ScrollText, Filter, RefreshCw, Coins, ShoppingCart, ToggleLeft, ShieldAlert } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function AdminLogsPage() {
   const { auditLogs } = useStore();
   const [filterType, setFilterType] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filtered = auditLogs.filter(
     (log) => filterType === "all" || log.type === filterType
+  );
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedLogs = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const getTypeIcon = (type: string) => {
@@ -43,7 +52,10 @@ export default function AdminLogsPage() {
         {/* Filter Buttons */}
         <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-admin-borderLight text-xs">
           <button
-            onClick={() => setFilterType("all")}
+            onClick={() => {
+              setFilterType("all");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               filterType === "all" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
             }`}
@@ -51,7 +63,10 @@ export default function AdminLogsPage() {
             همه رویدادها
           </button>
           <button
-            onClick={() => setFilterType("sync")}
+            onClick={() => {
+              setFilterType("sync");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               filterType === "sync" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
             }`}
@@ -59,7 +74,10 @@ export default function AdminLogsPage() {
             همگام‌سازی
           </button>
           <button
-            onClick={() => setFilterType("rate_change")}
+            onClick={() => {
+              setFilterType("rate_change");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               filterType === "rate_change" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
             }`}
@@ -67,7 +85,10 @@ export default function AdminLogsPage() {
             تغییر نرخ ارز
           </button>
           <button
-            onClick={() => setFilterType("order")}
+            onClick={() => {
+              setFilterType("order");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               filterType === "order" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500"
             }`}
@@ -80,7 +101,7 @@ export default function AdminLogsPage() {
       {/* Logs Timeline */}
       <div className="bg-white border border-admin-borderLight rounded-2xl p-6 shadow-card space-y-4">
         <div className="divide-y divide-admin-borderLight">
-          {filtered.map((log) => (
+          {paginatedLogs.map((log) => (
             <div key={log.id} className="py-4 flex items-start gap-4 text-xs">
               <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0 border border-teal-100">
                 {getTypeIcon(log.type)}
@@ -102,6 +123,23 @@ export default function AdminLogsPage() {
           ))}
         </div>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        itemsPerPage={itemsPerPage}
+        itemName="رویداد"
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onItemsPerPageChange={(limit) => {
+          setItemsPerPage(limit);
+          setCurrentPage(1);
+        }}
+        pageSizeOptions={[5, 10, 20, 50]}
+      />
     </div>
   );
 }

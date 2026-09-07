@@ -199,4 +199,24 @@ export const api = {
     }),
 
   getMe: () => request<any>("/auth/me"),
+
+  // Media / File Upload
+  uploadFile: async (file: File, folder = "products"): Promise<{ success: boolean; url: string; filename: string; size: number }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = typeof window !== "undefined" ? localStorage.getItem("arzan_auth_token") : null;
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE_URL}/upload?folder=${folder}`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "خطا در آپلود فایل.");
+    }
+    return res.json();
+  },
 };

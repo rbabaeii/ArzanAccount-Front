@@ -16,6 +16,7 @@ import {
   Key,
 } from "lucide-react";
 import Link from "next/link";
+import { toPersianDateTime } from "@/lib/date";
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
@@ -116,7 +117,7 @@ function OrderTrackingContent() {
                   )}
                 </div>
                 <span className="text-xs text-brand-muted block mt-1">
-                  ثبت شده در: {searchedOrder.createdAt} | ایمیل خریدار: {searchedOrder.customerEmail}
+                  ثبت شده در: {toPersianDateTime(searchedOrder.createdAt)} | ایمیل خریدار: {searchedOrder.customerEmail}
                 </span>
               </div>
 

@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   ArrowUpRight,
 } from "lucide-react";
+import { toPersianDateTime } from "@/lib/date";
 
 export default function AdminDashboardPage() {
   const {
@@ -196,7 +197,7 @@ export default function AdminDashboardPage() {
                   <span className="font-black font-mono text-admin-text block">
                     {new Intl.NumberFormat("fa-IR").format(o.totalPriceToman)} ت
                   </span>
-                  <span className="text-[10px] text-neutral-400">{o.createdAt}</span>
+                  <span className="text-[10px] text-neutral-400">{toPersianDateTime(o.createdAt)}</span>
                 </div>
               </div>
             ))}

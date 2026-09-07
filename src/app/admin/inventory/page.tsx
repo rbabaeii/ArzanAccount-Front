@@ -4,16 +4,25 @@ import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { Boxes, AlertTriangle, CheckCircle2, RefreshCw, Search, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import Pagination from "@/components/ui/Pagination";
 
 export default function AdminInventoryPage() {
   const { products, syncWithIrMarket, isLoadingSync, toggleProductActive } = useStore();
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const filtered = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.customTitle.includes(search) ||
       (p.externalId ? p.externalId.toString().includes(search) : false)
+  );
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const lowStockCount = products.filter((p) => p.stockCount < 25 && p.pricingUnit !== "per_1000").length;
@@ -79,7 +88,10 @@ export default function AdminInventoryPage() {
             type="text"
             placeholder="جستجوی محصول جهت بررسی موجودی..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-admin-bg border border-admin-borderLight focus:border-brand-primary rounded-xl py-2.5 pr-10 pl-4 text-xs outline-none"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
@@ -101,7 +113,7 @@ export default function AdminInventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-admin-borderLight">
-              {filtered.map((p) => {
+              {paginated.map((p) => {
                 const isLow = p.stockCount < 25 && p.pricingUnit !== "per_1000";
 
                 return (
@@ -158,6 +170,23 @@ export default function AdminInventoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        itemsPerPage={itemsPerPage}
+        itemName="محصول"
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onItemsPerPageChange={(limit) => {
+          setItemsPerPage(limit);
+          setCurrentPage(1);
+        }}
+        pageSizeOptions={[10, 20, 50, 100]}
+      />
     </div>
   );
 }

@@ -1,6 +1,30 @@
+@import "@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Jalali Datepicker Custom Theme Overrides */
+jdp-container {
+  --jdp-primary: #005a71;
+  border-radius: 1rem !important;
+  font-family: inherit !important;
+  z-index: 99999 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.dark jdp-container {
+  --jdp-color-0: #0f172a !important;
+  --jdp-color-1: #1e293b !important;
+  --jdp-color-2: #334155 !important;
+  --jdp-color-3: #64748b !important;
+  --jdp-color-4: #94a3b8 !important;
+  --jdp-color-5: #f8fafc !important;
+  --jdp-primary: #0e7490 !important;
+  --jdp-red: #ef4444 !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+}
 
 @layer base {
   body {
@@ -30,4 +54,13 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #adb5bd;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }

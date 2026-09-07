@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Header from "@/components/store/Header";
 import Footer from "@/components/store/Footer";
@@ -9,19 +9,28 @@ import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { useStore } from "@/context/StoreContext";
 import Link from "next/link";
 import { ArrowRight, Layers, PackageX } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function CategoryPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const { activeProducts, categories } = useStore();
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
   const currentCategory = categories.find((c) => c.slug === slug);
   const categoryProducts = currentCategory
     ? activeProducts.filter((p) => p.categoryId === currentCategory.id)
     : [];
 
+  const totalPages = Math.ceil(categoryProducts.length / pageSize);
+  const paginatedProducts = categoryProducts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
-    <div className="flex flex-col min-h-screen bg-brand-surfaceDim">
+    <div className="flex flex-col min-h-screen bg-brand-surfaceDim dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
       {currentCategory && (
         <BreadcrumbJsonLd
           items={[
@@ -66,10 +75,25 @@ export default function CategoryPage() {
 
         {/* Product Grid */}
         {categoryProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {categoryProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {paginatedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={categoryProducts.length}
+              itemsPerPage={pageSize}
+              itemName="محصول"
+              onPageChange={(p) => {
+                setCurrentPage(p);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="border-t border-brand-border dark:border-slate-800 pt-6"
+            />
           </div>
         ) : (
           <div className="bg-white border border-dashed border-brand-border rounded-2xl p-16 text-center shadow-card">

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function Header() {
   const { categories, settings, cart } = useStore();
@@ -60,9 +61,9 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-brand-border transition-all">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-brand-border dark:border-slate-800 transition-colors">
       {/* Top Banner */}
-      <div className="bg-brand-primaryDark text-white text-xs py-2 px-4 border-b border-white/10">
+      <div className="bg-brand-primaryDark dark:bg-slate-950 text-white text-xs py-2 px-4 border-b border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2 text-teal-100 text-[11px] sm:text-xs">
             <Zap className="w-3.5 h-3.5 text-brand-accent shrink-0 animate-pulse" />
@@ -108,7 +109,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-brand-dark hover:bg-neutral-100 rounded-lg"
+            className="md:hidden p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg"
             aria-label="باز کردن منو"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -119,13 +120,13 @@ export default function Header() {
               ار
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight text-brand-dark flex items-center gap-1.5">
+              <span className="text-xl font-black tracking-tight text-brand-dark dark:text-white flex items-center gap-1.5">
                 ارزان اکانت
-                <span className="text-[10px] bg-brand-accentLight text-brand-accent font-bold px-1.5 py-0.5 rounded border border-amber-200">
+                <span className="text-[10px] bg-brand-accentLight text-brand-accent font-bold px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-400/30">
                   تحویل آنی
                 </span>
               </span>
-              <span className="text-[11px] text-brand-muted font-medium">مرجع خرید مطمئن اشتراک‌های دیجیتال</span>
+              <span className="text-[11px] text-brand-muted dark:text-slate-400 font-medium">مرجع خرید مطمئن اشتراک‌های دیجیتال</span>
             </div>
           </Link>
         </div>
@@ -137,30 +138,33 @@ export default function Header() {
             placeholder="جستجوی سرویس (مثلاً ChatGPT Plus، Gemini Pro، تلگرام، اسپاتیفای...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-brand-surfaceDim border border-brand-border focus:border-brand-primary focus:bg-white rounded-xl py-2.5 pr-11 pl-4 text-xs outline-none transition-all placeholder:text-neutral-400"
+            className="w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-800 rounded-xl py-2.5 pr-11 pl-4 text-xs outline-none transition-all placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100"
           />
           <button
             type="submit"
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-primary transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-primary dark:hover:text-teal-400 transition-colors"
           >
             <Search className="w-4 h-4" />
           </button>
         </form>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-2 text-xs text-brand-muted bg-teal-50/70 border border-teal-100 px-3.5 py-2 rounded-xl">
-            <ShieldCheck className="w-4 h-4 text-teal-700 shrink-0" />
-            <span className="font-semibold text-teal-900">پرداخت امن و تحویل خودکار</span>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="hidden lg:flex items-center gap-2 text-xs text-brand-muted dark:text-teal-200 bg-teal-50/70 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-800/60 px-3 py-2 rounded-xl">
+            <ShieldCheck className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
+            <span className="font-semibold text-teal-900 dark:text-teal-200">پرداخت امن و تحویل خودکار</span>
           </div>
+
+          {/* Theme Toggle Button */}
+          <ThemeToggle />
 
           {/* Cart Icon & Badge */}
           <Link
             href="/cart"
-            className="relative p-2.5 text-brand-dark hover:text-brand-primary hover:bg-brand-surfaceDim rounded-xl border border-brand-border transition-all flex items-center gap-2"
+            className="relative p-2.5 text-brand-dark dark:text-slate-200 hover:text-brand-primary dark:hover:text-teal-300 hover:bg-brand-surfaceDim dark:hover:bg-slate-800 rounded-xl border border-brand-border dark:border-slate-700 transition-all flex items-center gap-2"
           >
-            <ShoppingBag className="w-5 h-5 text-brand-primary" />
-            <span className="hidden sm:inline text-xs font-bold text-brand-dark">سبد خرید</span>
+            <ShoppingBag className="w-5 h-5 text-brand-primary dark:text-teal-400" />
+            <span className="hidden sm:inline text-xs font-bold text-brand-dark dark:text-slate-200">سبد خرید</span>
             {totalCartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-brand-accent text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
                 {totalCartCount}
@@ -173,13 +177,13 @@ export default function Header() {
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-border hover:border-brand-primary bg-white hover:bg-brand-surfaceDim transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 hover:border-brand-primary dark:hover:border-teal-400 bg-white dark:bg-slate-800 hover:bg-brand-surfaceDim dark:hover:bg-slate-700 transition-all"
               >
-                <div className="w-7 h-7 rounded-lg bg-brand-primary text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-lg bg-brand-primary dark:bg-teal-600 text-white flex items-center justify-center font-bold text-xs">
                   {user?.name ? user.name.slice(0, 1) : <User className="w-3.5 h-3.5" />}
                 </div>
                 <div className="hidden sm:flex flex-col text-right">
-                  <span className="text-xs font-bold text-brand-dark max-w-[100px] truncate">
+                  <span className="text-xs font-bold text-brand-dark dark:text-white max-w-[100px] truncate">
                     {user?.name || user?.phone}
                   </span>
                   <span className="text-[10px] font-semibold text-brand-accent">
@@ -195,13 +199,13 @@ export default function Header() {
                     className="fixed inset-0 z-40"
                     onClick={() => setUserDropdownOpen(false)}
                   />
-                  <div className="absolute left-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-neutral-150 py-2 z-50 animate-fadeIn text-xs">
-                    <div className="px-4 py-3 border-b border-neutral-100 bg-teal-50/40">
-                      <div className="font-bold text-brand-dark">{user?.name || "کاربر گرامی"}</div>
-                      <div className="text-[11px] text-neutral-500 font-mono mt-0.5" dir="ltr">
+                  <div className="absolute left-0 mt-2 w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-neutral-150 dark:border-slate-800 py-2 z-50 animate-fadeIn text-xs">
+                    <div className="px-4 py-3 border-b border-neutral-100 dark:border-slate-800 bg-teal-50/40 dark:bg-slate-800/80">
+                      <div className="font-bold text-brand-dark dark:text-white">{user?.name || "کاربر گرامی"}</div>
+                      <div className="text-[11px] text-neutral-500 dark:text-slate-400 font-mono mt-0.5" dir="ltr">
                         {user?.phone}
                       </div>
-                      <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+                      <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300">
                         <Shield className="w-3 h-3" />
                         <span>{getRoleLabel(user?.role)}</span>
                       </div>
@@ -211,9 +215,9 @@ export default function Header() {
                       <Link
                         href="/orders"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-neutral-50 text-neutral-700 font-medium transition-colors"
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-slate-800 text-neutral-700 dark:text-slate-200 font-medium transition-colors"
                       >
-                        <PackageCheck className="w-4 h-4 text-brand-primary" />
+                        <PackageCheck className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                         <span>سفارش‌ها و لایسنس‌های من</span>
                       </Link>
 
@@ -221,21 +225,21 @@ export default function Header() {
                         <Link
                           href="/admin"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 hover:bg-amber-50 text-amber-900 font-bold transition-colors"
+                          className="flex items-center gap-2.5 px-4 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-bold transition-colors"
                         >
-                          <LayoutDashboard className="w-4 h-4 text-amber-600" />
+                          <LayoutDashboard className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           <span>ورود به پنل مدیریت</span>
                         </Link>
                       )}
                     </div>
 
-                    <div className="pt-1 border-t border-neutral-100">
+                    <div className="pt-1 border-t border-neutral-100 dark:border-slate-800">
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
                           logout();
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-rose-50 text-rose-600 font-bold text-right transition-colors"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-right transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>خروج از حساب کاربری</span>
@@ -248,9 +252,9 @@ export default function Header() {
           ) : (
             <button
               onClick={openLoginModal}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-brand-primary/30 bg-teal-50/60 hover:bg-teal-100/70 text-brand-primary font-bold text-xs transition-all shadow-2xs"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-brand-primary/30 dark:border-teal-600/40 bg-teal-50/60 dark:bg-teal-950/50 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 text-brand-primary dark:text-teal-300 font-bold text-xs transition-all shadow-2xs"
             >
-              <User className="w-4 h-4 text-brand-primary" />
+              <User className="w-4 h-4 text-brand-primary dark:text-teal-300" />
               <span>ورود / ثبت‌نام</span>
             </button>
           )}
@@ -258,20 +262,20 @@ export default function Header() {
       </div>
 
       {/* Categories Bar */}
-      <nav className="bg-white border-t border-brand-border px-4 overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 py-2.5 text-xs font-semibold text-brand-muted whitespace-nowrap">
-          <Link href="/products" className="hover:text-brand-primary transition-colors flex items-center gap-1 font-bold text-brand-primary">
+      <nav className="bg-white dark:bg-slate-900/90 border-t border-brand-border dark:border-slate-800 px-4 overflow-x-auto scrollbar-none transition-colors">
+        <div className="max-w-7xl mx-auto flex items-center gap-6 py-2.5 text-xs font-semibold text-brand-muted dark:text-slate-400 whitespace-nowrap">
+          <Link href="/products" className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400">
             <span>کاتالوگ محصولات</span>
           </Link>
-          <Link href="/categories" className="hover:text-brand-primary transition-colors flex items-center gap-1 font-bold text-teal-800 bg-teal-50 px-2 py-1 rounded-md">
+          <Link href="/categories" className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-1 rounded-md">
             <span>همه دسته‌بندی‌ها</span>
           </Link>
-          <span className="text-neutral-200">|</span>
+          <span className="text-neutral-200 dark:text-slate-700">|</span>
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/category/${cat.slug}`}
-              className="hover:text-brand-primary hover:bg-teal-50 px-2 py-1 rounded-md transition-colors"
+              className="hover:text-brand-primary dark:hover:text-teal-300 hover:bg-teal-50 dark:hover:bg-slate-800 px-2 py-1 rounded-md transition-colors"
             >
               {cat.title}
             </Link>
@@ -281,23 +285,27 @@ export default function Header() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-brand-border p-4 space-y-4 animate-fadeIn">
+        <div className="md:hidden bg-white dark:bg-slate-900 border-b border-brand-border dark:border-slate-800 p-4 space-y-4 animate-fadeIn transition-colors">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
               placeholder="جستجو در محصولات..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-brand-surfaceDim border border-brand-border rounded-lg py-2.5 pr-10 pl-3 text-xs outline-none"
+              className="w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 rounded-lg py-2.5 pr-10 pl-3 text-xs outline-none text-slate-800 dark:text-slate-100"
             />
             <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
           </form>
 
-          <div className="space-y-1 pt-2 border-t border-neutral-100 text-xs font-medium">
+          <div className="space-y-1 pt-2 border-t border-neutral-100 dark:border-slate-800 text-xs font-medium">
+            <div className="pb-2 mb-2 border-b border-neutral-100 dark:border-slate-800">
+              <ThemeToggle showLabel className="w-full justify-between px-3 py-2" />
+            </div>
+
             {isAuthenticated ? (
-              <div className="p-2 mb-2 bg-teal-50 rounded-xl border border-teal-100 flex items-center justify-between">
+              <div className="p-2 mb-2 bg-teal-50 dark:bg-slate-800 rounded-xl border border-teal-100 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-brand-dark">{user?.name || user?.phone}</div>
+                  <div className="font-bold text-brand-dark dark:text-white">{user?.name || user?.phone}</div>
                   <div className="text-[10px] text-brand-accent font-semibold">{getRoleLabel(user?.role)}</div>
                 </div>
                 <button
@@ -305,7 +313,7 @@ export default function Header() {
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="text-rose-600 font-bold text-xs p-1 hover:bg-rose-50 rounded"
+                  className="text-rose-600 dark:text-rose-400 font-bold text-xs p-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded"
                 >
                   خروج
                 </button>
@@ -316,7 +324,7 @@ export default function Header() {
                   setMobileMenuOpen(false);
                   openLoginModal();
                 }}
-                className="w-full text-right p-2.5 text-brand-primary font-bold bg-teal-50 hover:bg-teal-100 rounded-xl mb-2 flex items-center gap-2"
+                className="w-full text-right p-2.5 text-brand-primary dark:text-teal-300 font-bold bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 dark:hover:bg-teal-900/50 rounded-xl mb-2 flex items-center gap-2"
               >
                 <User className="w-4 h-4" />
                 <span>ورود / ثبت‌نام در سایت</span>
@@ -326,21 +334,21 @@ export default function Header() {
             <Link
               href="/products"
               onClick={() => setMobileMenuOpen(false)}
-              className="block p-2 text-brand-primary font-bold hover:bg-neutral-50 rounded"
+              className="block p-2 text-brand-primary dark:text-teal-300 font-bold hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
             >
               کاتالوگ جامع محصولات
             </Link>
             <Link
               href="/orders"
               onClick={() => setMobileMenuOpen(false)}
-              className="block p-2 text-brand-dark hover:bg-neutral-50 rounded"
+              className="block p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
             >
               رهگیری سفارش و مشاهده لایسنس
             </Link>
             <Link
               href="/cart"
               onClick={() => setMobileMenuOpen(false)}
-              className="block p-2 text-brand-dark hover:bg-neutral-50 rounded"
+              className="block p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
             >
               سبد خرید ({totalCartCount} آیتم)
             </Link>
@@ -348,7 +356,7 @@ export default function Header() {
               <Link
                 href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block p-2 text-brand-accent font-bold hover:bg-neutral-50 rounded"
+                className="block p-2 text-brand-accent font-bold hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
               >
                 ورود به پنل مدیریت
               </Link>

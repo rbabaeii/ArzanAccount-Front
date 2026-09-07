@@ -257,17 +257,32 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-5 sticky top-28 space-y-6">
             <div className="bg-white border border-brand-border rounded-2xl p-6 sm:p-7 shadow-card space-y-6">
               {/* Pricing Header */}
-              <div className="pb-5 border-b border-brand-border">
-                <span className="text-xs text-brand-muted block font-medium">مبلغ قابل پرداخت با نرخ روز:</span>
+              <div className="pb-5 border-b border-brand-border dark:border-slate-800">
+                {price.discountPercent > 0 ? (
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xs text-neutral-400 dark:text-slate-500 line-through font-mono">
+                      {new Intl.NumberFormat("fa-IR").format(price.publicRetailToman * (price.isPerThousand ? Math.round(quantity / 1000) : quantity))} تومان
+                    </span>
+                    <span className="text-[10px] bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-400 font-bold px-2 py-0.5 rounded-full">
+                      %{price.discountPercent} تخفیف ویژه
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-brand-muted dark:text-slate-400 block font-medium">
+                    مبلغ قابل پرداخت با نرخ روز:
+                  </span>
+                )}
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl sm:text-4xl font-black text-brand-dark tracking-tight">
+                  <span className="text-3xl sm:text-4xl font-black text-brand-dark dark:text-white tracking-tight">
                     {formattedTotalPrice}
                   </span>
-                  <span className="text-sm font-bold text-brand-muted">تومان</span>
+                  <span className="text-sm font-bold text-brand-muted dark:text-slate-400">تومان</span>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-brand-muted mt-2">
-                  <span>نرخ پایه خرید ارزی:</span>
-                  <span className="font-mono font-bold text-brand-dark">${(product.costPriceUsd).toFixed(2)} USD</span>
+                <div className="flex items-center justify-between text-[11px] text-brand-muted dark:text-slate-400 mt-2">
+                  <span>نرخ پایه بازار مصرف‌کننده:</span>
+                  <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                    ${(product.retailPriceUsd || product.costPriceUsd).toFixed(2)} USD
+                  </span>
                 </div>
               </div>
 

@@ -5,6 +5,7 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { useAuth, UserRole } from "@/context/AuthContext";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import {
   LayoutDashboard,
   Package,
@@ -293,20 +294,23 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-admin-bg flex flex-col md:flex-row text-admin-text">
+    <div className="min-h-screen bg-admin-bg dark:bg-slate-950 flex flex-col md:flex-row text-admin-text dark:text-slate-100 transition-colors">
       {/* Mobile Top Header */}
-      <div className="md:hidden bg-admin-primary text-white p-4 flex items-center justify-between shadow-md">
+      <div className="md:hidden bg-admin-primary dark:bg-slate-900 text-white p-4 flex items-center justify-between shadow-md border-b border-white/10 dark:border-slate-800">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-1.5 hover:bg-white/10 rounded-lg"
+          className="p-1.5 hover:bg-white/10 dark:hover:bg-slate-800 rounded-lg"
           aria-label="باز کردن منو"
         >
           {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
         <span className="font-black text-sm">کنترل سنتر ارزان اکانت</span>
-        <NextLink href="/" className="p-1.5 hover:bg-white/10 rounded-lg" title="فروشگاه">
-          <ShoppingBag className="w-5 h-5" />
-        </NextLink>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <NextLink href="/" className="p-1.5 hover:bg-white/10 dark:hover:bg-slate-800 rounded-lg" title="فروشگاه">
+            <ShoppingBag className="w-5 h-5" />
+          </NextLink>
+        </div>
       </div>
 
       {/* Sidebar (HypeStore Teal Horizon Theme) */}
@@ -416,19 +420,22 @@ export default function AdminLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="hidden md:flex h-16 bg-white border-b border-admin-borderLight px-8 items-center justify-between sticky top-0 z-30 shadow-2xs">
+        <header className="hidden md:flex h-16 bg-white dark:bg-slate-900 border-b border-admin-borderLight dark:border-slate-800 px-8 items-center justify-between sticky top-0 z-30 shadow-2xs transition-colors">
           <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-2 bg-teal-50/70 border border-teal-100 px-3 py-1.5 rounded-lg">
-              <span className="text-teal-800">نرخ پایه دلار:</span>
-              <span className="font-bold text-brand-primary font-mono">{formattedTomanRate} تومان</span>
+            <div className="flex items-center gap-2 bg-teal-50/70 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-800/60 px-3 py-1.5 rounded-lg">
+              <span className="text-teal-800 dark:text-teal-300">نرخ پایه دلار:</span>
+              <span className="font-bold text-brand-primary dark:text-teal-400 font-mono">{formattedTomanRate} تومان</span>
             </div>
 
-            <div className="text-neutral-400">
+            <div className="text-neutral-400 dark:text-slate-500">
               <span>آخرین همگام‌سازی کاتالوگ: {settings.lastSyncTime}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <ThemeToggle />
+
             {/* Sync Button */}
             <button
               onClick={handleSync}
@@ -442,9 +449,9 @@ export default function AdminLayout({
             {/* Back to store */}
             <NextLink
               href="/"
-              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black border border-neutral-200 px-3 py-2 rounded-xl"
+              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-slate-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-slate-700 px-3 py-2 rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-slate-800"
             >
-              <ShoppingBag className="w-4 h-4 text-neutral-500" />
+              <ShoppingBag className="w-4 h-4 text-neutral-500 dark:text-slate-400" />
               <span>مشاهده سایت</span>
             </NextLink>
           </div>

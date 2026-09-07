@@ -108,7 +108,7 @@ export default function LoginModal() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl border border-brand-border max-w-md w-full overflow-hidden animate-fadeIn relative">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-brand-border dark:border-slate-800 max-w-md w-full overflow-hidden animate-fadeIn relative">
         
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-brand-primaryDark to-brand-primary p-6 text-white relative">
@@ -139,18 +139,18 @@ export default function LoginModal() {
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-5 text-xs">
+        <div className="p-6 space-y-5 text-xs text-slate-800 dark:text-slate-100">
           {/* Alerts */}
           {errorMessage && (
-            <div className="bg-red-50 text-red-700 border border-red-200 p-3 rounded-xl flex items-center gap-2">
+            <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 p-3 rounded-xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 p-3 rounded-xl flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
               <span>{successMessage}</span>
             </div>
           )}
@@ -159,7 +159,7 @@ export default function LoginModal() {
           {step === "phone" && (
             <div className="space-y-4">
               <div>
-                <label className="block font-bold text-brand-dark mb-1.5">
+                <label className="block font-bold text-brand-dark dark:text-white mb-1.5">
                   شماره موبایل (۱۱ رقم):
                 </label>
                 <div className="relative">
@@ -169,7 +169,7 @@ export default function LoginModal() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     dir="ltr"
-                    className="w-full bg-brand-surfaceDim border border-brand-border focus:border-brand-primary focus:bg-white rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left"
+                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
                   />
                   <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 </div>
@@ -177,7 +177,7 @@ export default function LoginModal() {
 
               {/* Quick Test Accounts (Fast Fill) */}
               <div className="space-y-2 pt-1">
-                <span className="text-[11px] font-bold text-neutral-500 block">
+                <span className="text-[11px] font-bold text-neutral-500 dark:text-slate-400 block">
                   شماره‌های تستی پیش‌فرض (تایید با کد ۱۱۱۱۱):
                 </span>
                 <div className="grid grid-cols-2 gap-2">
@@ -187,10 +187,10 @@ export default function LoginModal() {
                       setPhone("09180000000");
                       handleSendOtp("09180000000");
                     }}
-                    className="p-2.5 rounded-xl border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 text-right transition-colors"
+                    className="p-2.5 rounded-xl border border-teal-200 dark:border-teal-800/80 bg-teal-50/70 dark:bg-teal-950/40 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 text-right transition-colors"
                   >
-                    <span className="font-bold text-brand-primary block text-[11px]">کاربر عادی (خریدار)</span>
-                    <span className="font-mono text-[10px] text-neutral-500 dir-ltr text-right block">09180000000</span>
+                    <span className="font-bold text-brand-primary dark:text-teal-300 block text-[11px]">کاربر عادی (خریدار)</span>
+                    <span className="font-mono text-[10px] text-neutral-500 dark:text-slate-400 dir-ltr text-right block">09180000000</span>
                   </button>
 
                   <button
@@ -199,14 +199,14 @@ export default function LoginModal() {
                       setPhone("09181111111");
                       handleSendOtp("09181111111");
                     }}
-                    className="p-2.5 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 text-right transition-colors"
+                    className="p-2.5 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-right transition-colors"
                   >
-                    <span className="font-bold text-amber-900 block text-[11px]">مدیر ارشد (Super Admin)</span>
-                    <span className="font-mono text-[10px] text-neutral-500 dir-ltr text-right block">09181111111</span>
+                    <span className="font-bold text-amber-900 dark:text-amber-300 block text-[11px]">مدیر ارشد (Super Admin)</span>
+                    <span className="font-mono text-[10px] text-neutral-500 dark:text-slate-400 dir-ltr text-right block">09181111111</span>
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
+                <div className="flex items-center justify-between text-[11px] text-neutral-400 dark:text-slate-500 pt-1">
                   <span>سایر مدیران:</span>
                   <div className="flex gap-2">
                     <button
@@ -214,7 +214,7 @@ export default function LoginModal() {
                         setPhone("09182222222");
                         handleSendOtp("09182222222");
                       }}
-                      className="hover:text-brand-primary underline"
+                      className="hover:text-brand-primary dark:hover:text-teal-400 underline"
                     >
                       کاتالوگ
                     </button>
@@ -224,7 +224,7 @@ export default function LoginModal() {
                         setPhone("09183333333");
                         handleSendOtp("09183333333");
                       }}
-                      className="hover:text-brand-primary underline"
+                      className="hover:text-brand-primary dark:hover:text-teal-400 underline"
                     >
                       مالی
                     </button>
@@ -234,7 +234,7 @@ export default function LoginModal() {
                         setPhone("09184444444");
                         handleSendOtp("09184444444");
                       }}
-                      className="hover:text-brand-primary underline"
+                      className="hover:text-brand-primary dark:hover:text-teal-400 underline"
                     >
                       پشتیبانی
                     </button>
@@ -263,15 +263,15 @@ export default function LoginModal() {
           {/* STEP 2: OTP Input */}
           {step === "otp" && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
-                <span className="text-amber-900 font-medium">کد تایید آزمایشی محیط تست:</span>
-                <span className="font-mono font-black text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-300 text-sm">
+              <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex items-center justify-between">
+                <span className="text-amber-900 dark:text-amber-200 font-medium">کد تایید آزمایشی محیط تست:</span>
+                <span className="font-mono font-black text-amber-700 dark:text-amber-300 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 text-sm">
                   11111
                 </span>
               </div>
 
               <div>
-                <label className="block font-bold text-brand-dark mb-1.5">
+                <label className="block font-bold text-brand-dark dark:text-white mb-1.5">
                   کد تایید ۵ رقمی:
                 </label>
                 <div className="relative">
@@ -283,7 +283,7 @@ export default function LoginModal() {
                     onChange={(e) => setOtp(e.target.value)}
                     dir="ltr"
                     autoFocus
-                    className="w-full bg-brand-surfaceDim border border-brand-border focus:border-brand-primary focus:bg-white rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none"
+                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none text-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -292,21 +292,21 @@ export default function LoginModal() {
                 <button
                   type="button"
                   onClick={() => setStep("phone")}
-                  className="text-neutral-500 hover:text-brand-dark flex items-center gap-1"
+                  className="text-neutral-500 dark:text-slate-400 hover:text-brand-dark dark:hover:text-white flex items-center gap-1"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   <span>تغییر شماره ({phone})</span>
                 </button>
 
                 {countdown > 0 ? (
-                  <span className="text-neutral-400 font-mono">
+                  <span className="text-neutral-400 dark:text-slate-500 font-mono">
                     ارسال مجدد ({countdown} ثانیه)
                   </span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handleSendOtp()}
-                    className="text-brand-primary hover:underline font-bold flex items-center gap-1"
+                    className="text-brand-primary dark:text-teal-400 hover:underline font-bold flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>ارسال دوباره کد</span>
@@ -332,7 +332,7 @@ export default function LoginModal() {
           )}
 
           {/* Privacy Note */}
-          <div className="pt-2 text-[10px] text-center text-neutral-400 leading-relaxed border-t border-brand-border/60">
+          <div className="pt-2 text-[10px] text-center text-neutral-400 dark:text-slate-500 leading-relaxed border-t border-brand-border/60 dark:border-slate-800">
             ورود شما به منزله پذیرش قوانین و مقررات حریم خصوصی و امنیت اطلاعات در ارزان اکانت است.
           </div>
         </div>

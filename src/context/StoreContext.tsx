@@ -17,6 +17,15 @@ export interface CalculatedPrice {
   toman: number;
   formattedToman: string;
   usdPrice: number;
+  costToman: number;
+  formattedCostToman: string;
+  retailPriceUsd: number;
+  publicRetailToman: number;
+  formattedPublicRetailToman: string;
+  profitToman: number;
+  discountPercent: number;
+  marginPercent: number;
+  isCustomMarginActive: boolean;
   isPerThousand: boolean;
 }
 
@@ -334,19 +343,58 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Dynamic live price calculation formula:
-  // (costPriceUsd) * (usdToRialRate) * (1 + margin / 100)
+  // Dynamic live price calculation formula with dual pricing:
+  // costToman = (costPriceUsd * usdToRialRate) / 10
+  // publicRetailToman = (retailPriceUsd * usdToRialRate) / 10
+  // finalToman = margin active ? cost * (1 + margin) : publicRetail
   const calculateProductPrice = (product: Product): CalculatedPrice => {
-    const margin = product.customMarginPercent ?? settings.defaultMarginPercent;
-    const baseRial = product.costPriceUsd * settings.usdToRialRate;
-    const finalRial = Math.round(baseRial * (1 + margin / 100));
-    const finalToman = Math.round(finalRial / 10);
+    const isCustomMarginActive =
+      product.customMarginPercent !== null &&
+      product.customMarginPercent !== undefined &&
+      product.customMarginPercent > 0;
+
+    const margin = isCustomMarginActive
+      ? product.customMarginPercent!
+      : (settings.defaultMarginPercent || 0);
+
+    const costToman = Math.round((product.costPriceUsd * settings.usdToRialRate) / 10);
+    const retailPriceUsd = product.retailPriceUsd && product.retailPriceUsd > 0
+      ? product.retailPriceUsd
+      : product.costPriceUsd;
+    const publicRetailToman = Math.round((retailPriceUsd * settings.usdToRialRate) / 10);
+
+    let finalToman = 0;
+    if (isCustomMarginActive || !product.retailPriceUsd || product.retailPriceUsd <= 0) {
+      finalToman = Math.round(costToman * (1 + margin / 100));
+    } else {
+      if (settings.defaultMarginPercent && settings.defaultMarginPercent > 0) {
+        finalToman = Math.round(costToman * (1 + settings.defaultMarginPercent / 100));
+      } else {
+        finalToman = publicRetailToman;
+      }
+    }
+
+    const finalRial = finalToman * 10;
+    const profitToman = Math.max(0, finalToman - costToman);
+    const discountPercent =
+      publicRetailToman > finalToman
+        ? Math.round(((publicRetailToman - finalToman) / publicRetailToman) * 100)
+        : 0;
 
     return {
       rial: finalRial,
       toman: finalToman,
       formattedToman: new Intl.NumberFormat("fa-IR").format(finalToman),
       usdPrice: product.costPriceUsd,
+      costToman,
+      formattedCostToman: new Intl.NumberFormat("fa-IR").format(costToman),
+      retailPriceUsd,
+      publicRetailToman,
+      formattedPublicRetailToman: new Intl.NumberFormat("fa-IR").format(publicRetailToman),
+      profitToman,
+      discountPercent,
+      marginPercent: margin,
+      isCustomMarginActive,
       isPerThousand: product.pricingUnit === "per_1000",
     };
   };

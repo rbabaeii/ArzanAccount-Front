@@ -20,6 +20,8 @@ import {
   Package,
 } from "lucide-react";
 import Link from "next/link";
+import ImageUploader from "@/components/ui/ImageUploader";
+import Pagination from "@/components/ui/Pagination";
 
 export default function AdminProductsPage() {
   const {
@@ -34,6 +36,8 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // Edit Modal State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -161,11 +165,41 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  // Calculate live preview in modal
-  const modalBaseRial = editCostPriceUsd * settings.usdToRialRate;
-  const modalFinalRial = Math.round(modalBaseRial * (1 + editMargin / 100));
-  const modalFinalToman = Math.round(modalFinalRial / 10);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Calculate live preview in modal with dual pricing
+  const modalCostToman = Math.round((editCostPriceUsd * settings.usdToRialRate) / 10);
+  const modalRetailUsd = editRetailPriceUsd > 0 ? editRetailPriceUsd : editCostPriceUsd;
+  const modalPublicRetailToman = Math.round((modalRetailUsd * settings.usdToRialRate) / 10);
+
+  const isModalCustomMarginActive = editMargin !== null && editMargin !== undefined && editMargin > 0;
+  const effectiveModalMargin = isModalCustomMarginActive ? editMargin : (settings.defaultMarginPercent || 0);
+
+  let modalFinalToman = 0;
+  if (isModalCustomMarginActive || !editRetailPriceUsd || editRetailPriceUsd <= 0) {
+    modalFinalToman = Math.round(modalCostToman * (1 + effectiveModalMargin / 100));
+  } else {
+    if (settings.defaultMarginPercent && settings.defaultMarginPercent > 0) {
+      modalFinalToman = Math.round(modalCostToman * (1 + settings.defaultMarginPercent / 100));
+    } else {
+      modalFinalToman = modalPublicRetailToman;
+    }
+  }
+
+  const modalProfitToman = Math.max(0, modalFinalToman - modalCostToman);
+  const modalDiscountPercent =
+    modalPublicRetailToman > modalFinalToman
+      ? Math.round(((modalPublicRetailToman - modalFinalToman) / modalPublicRetailToman) * 100)
+      : 0;
+
   const modalFormattedToman = new Intl.NumberFormat("fa-IR").format(modalFinalToman);
+  const modalFormattedCostToman = new Intl.NumberFormat("fa-IR").format(modalCostToman);
+  const modalFormattedPublicToman = new Intl.NumberFormat("fa-IR").format(modalPublicRetailToman);
+  const modalFormattedProfitToman = new Intl.NumberFormat("fa-IR").format(modalProfitToman);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -204,7 +238,10 @@ export default function AdminProductsPage() {
             type="text"
             placeholder="جستجو در نام انگلیسی، عنوان فارسی یا کد مرجع..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2 pr-9 pl-4 text-xs outline-none"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -213,7 +250,10 @@ export default function AdminProductsPage() {
         {/* Status Filter */}
         <div className="flex items-center gap-1 bg-admin-bg p-1 rounded-lg border border-admin-borderLight text-xs">
           <button
-            onClick={() => setStatusFilter("all")}
+            onClick={() => {
+              setStatusFilter("all");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
               statusFilter === "all"
                 ? "bg-white text-admin-primary shadow-xs font-bold"
@@ -223,7 +263,10 @@ export default function AdminProductsPage() {
             همه
           </button>
           <button
-            onClick={() => setStatusFilter("active")}
+            onClick={() => {
+              setStatusFilter("active");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
               statusFilter === "active"
                 ? "bg-emerald-600 text-white shadow-xs font-bold"
@@ -233,7 +276,10 @@ export default function AdminProductsPage() {
             فقط فعال‌ها
           </button>
           <button
-            onClick={() => setStatusFilter("inactive")}
+            onClick={() => {
+              setStatusFilter("inactive");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
               statusFilter === "inactive"
                 ? "bg-neutral-700 text-white shadow-xs font-bold"
@@ -247,7 +293,10 @@ export default function AdminProductsPage() {
         {/* Category Dropdown */}
         <select
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          onChange={(e) => {
+            setCategoryFilter(e.target.value);
+            setCurrentPage(1);
+          }}
           className="bg-admin-bg border border-admin-borderLight text-xs rounded-lg py-2 px-3 outline-none text-neutral-700"
         >
           <option value="all">همه دسته‌بندی‌ها ({categories.length})</option>
@@ -264,30 +313,31 @@ export default function AdminProductsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-admin-container/50 border-b border-admin-borderLight text-xs font-bold text-admin-text">
+              <tr className="bg-admin-container/50 border-b border-admin-borderLight dark:border-slate-800 text-xs font-bold text-admin-text dark:text-slate-200">
                 <th className="py-3 px-4 w-16">کد مرجع</th>
                 <th className="py-3 px-4">عنوان نمایشی و نام در API</th>
                 <th className="py-3 px-4">دسته‌بندی</th>
-                <th className="py-3 px-4">قیمت خرید (USD)</th>
-                <th className="py-3 px-4">قیمت فروش سایت (تومان)</th>
+                <th className="py-3 px-4">قیمت خرید (تامین)</th>
+                <th className="py-3 px-4">قیمت عمومی بازار</th>
+                <th className="py-3 px-4">قیمت فروش سایت و سود</th>
                 <th className="py-3 px-4 text-center">وضعیت در سایت</th>
                 <th className="py-3 px-4 text-center">عملیات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-admin-borderLight text-xs">
-              {filteredProducts.map((product) => {
+            <tbody className="divide-y divide-admin-borderLight dark:divide-slate-800 text-xs">
+              {paginatedProducts.map((product) => {
                 const price = calculateProductPrice(product);
                 const category = categories.find((c) => c.id === product.categoryId);
 
                 return (
                   <tr
                     key={product.id}
-                    className={`hover:bg-teal-50/30 transition-colors ${
-                      !product.isActive ? "bg-neutral-50/60 opacity-80" : ""
+                    className={`hover:bg-teal-50/30 dark:hover:bg-slate-800/50 transition-colors ${
+                      !product.isActive ? "bg-neutral-50/60 dark:bg-slate-900/40 opacity-80" : ""
                     }`}
                   >
                     {/* Code */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-500">
+                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-500 dark:text-slate-400">
                       #{product.externalId}
                     </td>
 
@@ -298,32 +348,32 @@ export default function AdminProductsPage() {
                           <img
                             src={product.image}
                             alt=""
-                            className="w-7 h-7 rounded object-cover border border-neutral-200 shrink-0"
+                            className="w-7 h-7 rounded object-cover border border-neutral-200 dark:border-slate-700 shrink-0"
                           />
                         )}
                         <div>
-                          <div className="font-bold text-neutral-900 leading-snug">
+                          <div className="font-bold text-neutral-900 dark:text-white leading-snug">
                             {product.customTitle}
                           </div>
-                          <div className="text-[11px] text-neutral-400 font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          <div className="text-[11px] text-neutral-400 dark:text-slate-400 font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <span>{product.name}</span>
                             {product.badge && (
-                              <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded text-[10px] font-sans font-semibold">
+                              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 px-1.5 py-0.2 rounded text-[10px] font-sans font-semibold">
                                 {product.badge}
                               </span>
                             )}
                             {product.pricingUnit === "per_1000" && (
-                              <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded text-[10px]">
+                              <span className="text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-1 py-0.2 rounded text-[10px]">
                                 تعرفه در ۱۰۰۰ عدد
                               </span>
                             )}
                             {product.isFeatured && (
-                              <span className="text-teal-700 bg-teal-50 border border-teal-200 px-1 py-0.2 rounded text-[10px]">
+                              <span className="text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 px-1 py-0.2 rounded text-[10px]">
                                 ویژه
                               </span>
                             )}
                             {product.isFlashDeal && (
-                              <span className="text-red-700 bg-red-50 border border-red-200 px-1 py-0.2 rounded text-[10px]">
+                              <span className="text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-1 py-0.2 rounded text-[10px]">
                                 شگفت‌انگیز
                               </span>
                             )}
@@ -335,27 +385,53 @@ export default function AdminProductsPage() {
                     {/* Category */}
                     <td className="py-3.5 px-4">
                       {category ? (
-                        <span className="inline-block bg-teal-50 text-teal-800 border border-teal-200 px-2 py-1 rounded text-[11px] font-semibold">
+                        <span className="inline-block bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2 py-1 rounded text-[11px] font-semibold">
                           {category.title}
                         </span>
                       ) : (
-                        <span className="text-neutral-400 italic">بدون دسته</span>
+                        <span className="text-neutral-400 dark:text-slate-500 italic">بدون دسته</span>
                       )}
                     </td>
 
-                    {/* Cost USD */}
-                    <td className="py-3.5 px-4 font-mono text-neutral-600">
-                      ${product.costPriceUsd.toFixed(2)}
+                    {/* Cost USD & Toman */}
+                    <td className="py-3.5 px-4 font-mono">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
+                        ${product.costPriceUsd.toFixed(2)}
+                      </div>
+                      <div className="text-[10px] text-neutral-400 dark:text-slate-500 font-sans">
+                        {price.formattedCostToman} ت
+                      </div>
                     </td>
 
-                    {/* Selling Toman */}
+                    {/* Retail USD & Toman */}
+                    <td className="py-3.5 px-4 font-mono">
+                      <div className="text-neutral-600 dark:text-slate-400">
+                        ${(product.retailPriceUsd || product.costPriceUsd).toFixed(2)}
+                      </div>
+                      <div className="text-[10px] text-neutral-400 dark:text-slate-500 font-sans">
+                        {price.formattedPublicRetailToman} ت
+                      </div>
+                    </td>
+
+                    {/* Selling Toman & Profit */}
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-black text-sm">
+                      <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
                         {price.formattedToman}
-                      </span>
-                      <span className="text-[11px] text-neutral-400 mr-1">تومان</span>
-                      <div className="text-[10px] text-neutral-400">
-                        سود: {product.customMarginPercent ?? settings.defaultMarginPercent}٪
+                        <span className="text-[10px] font-normal text-neutral-400 dark:text-slate-500 mr-1">تومان</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
+                        <span
+                          className={`px-1.5 py-0.2 rounded font-bold ${
+                            price.isCustomMarginActive
+                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                              : "bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300"
+                          }`}
+                        >
+                          {price.marginPercent}٪ سود
+                        </span>
+                        <span className="text-neutral-400 dark:text-slate-500 font-mono">
+                          (+{new Intl.NumberFormat("fa-IR").format(price.profitToman)} ت)
+                        </span>
                       </div>
                     </td>
 
@@ -420,6 +496,23 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredProducts.length}
+        itemsPerPage={itemsPerPage}
+        itemName="محصول"
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onItemsPerPageChange={(limit) => {
+          setItemsPerPage(limit);
+          setCurrentPage(1);
+        }}
+        pageSizeOptions={[10, 20, 50, 100]}
+      />
 
       {/* Comprehensive Product Edit Modal (5 Tabs) */}
       {editingProduct && (
@@ -582,11 +675,12 @@ export default function AdminProductsPage() {
 
               {/* TAB 2: PRICING & PROFIT */}
               {activeTab === "pricing" && (
-                <div className="space-y-4 animate-fadeIn">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-5 animate-fadeIn">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Cost Price USD */}
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5">
-                        قیمت خرید پایه دلاری (USD):
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
+                        قیمت خرید همکار (USD):
                       </label>
                       <div className="relative">
                         <input
@@ -595,22 +689,46 @@ export default function AdminProductsPage() {
                           min="0"
                           value={editCostPriceUsd}
                           onChange={(e) => setEditCostPriceUsd(Number(e.target.value))}
-                          className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs font-mono font-bold outline-none"
+                          className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs font-mono font-bold outline-none text-slate-800 dark:text-slate-100"
                           required
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 font-mono">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-slate-500 font-mono">
                           USD
                         </span>
                       </div>
-                      <span className="text-[10px] text-neutral-400 mt-1 block">
-                        قیمت اصلی در irMarket
+                      <span className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1 block">
+                        قیمت تامین ما از irMarket
                       </span>
                     </div>
 
+                    {/* Retail Price USD */}
                     <div>
-                      <label className="block font-bold text-neutral-800 mb-1.5 flex justify-between">
-                        <span>حاشیه سود اختصاصی این محصول:</span>
-                        <span className="text-admin-primary font-mono font-bold">
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
+                        قیمت عمومی بازار (USD):
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editRetailPriceUsd}
+                          onChange={(e) => setEditRetailPriceUsd(Number(e.target.value))}
+                          className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs font-mono font-bold outline-none text-slate-800 dark:text-slate-100"
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-slate-500 font-mono">
+                          USD
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1 block">
+                        نرخ مصرف‌کننده رسمی بازار
+                      </span>
+                    </div>
+
+                    {/* Custom Margin Percent */}
+                    <div>
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5 flex justify-between">
+                        <span>حاشیه سود اختصاصی:</span>
+                        <span className="text-admin-primary dark:text-teal-400 font-mono font-bold">
                           %{editMargin}
                         </span>
                       </label>
@@ -621,39 +739,69 @@ export default function AdminProductsPage() {
                           max="200"
                           value={editMargin}
                           onChange={(e) => setEditMargin(Number(e.target.value))}
-                          className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs font-mono font-bold outline-none"
+                          className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 px-3 text-xs font-mono font-bold outline-none text-slate-800 dark:text-slate-100"
                           required
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-slate-500">
                           %
                         </span>
                       </div>
-                      <span className="text-[10px] text-neutral-400 mt-1 block">
-                        سود پیش‌فرض سایت: %{settings.defaultMarginPercent}
+                      <span className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1 block">
+                        سود پیش‌فرض سراسری: %{settings.defaultMarginPercent}
                       </span>
                     </div>
                   </div>
 
-                  {/* Live Price Calculator Box */}
-                  <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl space-y-2">
-                    <div className="flex items-center justify-between text-xs text-teal-900 font-bold">
-                      <span>پیش‌نمایش قیمت نهایی فروش در سایت:</span>
-                      <span className="font-mono text-[11px] text-teal-700">
-                        (نرخ برابری: {new Intl.NumberFormat("fa-IR").format(Math.round(settings.usdToRialRate / 10))} تومان)
+                  {/* Comprehensive Dual Pricing Live Preview */}
+                  <div className="p-4 bg-teal-50/70 dark:bg-slate-800/90 border border-teal-200 dark:border-slate-700 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between text-xs text-teal-950 dark:text-teal-300 font-bold border-b border-teal-200/60 dark:border-slate-700 pb-2.5">
+                      <span>پیش‌نمایش زنده قیمت دوگانه و سود:</span>
+                      <span className="font-mono text-[11px] text-teal-700 dark:text-teal-400">
+                        نرخ تبدیل: {new Intl.NumberFormat("fa-IR").format(Math.round(settings.usdToRialRate / 10))} تومان / دلار
                       </span>
                     </div>
 
-                    <div className="flex items-baseline gap-2 pt-1">
-                      <span className="text-2xl font-black text-brand-primary">
-                        {modalFormattedToman}
-                      </span>
-                      <span className="text-xs font-bold text-neutral-600">تومان</span>
+                    {/* 4 Metric Cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      {/* Cost */}
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-neutral-200 dark:border-slate-800">
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500 block">قیمت خرید (تامین):</span>
+                        <span className="font-black text-slate-700 dark:text-slate-200 text-sm mt-0.5 block font-mono">
+                          {modalFormattedCostToman} <span className="text-[10px] font-sans font-normal">تومان</span>
+                        </span>
+                      </div>
+
+                      {/* Public Retail */}
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-neutral-200 dark:border-slate-800">
+                        <span className="text-[10px] text-neutral-400 dark:text-slate-500 block">قیمت عمومی بازار:</span>
+                        <span className="font-black text-neutral-500 dark:text-slate-400 text-sm mt-0.5 block font-mono">
+                          {modalFormattedPublicToman} <span className="text-[10px] font-sans font-normal">تومان</span>
+                        </span>
+                      </div>
+
+                      {/* Selling Price */}
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-300 dark:border-emerald-800">
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold block">قیمت فروش سایت:</span>
+                        <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm mt-0.5 block font-mono">
+                          {modalFormattedToman} <span className="text-[10px] font-sans font-normal">تومان</span>
+                        </span>
+                      </div>
+
+                      {/* Profit */}
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-amber-300 dark:border-amber-800">
+                        <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold block">سود ناخالص هر فروش:</span>
+                        <span className="font-black text-amber-600 dark:text-amber-400 text-sm mt-0.5 block font-mono">
+                          +{modalFormattedProfitToman} <span className="text-[10px] font-sans font-normal">تومان</span>
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="text-[11px] text-teal-800 pt-1 border-t border-teal-200/60 flex justify-between">
-                      <span>خرید پایه: {new Intl.NumberFormat("fa-IR").format(Math.round(modalBaseRial / 10))} تومان</span>
-                      <span>سود ناخالص: {new Intl.NumberFormat("fa-IR").format(Math.round(modalFinalToman - modalBaseRial / 10))} تومان</span>
-                    </div>
+                    {modalDiscountPercent > 0 && (
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <span>💡</span>
+                        <span>قیمت فروش ما {modalDiscountPercent}٪ ارزان‌تر از نرخ رسمی بازار است و برای خریدار به عنوان تخفیف شگفت‌انگیز نمایش داده می‌شود.</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -661,42 +809,22 @@ export default function AdminProductsPage() {
               {/* TAB 3: MEDIA & IMAGES */}
               {activeTab === "media" && (
                 <div className="space-y-4 animate-fadeIn">
-                  <div>
-                    <label className="block font-bold text-neutral-800 mb-1.5">
-                      آدرس مستقیم تصویر / کاور محصول:
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
-                      value={editImage}
-                      onChange={(e) => setEditImage(e.target.value)}
-                      className="w-full bg-admin-bg border border-admin-borderLight focus:border-admin-primary rounded-lg py-2.5 px-3 text-xs outline-none dir-ltr text-left font-mono"
-                    />
-                  </div>
+                  <ImageUploader
+                    value={editImage}
+                    onChange={setEditImage}
+                    folder="products"
+                    label="تصویر شاخص و کاور کاتالوگ محصول"
+                    placeholderText="تصویر محصول را بکشید یا برای انتخاب فایل کلیک کنید"
+                    maxSizeMB={5}
+                  />
 
-                  {/* Image Preview Box */}
-                  <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl flex items-center gap-4">
-                    <div className="w-24 h-24 rounded-lg bg-white border border-neutral-200 overflow-hidden shrink-0 flex items-center justify-center">
-                      {editImage ? (
-                        <img
-                          src={editImage}
-                          alt="پیش‌نمایش"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as any).src =
-                              "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600";
-                          }}
-                        />
-                      ) : (
-                        <ImageIcon className="w-8 h-8 text-neutral-300" />
-                      )}
-                    </div>
-                    <div className="space-y-1 text-xs text-neutral-500">
-                      <span className="font-bold text-neutral-800 block">پیش‌نمایش تصویر محصول</span>
-                      <p className="text-[11px] leading-relaxed">
-                        تصاویر با نسبت ۱:۱ یا ۳:۴ مربعی بهترین کیفیت نمایش را در کارت‌های کاتالوگ خواهند داشت.
-                      </p>
-                    </div>
+                  <div className="p-4 bg-neutral-50 dark:bg-slate-800/60 border border-neutral-200 dark:border-slate-700 rounded-xl text-xs text-neutral-500 dark:text-slate-400 space-y-1">
+                    <span className="font-bold text-neutral-800 dark:text-slate-200 block">نکات مهم تصویر محصول:</span>
+                    <ul className="list-disc list-inside space-y-0.5 text-[11px] leading-relaxed">
+                      <li>تصاویر با نسبت ۱:۱ یا ۱۶:۹ با وضوح حداقل ۶۰۰×۶۰۰ پیکسل بهترین کیفیت نمایش را در کارت‌های کاتالوگ و صفحه محصول خواهند داشت.</li>
+                      <li>فایل‌ها به صورت خودکار با پسوندهای PNG، JPG، WEBP روی سرور ذخیره و آدرس‌دهی می‌شوند.</li>
+                      <li>در صورت تمایل می‌توانید تب «لینک مستقیم» را انتخاب کرده و آدرس عکس اینترنتی مورد نظر را وارد نمایید.</li>
+                    </ul>
                   </div>
                 </div>
               )}

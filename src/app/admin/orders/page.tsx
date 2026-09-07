@@ -32,6 +32,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import { toPersianDateTime } from "@/lib/date";
+import Pagination from "@/components/ui/Pagination";
+
 export default function AdminOrdersPage() {
   const { orders, updateOrderStatus, settings } = useStore();
 
@@ -39,6 +42,10 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   // Editing credentials state inside modal
   const [isEditingCredentials, setIsEditingCredentials] = useState(false);
@@ -54,6 +61,12 @@ export default function AdminOrdersPage() {
     const matchesStatus = statusFilter === "all" ? true : o.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -132,7 +145,10 @@ export default function AdminOrdersPage() {
             type="text"
             placeholder="جستجو با کد سفارش (ARZ-XXXX)، ایمیل یا شماره موبایل خریدار..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-admin-bg border border-admin-borderLight focus:border-brand-primary rounded-xl py-2.5 pr-9 pl-3 text-xs outline-none"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -140,7 +156,10 @@ export default function AdminOrdersPage() {
 
         <div className="flex items-center gap-1 bg-admin-bg p-1 rounded-xl border border-admin-borderLight text-xs overflow-x-auto">
           <button
-            onClick={() => setStatusFilter("all")}
+            onClick={() => {
+              setStatusFilter("all");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 flex items-center gap-1.5 ${
               statusFilter === "all" ? "bg-white text-brand-primary shadow-xs font-bold" : "text-neutral-500 hover:text-neutral-900"
             }`}
@@ -149,7 +168,10 @@ export default function AdminOrdersPage() {
             <span className="text-[10px] bg-neutral-200 px-1.5 py-0.2 rounded-full font-mono">{orders.length}</span>
           </button>
           <button
-            onClick={() => setStatusFilter("delivered")}
+            onClick={() => {
+              setStatusFilter("delivered");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 flex items-center gap-1.5 ${
               statusFilter === "delivered" ? "bg-emerald-600 text-white shadow-xs font-bold" : "text-neutral-500 hover:text-neutral-900"
             }`}
@@ -158,7 +180,10 @@ export default function AdminOrdersPage() {
             <span className="text-[10px] bg-emerald-700 text-white px-1.5 py-0.2 rounded-full font-mono">{deliveredCount}</span>
           </button>
           <button
-            onClick={() => setStatusFilter("processing")}
+            onClick={() => {
+              setStatusFilter("processing");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 flex items-center gap-1.5 ${
               statusFilter === "processing" ? "bg-amber-500 text-white shadow-xs font-bold" : "text-neutral-500 hover:text-neutral-900"
             }`}
@@ -167,7 +192,10 @@ export default function AdminOrdersPage() {
             <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.2 rounded-full font-mono">{processingCount}</span>
           </button>
           <button
-            onClick={() => setStatusFilter("failed")}
+            onClick={() => {
+              setStatusFilter("failed");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 flex items-center gap-1.5 ${
               statusFilter === "failed" ? "bg-red-600 text-white shadow-xs font-bold" : "text-neutral-500 hover:text-neutral-900"
             }`}
@@ -181,9 +209,9 @@ export default function AdminOrdersPage() {
       {/* Orders Table */}
       <div className="bg-white border border-admin-borderLight rounded-2xl overflow-hidden shadow-card">
         <div className="overflow-x-auto">
-          <table className="w-full text-right border-collapse text-xs">
+          <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-admin-container/60 border-b border-admin-borderLight font-bold text-admin-text">
+              <tr className="bg-admin-container/50 border-b border-admin-borderLight text-xs font-bold text-admin-text">
                 <th className="py-3.5 px-4">کد سفارش</th>
                 <th className="py-3.5 px-4">خریدار</th>
                 <th className="py-3.5 px-4">اشتراک خریداری‌شده</th>
@@ -194,7 +222,7 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-admin-borderLight">
-              {filteredOrders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <tr
                   key={order.id}
                   onClick={() => openOrderDetails(order)}
@@ -203,7 +231,7 @@ export default function AdminOrdersPage() {
                   <td className="py-3.5 px-4 font-mono font-bold text-brand-primary">
                     #{order.orderNumber}
                     <span className="block text-[10px] text-neutral-400 font-sans font-normal">
-                      {order.createdAt}
+                      {toPersianDateTime(order.createdAt)}
                     </span>
                   </td>
 
@@ -276,6 +304,23 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredOrders.length}
+        itemsPerPage={itemsPerPage}
+        itemName="سفارش"
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onItemsPerPageChange={(limit) => {
+          setItemsPerPage(limit);
+          setCurrentPage(1);
+        }}
+        pageSizeOptions={[10, 15, 30, 50]}
+      />
+
       {/* ========================================================================= */}
       {/* ADVANCED ORDER DETAILS & WORKFLOW MODAL (HypeStore Stitch Screen Synchronized) */}
       {/* ========================================================================= */}
@@ -327,7 +372,7 @@ export default function AdminOrdersPage() {
                   <div className="flex items-center gap-3 text-[11px] text-neutral-400 mt-1">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>{selectedOrder.createdAt}</span>
+                      <span>{toPersianDateTime(selectedOrder.createdAt)}</span>
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
