@@ -4,6 +4,7 @@ import { formatPrice, formatNumber } from "@/lib/format";
 
 import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
+import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Order } from "@/types";
 import {
@@ -64,6 +65,37 @@ export default function AdminOrdersPage() {
   const [isEditingCredentials, setIsEditingCredentials] = useState(false);
   const [editCredentialsText, setEditCredentialsText] = useState("");
   const [saveToast, setSaveToast] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [emailToast, setEmailToast] = useState<string | null>(null);
+
+  const handleResendEmail = async (order: Order) => {
+    setIsResendingEmail(true);
+    try {
+      await api.sendOrderReceiptEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerEmail.split("@")[0],
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        createdAt: toPersianDateTime(order.createdAt),
+        items: order.items.map((it) => ({
+          productTitle: it.productTitle,
+          quantity: it.quantity,
+          priceToman: it.priceToman,
+          priceUsd: it.priceUsd,
+        })),
+        deliveredAccounts: order.deliveredAccounts,
+        totalPriceToman: order.totalPriceToman,
+        totalPriceUsd: order.totalPriceUsd,
+      });
+      setEmailToast(`ایمیل رسید و لایسنس با موفقیت به ${order.customerEmail} ارسال شد!`);
+      setTimeout(() => setEmailToast(null), 3500);
+    } catch (err: any) {
+      setEmailToast(err?.message || "خطا در ارسال ایمیل.");
+      setTimeout(() => setEmailToast(null), 3500);
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
 
   const filteredOrders = orders.filter((o) => {
     const matchesSearch =
@@ -199,6 +231,12 @@ export default function AdminOrdersPage() {
         <div className="fixed bottom-6 left-6 z-50 bg-emerald-700 text-white px-5 py-3 rounded-xl shadow-xl text-xs flex items-center gap-2 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
           <span>مشخصات لایسنس با موفقیت ذخیره و به‌روزرسانی شد!</span>
+        </div>
+      )}
+      {emailToast && (
+        <div className="fixed bottom-6 left-6 z-50 bg-teal-800 text-white px-5 py-3 rounded-xl shadow-xl text-xs flex items-center gap-2 animate-bounce">
+          <Mail className="w-4 h-4 text-teal-200 shrink-0" />
+          <span>{emailToast}</span>
         </div>
       )}
 
@@ -650,6 +688,15 @@ export default function AdminOrdersPage() {
               </div>
 
               <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button
+                  onClick={() => handleResendEmail(selectedOrder)}
+                  disabled={isResendingEmail}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-xs font-semibold transition-colors disabled:opacity-50"
+                  title="ارسال مجدد رسید و لایسنس به ایمیل خریدار"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>{isResendingEmail ? "در حال ارسال..." : "ارسال مجدد ایمیل"}</span>
+                </button>
                 <button
                   onClick={() => window.print()}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-100 dark:hover:bg-slate-800 dark:bg-slate-800 text-xs font-semibold transition-colors"

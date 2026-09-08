@@ -253,4 +253,42 @@ export const api = {
     }
     return res.json();
   },
+
+  // Email & SMTP Management
+  getEmailSettings: () => request<any>("/email/settings"),
+
+  updateEmailSettings: (config: any, user = "مدیر ارشد") =>
+    request<any>("/email/settings", {
+      method: "PUT",
+      body: JSON.stringify({ config, user }),
+    }),
+
+  sendTestEmail: (to: string, template = "test") =>
+    request<any>("/email/test", {
+      method: "POST",
+      body: JSON.stringify({ to, template }),
+    }),
+
+  getEmailStats: () => request<any>("/email/stats"),
+
+  getEmailLogs: (params?: {
+    status?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.status && params.status !== "all") q.set("status", params.status);
+    if (params?.search) q.set("search", params.search);
+    if (params?.limit) q.set("limit", String(params.limit));
+    if (params?.offset) q.set("offset", String(params.offset));
+    const qs = q.toString();
+    return request<{ logs: any[]; total: number }>(`/email/logs${qs ? `?${qs}` : ""}`);
+  },
+
+  sendOrderReceiptEmail: (orderData: any) =>
+    request<any>("/email/send-order-receipt", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    }),
 };

@@ -2,7 +2,9 @@
 
 import { formatPrice, formatNumber } from "@/lib/format";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { api } from "@/lib/api";
 import { useStore } from "@/context/StoreContext";
 import {
   BarChart3,
@@ -13,10 +15,30 @@ import {
   Sparkles,
   ShoppingBag,
   Zap,
+  Mail,
+  Send,
+  CheckCircle2,
+  ShieldCheck,
+  Activity,
 } from "lucide-react";
 
 export default function AdminAnalyticsPage() {
   const { orders, products, settings } = useStore();
+  const [emailStats, setEmailStats] = useState({
+    total: 0,
+    sent: 0,
+    failed: 0,
+    todayCount: 0,
+    deliveryRate: 100,
+    lastSentAt: null as string | null,
+    lastStatus: "IDLE",
+  });
+
+  useEffect(() => {
+    api.getEmailStats().then((res) => {
+      if (res) setEmailStats(res);
+    }).catch(() => null);
+  }, []);
 
   const totalRevenueToman = orders.reduce((acc, o) => acc + o.totalPriceToman, 0);
   const totalCostUsd = orders.reduce((acc, o) => acc + o.totalPriceUsd, 0);
@@ -160,6 +182,62 @@ export default function AdminAnalyticsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Email Delivery & Notifications Intelligence */}
+      <div className="bg-gradient-to-r from-slate-900 to-teal-950 text-white p-6 rounded-2xl border border-teal-800/60 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm">وضعیت ارسال ایمیل و مکاتبات مشتریان (Email Intelligence)</h3>
+              <p className="text-xs text-teal-200 mt-0.5">
+                عملکرد سرور Gmail SMTP در صدور لایسنس، ارسال فاکتور و نرخ تحویل در صندوق ورودی (Inbox)
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/admin/settings/email"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md transition-colors"
+          >
+            <span>مدیریت سرور ایمیل و لاگ‌ها</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs pt-1">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <span className="text-teal-200 block">کل ایمیل‌های ارسال شده:</span>
+            <div className="text-xl font-black font-mono text-white mt-1">
+              {formatNumber(emailStats.total)} <span className="text-xs font-normal text-neutral-400">فقره</span>
+            </div>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <span className="text-teal-200 block">نرخ تحویل موفق (Delivery Rate):</span>
+            <div className="text-xl font-black font-mono text-emerald-400 mt-1">
+              %{emailStats.deliveryRate}
+            </div>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <span className="text-teal-200 block">ارسالی‌های امروز:</span>
+            <div className="text-xl font-black font-mono text-teal-300 mt-1">
+              {formatNumber(emailStats.todayCount)} <span className="text-xs font-normal text-neutral-400">ایمیل</span>
+            </div>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <span className="text-teal-200 block">وضعیت اتصال سرور:</span>
+            <div className="text-sm font-black text-emerald-400 mt-1 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Gmail SMTP فعال و برخط</span>
+            </div>
           </div>
         </div>
       </div>

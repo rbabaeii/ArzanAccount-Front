@@ -577,6 +577,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     saveOrders(updated);
 
     const order = orders.find((o) => o.id === orderId);
+    if (order && (status === "delivered" || (accounts && accounts.length > 0))) {
+      // Automatically send order delivery email with credentials
+      api.sendOrderReceiptEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerEmail.split("@")[0],
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        createdAt: toEnglishDigits(new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(new Date())),
+        items: order.items.map((it) => ({
+          productTitle: it.productTitle,
+          quantity: it.quantity,
+          priceToman: it.priceToman,
+          priceUsd: it.priceUsd,
+        })),
+        deliveredAccounts: accounts || order.deliveredAccounts,
+        totalPriceToman: order.totalPriceToman,
+        totalPriceUsd: order.totalPriceUsd,
+      }).catch((err) => console.warn("Could not dispatch receipt email:", err));
+    }
     if (order && adminInfo?.name) {
       const isDelivered = status === "delivered";
       const newLog: AuditLog = {

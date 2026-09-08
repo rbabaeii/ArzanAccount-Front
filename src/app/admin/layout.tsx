@@ -17,6 +17,7 @@ import {
   Coins,
   Settings,
   Activity,
+  Mail,
   BarChart3,
   ScrollText,
   RefreshCw,
@@ -84,6 +85,7 @@ export default function AdminLayout({
 
   const isItemVisible = (itemHref: string) => {
     if (itemHref === "/admin/admin-activities") return user?.role === "SUPER_ADMIN";
+    if (itemHref === "/admin/settings/email") return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (itemHref === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
@@ -100,6 +102,7 @@ export default function AdminLayout({
 
   const isCurrentRouteAllowed = () => {
     if (pathname.startsWith("/admin/admin-activities")) return user?.role === "SUPER_ADMIN";
+    if (pathname.startsWith("/admin/settings/email")) return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (pathname === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
@@ -181,6 +184,11 @@ export default function AdminLayout({
           title: "لاگ فعالیت‌ها و ردپای سیستم",
           href: "/admin/logs",
           icon: <ScrollText className="w-4 h-4" />,
+        },
+        {
+          title: "تنظیمات سرور ایمیل (SMTP)",
+          href: "/admin/settings/email",
+          icon: <Mail className="w-4 h-4" />,
         },
         {
           title: "تنظیمات عمومی سیستم",
