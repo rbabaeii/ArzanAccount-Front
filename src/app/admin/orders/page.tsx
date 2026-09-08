@@ -4,6 +4,7 @@ import { formatPrice, formatNumber } from "@/lib/format";
 
 import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
 import { Order } from "@/types";
 import {
   ShoppingCart,
@@ -31,6 +32,10 @@ import {
   Calendar,
   CreditCard,
   Layers,
+  UserCheck,
+  TrendingUp,
+  DollarSign,
+  BadgeCheck,
   ArrowRight,
 } from "lucide-react";
 
@@ -39,6 +44,12 @@ import Pagination from "@/components/ui/Pagination";
 
 export default function AdminOrdersPage() {
   const { orders, updateOrderStatus, settings } = useStore();
+  const { user } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<"all" | "my_approved">("all");
+  const [myTimeRange, setMyTimeRange] = useState<"all" | "today" | "yesterday" | "7d" | "30d" | "custom">("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("all");
@@ -64,8 +75,58 @@ export default function AdminOrdersPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const paginatedOrders = filteredOrders.slice(
+  // Filter for current admin's approved orders
+  const myApprovedOrders = orders.filter((o) => {
+    // Check if approved by this admin (or in demo mode, if delivered and matches or admin has support/super role)
+    const isApprovedByMe =
+      o.approvedByAdminId === user?.id ||
+      (user?.name && o.approvedByAdminName && o.approvedByAdminName.toLowerCase().includes(user.name.toLowerCase())) ||
+      (o.status === "delivered" && (user?.role === "SUPPORT_ADMIN" || user?.role === "SUPER_ADMIN") && !o.approvedByAdminId);
+
+    if (!isApprovedByMe) return false;
+
+    // Time filter
+    const targetDate = new Date(o.approvedAt || o.createdAt);
+    const now = new Date();
+
+    if (myTimeRange === "today") {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (targetDate < start) return false;
+    } else if (myTimeRange === "yesterday") {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (targetDate < start || targetDate >= end) return false;
+    } else if (myTimeRange === "7d") {
+      const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (targetDate < start) return false;
+    } else if (myTimeRange === "30d") {
+      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      if (targetDate < start) return false;
+    } else if (myTimeRange === "custom") {
+      if (customStartDate && targetDate < new Date(customStartDate)) return false;
+      if (customEndDate && targetDate > new Date(customEndDate + "T23:59:59")) return false;
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      const matches =
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.customerEmail.toLowerCase().includes(q) ||
+        (o.customerPhone && o.customerPhone.includes(q)) ||
+        o.items.some((it) => it.productTitle.toLowerCase().includes(q));
+      if (!matches) return false;
+    }
+
+    return true;
+  });
+
+  const myTotalToman = myApprovedOrders.reduce((acc, o) => acc + (o.totalPriceToman || 0), 0);
+  const myTotalUsd = myApprovedOrders.reduce((acc, o) => acc + (o.totalPriceUsd || 0), 0);
+  const myDeliveredLicensesCount = myApprovedOrders.reduce((acc, o) => acc + (o.deliveredAccounts?.length || 0), 0);
+
+  const currentDisplayOrders = activeTab === "my_approved" ? myApprovedOrders : filteredOrders;
+  const totalPages = Math.ceil(currentDisplayOrders.length / itemsPerPage);
+  const paginatedOrders = currentDisplayOrders.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -89,8 +150,20 @@ export default function AdminOrdersPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    updateOrderStatus(selectedOrder.id, selectedOrder.status, accounts);
-    setSelectedOrder({ ...selectedOrder, deliveredAccounts: accounts });
+    const adminInfo = {
+      id: user?.id,
+      name: user?.name,
+      phone: user?.phone,
+    };
+
+    updateOrderStatus(selectedOrder.id, selectedOrder.status, accounts, adminInfo);
+    setSelectedOrder({
+      ...selectedOrder,
+      deliveredAccounts: accounts,
+      approvedByAdminId: user?.id,
+      approvedByAdminName: user?.name,
+      approvedAt: new Date().toISOString(),
+    });
     setIsEditingCredentials(false);
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 2500);
@@ -98,13 +171,26 @@ export default function AdminOrdersPage() {
 
   const handleStatusChange = (status: Order["status"]) => {
     if (!selectedOrder) return;
-    updateOrderStatus(selectedOrder.id, status);
-    setSelectedOrder({ ...selectedOrder, status });
+    const adminInfo = {
+      id: user?.id,
+      name: user?.name,
+      phone: user?.phone,
+    };
+    updateOrderStatus(selectedOrder.id, status, undefined, adminInfo);
+    setSelectedOrder({
+      ...selectedOrder,
+      status,
+      approvedByAdminId: user?.id,
+      approvedByAdminName: user?.name,
+      approvedAt: new Date().toISOString(),
+    });
   };
 
   const deliveredCount = orders.filter((o) => o.status === "delivered").length;
   const processingCount = orders.filter((o) => o.status === "processing").length;
   const failedCount = orders.filter((o) => o.status === "failed" || o.status === "cancelled").length;
+
+
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -139,6 +225,173 @@ export default function AdminOrdersPage() {
           </span>
         </div>
       </div>
+
+      {/* Main Mode Tabs */}
+      <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-2">
+        <button
+          onClick={() => {
+            setActiveTab("all");
+            setCurrentPage(1);
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "all"
+              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+          }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>همه سفارشات سیستم</span>
+          <span className={`text-[11px] px-2 py-0.5 rounded-full font-mono ${
+            activeTab === "all" ? "bg-white/20 text-white" : "bg-neutral-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+          }`}>
+            {orders.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("my_approved");
+            setCurrentPage(1);
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "my_approved"
+              ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+          }`}
+        >
+          <BadgeCheck className="w-4 h-4" />
+          <span>آمار و سفارشات تایید شده من</span>
+          <span className={`text-[11px] px-2 py-0.5 rounded-full font-mono ${
+            activeTab === "my_approved" ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+          }`}>
+            {myApprovedOrders.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Personal Statistics Dashboard for Orders Admin */}
+      {activeTab === "my_approved" && (
+        <div className="space-y-4">
+          {/* Admin Info Banner */}
+          <div className="bg-gradient-to-r from-purple-900/90 to-indigo-900/90 text-white p-5 rounded-2xl border border-purple-800 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-purple-800/80 text-purple-200">
+                  <UserCheck className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black">
+                    کارنامه و آمار تایید سفارشات {user?.name || "مدیر سفارشات"}
+                  </h3>
+                  <p className="text-xs text-purple-200 mt-0.5">
+                    فهرست کلیه سفارشاتی که توسط این حساب بررسی، تایید و لایسنس آن‌ها صادر و تحویل داده شده است.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Time Filter Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 bg-black/20 backdrop-blur-md p-1.5 rounded-xl border border-white/10 text-xs">
+              {[
+                { id: "all", label: "همه زمان‌ها" },
+                { id: "today", label: "امروز" },
+                { id: "yesterday", label: "دیروز" },
+                { id: "7d", label: "۷ روز اخیر" },
+                { id: "30d", label: "۳۰ روز اخیر" },
+                { id: "custom", label: "بازه دلخواه" },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  onClick={() => setMyTimeRange(pill.id as any)}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                    myTimeRange === pill.id
+                      ? "bg-purple-600 text-white shadow-xs font-bold"
+                      : "text-purple-200 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Date Inputs if custom is selected */}
+          {myTimeRange === "custom" && (
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-200 dark:border-purple-900/50 flex flex-wrap items-center gap-4 text-xs">
+              <span className="font-bold text-purple-900 dark:text-purple-300">انتخاب بازه تاریخی دقیق:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500">از تاریخ:</span>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500">تا تاریخ:</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 4 KPI Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+              <span className="text-[11px] text-admin-textMuted dark:text-slate-400 block font-medium">
+                سفارشات تایید شده توسط من
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black font-mono text-purple-600 dark:text-purple-400">
+                  {formatNumber(myApprovedOrders.length)}
+                </span>
+                <span className="text-xs text-neutral-400">سفارش</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+              <span className="text-[11px] text-admin-textMuted dark:text-slate-400 block font-medium">
+                مجموع فروش تایید شده (تومان)
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                  {formatPrice(myTotalToman)}
+                </span>
+                <span className="text-xs text-neutral-400">تومان</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+              <span className="text-[11px] text-admin-textMuted dark:text-slate-400 block font-medium">
+                مجموع فروش دلاری ($)
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+                  ${myTotalUsd.toFixed(2)}
+                </span>
+                <span className="text-xs text-neutral-400">USD</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+              <span className="text-[11px] text-admin-textMuted dark:text-slate-400 block font-medium">
+                اکانت و لایسنس تحویل داده شده
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
+                  {formatNumber(myDeliveredLicensesCount)}
+                </span>
+                <span className="text-xs text-neutral-400">اکانت</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter and Search */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-card flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -267,21 +520,32 @@ export default function AdminOrdersPage() {
                   </td>
 
                   <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value as Order["status"])}
-                      className={`text-xs font-bold py-1 px-2.5 rounded-lg border outline-none cursor-pointer ${
-                        order.status === "delivered"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : order.status === "processing"
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-red-50 text-red-700 border-red-200"
-                      }`}
-                    >
-                      <option value="delivered">تحویل شده</option>
-                      <option value="processing">در حال پردازش</option>
-                      <option value="failed">ناموفق / لغو</option>
-                    </select>
+                    <div className="space-y-1">
+                      <select
+                        value={order.status}
+                        onChange={(e) => {
+                          const adminInfo = { id: user?.id, name: user?.name, phone: user?.phone };
+                          updateOrderStatus(order.id, e.target.value as Order["status"], undefined, adminInfo);
+                        }}
+                        className={`text-xs font-bold py-1 px-2.5 rounded-lg border outline-none cursor-pointer ${
+                          order.status === "delivered"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : order.status === "processing"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        }`}
+                      >
+                        <option value="delivered">تحویل شده</option>
+                        <option value="processing">در حال پردازش</option>
+                        <option value="failed">ناموفق / لغو</option>
+                      </select>
+                      {order.approvedByAdminName && (
+                        <div className="text-[10px] text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>تایید: {order.approvedByAdminName}</span>
+                        </div>
+                      )}
+                    </div>
                   </td>
 
                   <td className="py-3.5 px-4 text-center">
@@ -299,7 +563,7 @@ export default function AdminOrdersPage() {
           </table>
         </div>
 
-        {filteredOrders.length === 0 && (
+        {currentDisplayOrders.length === 0 && (
           <div className="p-8 text-center text-xs text-neutral-400">
             سفارشی با معیارهای فیلتر یافت نشد.
           </div>
@@ -309,7 +573,7 @@ export default function AdminOrdersPage() {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        totalItems={filteredOrders.length}
+        totalItems={currentDisplayOrders.length}
         itemsPerPage={itemsPerPage}
         itemName="سفارش"
         onPageChange={(page) => {
@@ -404,6 +668,41 @@ export default function AdminOrdersPage() {
 
             {/* Scrollable Body */}
             <div className="p-6 overflow-y-auto space-y-6">
+
+              {/* Admin Approval & Verification Banner */}
+              {selectedOrder.approvedByAdminName && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/40 dark:to-indigo-950/40 border border-purple-200 dark:border-purple-800/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-purple-950 dark:text-purple-100 flex items-center gap-2">
+                        <span>بررسی و تایید شده توسط مدیر:</span>
+                        <span className="bg-purple-200 dark:bg-purple-900/60 text-purple-900 dark:text-purple-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
+                          {selectedOrder.approvedByAdminName}
+                        </span>
+                        {selectedOrder.approvedByAdminPhone && (
+                          <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                            ({selectedOrder.approvedByAdminPhone})
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-purple-700 dark:text-purple-300 mt-0.5">
+                        مسئولیت بررسی درگاه، صدور لایسنس و تحویل اطلاعات اشتراک به خریدار بر عهده این مدیر ثبت گردیده است.
+                      </p>
+                    </div>
+                  </div>
+                  {selectedOrder.approvedAt && (
+                    <div className="text-left sm:text-right shrink-0 bg-white/60 dark:bg-slate-900/60 px-3 py-1.5 rounded-xl border border-purple-200/60 dark:border-purple-800/40">
+                      <span className="text-[10px] text-neutral-400 block">زمان دقیق ثبت تایید:</span>
+                      <span className="text-xs font-mono font-bold text-purple-800 dark:text-purple-300">
+                        {toPersianDateTime(selectedOrder.approvedAt)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* 1. Interactive Workflow Stepper (Lifecycle) */}
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">

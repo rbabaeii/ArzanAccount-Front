@@ -66,6 +66,10 @@ export interface Order {
   deliveredAccounts?: string[]; // e.g. ["user@domain.com:Pass123 (pin: 4421)"]
   paymentGateway: "zarinpal" | "nextpay" | "crypto";
   discountAppliedToman?: number;
+  approvedByAdminId?: string;
+  approvedByAdminName?: string;
+  approvedByAdminPhone?: string;
+  approvedAt?: string;
 }
 
 export interface Coupon {
@@ -86,8 +90,12 @@ export interface AuditLog {
   action: string;
   details: string;
   user: string;
-  timestamp: string;
-  type: "sync" | "rate_change" | "order" | "product_toggle" | "security";
+  adminId?: string;
+  adminName?: string;
+  adminPhone?: string;
+  timestamp?: string;
+  createdAt?: string;
+  type: string;
 }
 
 export interface SystemSettings {

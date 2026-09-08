@@ -16,6 +16,7 @@ import {
   FolderTree,
   Coins,
   Settings,
+  Activity,
   BarChart3,
   ScrollText,
   RefreshCw,
@@ -82,6 +83,7 @@ export default function AdminLayout({
   };
 
   const isItemVisible = (itemHref: string) => {
+    if (itemHref === "/admin/admin-activities") return user?.role === "SUPER_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (itemHref === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
@@ -97,6 +99,7 @@ export default function AdminLayout({
   };
 
   const isCurrentRouteAllowed = () => {
+    if (pathname.startsWith("/admin/admin-activities")) return user?.role === "SUPER_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (pathname === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
@@ -151,6 +154,13 @@ export default function AdminLayout({
           title: "کاربران و مدیران (RBAC)",
           href: "/admin/users",
           icon: <Users className="w-4 h-4" />,
+        },
+        {
+          title: "نظارت بر فعالیت مدیران",
+          href: "/admin/admin-activities",
+          icon: <Activity className="w-4 h-4" />,
+          badge: "ویژه Super Admin",
+          badgeColor: "bg-purple-600 text-white font-bold",
         },
         {
           title: "تنظیمات ارز و قیمت‌گذاری",

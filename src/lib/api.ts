@@ -192,6 +192,33 @@ export const api = {
       body: JSON.stringify({ adminUser }),
     }),
 
+  getAdminActivities: (params?: {
+    adminId?: string;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+    sort?: "asc" | "desc";
+    limit?: number;
+    offset?: number;
+  }) => {
+    const query = new URLSearchParams();
+    if (params?.adminId) query.set("adminId", params.adminId);
+    if (params?.type) query.set("type", params.type);
+    if (params?.startDate) query.set("startDate", params.startDate);
+    if (params?.endDate) query.set("endDate", params.endDate);
+    if (params?.search) query.set("search", params.search);
+    if (params?.sort) query.set("sort", params.sort);
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+
+    const qs = query.toString();
+    return request<{ activities: any[]; total: number }>(`/users/admin-activities${qs ? `?${qs}` : ""}`);
+  },
+
+  getAdminActivitySummary: (adminId: string) =>
+    request<{ admin: any; stats: any }>(`/users/${adminId}/activity-summary`),
+
   // Auth & OTP
   sendOtp: (phone: string) =>
     request<{ success: boolean; message: string }>("/auth/send-otp", {

@@ -68,7 +68,13 @@ interface StoreContextType {
 
   // Order Actions
   createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt">) => Order;
-  updateOrderStatus: (orderId: string, status: Order["status"], accounts?: string[]) => void;
+  updateOrderStatus: (
+    orderId: string,
+    status: Order["status"],
+    accounts?: string[],
+    adminInfo?: { id?: string; name?: string; phone?: string }
+  ) => void;
+  addAdminAuditLog: (log: Omit<AuditLog, "id" | "timestamp">) => void;
   addCoupon: (coupon: Omit<Coupon, "id">) => void;
   toggleCoupon: (couponId: string) => void;
 }
@@ -547,11 +553,56 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return newOrder;
   };
 
-  const updateOrderStatus = (orderId: string, status: Order["status"], accounts?: string[]) => {
-    const updated = orders.map((o) =>
-      o.id === orderId ? { ...o, status, deliveredAccounts: accounts || o.deliveredAccounts } : o
-    );
+  const updateOrderStatus = (
+    orderId: string,
+    status: Order["status"],
+    accounts?: string[],
+    adminInfo?: { id?: string; name?: string; phone?: string }
+  ) => {
+    const updated = orders.map((o) => {
+      if (o.id === orderId) {
+        const isNowDelivered = status === "delivered" && o.status !== "delivered";
+        return {
+          ...o,
+          status,
+          deliveredAccounts: accounts || o.deliveredAccounts,
+          approvedByAdminId: adminInfo?.id || o.approvedByAdminId,
+          approvedByAdminName: adminInfo?.name || o.approvedByAdminName,
+          approvedByAdminPhone: adminInfo?.phone || o.approvedByAdminPhone,
+          approvedAt: isNowDelivered ? new Date().toISOString() : o.approvedAt,
+        };
+      }
+      return o;
+    });
     saveOrders(updated);
+
+    const order = orders.find((o) => o.id === orderId);
+    if (order && adminInfo?.name) {
+      const isDelivered = status === "delivered";
+      const newLog: AuditLog = {
+        id: `log-${Date.now()}`,
+        action: isDelivered ? `تایید و تحویل سفارش #${order.orderNumber}` : `تغییر وضعیت سفارش #${order.orderNumber}`,
+        details: `سفارش #${order.orderNumber} به مبلغ ${formatPrice(order.totalPriceToman)} تومان توسط ${adminInfo.name} ${isDelivered ? "تایید و صادر شد" : `به ${status} تغییر یافت`}.`,
+        user: adminInfo.name,
+        adminId: adminInfo.id,
+        adminName: adminInfo.name,
+        adminPhone: adminInfo.phone,
+        timestamp: "هم‌اکنون",
+        createdAt: new Date().toISOString(),
+        type: isDelivered ? "order_delivery" : "order",
+      };
+      setAuditLogs((prev) => [newLog, ...prev]);
+    }
+  };
+
+  const addAdminAuditLog = (log: Omit<AuditLog, "id" | "timestamp">) => {
+    const newLog: AuditLog = {
+      ...log,
+      id: `log-${Date.now()}`,
+      timestamp: "هم‌اکنون",
+      createdAt: new Date().toISOString(),
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
   };
 
   const addCoupon = (coupon: Omit<Coupon, "id">) => {
@@ -614,6 +665,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         removeCoupon,
         createOrder,
         updateOrderStatus,
+        addAdminAuditLog,
         addCoupon,
         toggleCoupon,
       }}

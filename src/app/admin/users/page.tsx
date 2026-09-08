@@ -3,6 +3,8 @@
 import { formatPrice, formatNumber } from "@/lib/format";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   Users,
@@ -19,6 +21,7 @@ import {
   Trash2,
   Check,
   Minus,
+  Activity,
 } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
 
@@ -43,6 +46,7 @@ interface UserStats {
 }
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserItem[]>([]);
   const [stats, setStats] = useState<UserStats>({
     totalUsers: 0,
@@ -554,13 +558,25 @@ export default function AdminUsersPage() {
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => handleDeleteUser(u)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
-                        title="حذف کاربر"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        {currentUser?.role === "SUPER_ADMIN" && u.role !== "USER" && (
+                          <Link
+                            href={`/admin/admin-activities?adminId=${u.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-800 transition-colors shadow-xs shrink-0"
+                            title="مشاهده لاگ و تاریخچه فعالیت‌های این مدیر"
+                          >
+                            <Activity className="w-3.5 h-3.5" />
+                            <span>فعالیت‌های این ادمین</span>
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => handleDeleteUser(u)}
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
+                          title="حذف کاربر"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
