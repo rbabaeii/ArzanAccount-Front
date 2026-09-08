@@ -522,14 +522,17 @@ export default function AdminEmailSettingsPage() {
               </div>
 
               {/* Anti-spam Advice Box */}
-              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-3.5 rounded-xl text-[11.5px] text-emerald-900 dark:text-emerald-300 space-y-1">
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-4 rounded-xl text-[11.5px] text-emerald-900 dark:text-emerald-300 space-y-2">
                 <div className="font-bold flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>استانداردهای ضد اسپم فعال هستند:</span>
+                  <span>استانداردهای ضد اسپم و تحویل به اینباکس (Inbox Deliverability):</span>
                 </div>
-                <p className="leading-relaxed text-emerald-800 dark:text-emerald-400">
-                  تمامی ایمیل‌ها به همراه هدرهای تطابق جیمیل، نسخه موازی متنی (Plain Text)، هدر لغو اشتراک RFC و کدهای استاندارد HTML ارسال می‌شوند تا در Inbox قرار گیرند.
-                </p>
+                <ul className="list-disc list-inside space-y-1 text-emerald-800 dark:text-emerald-400 leading-relaxed pr-1">
+                  <li>حذف کلیه هدرهای حساس و مشکوک فیلتر اسپم نظیر <code>X-Priority</code> و <code>X-Mailer</code> غیراستاندارد.</li>
+                  <li>ارسال موازی نسخه متنی (Plain Text) در کنار HTML و فرمت‌بندی استاندارد RFC 2047 جهت عبور از فیلترهای ضد فیشینگ.</li>
+                  <li>حذف کلیه آدرس‌های محلی <code>localhost</code> از متن ایمیل و جایگزینی با پروتکل امن HTTPS.</li>
+                  <li><strong>نکته جی‌میل:</strong> در اولین ارسال‌ها به یک آدرس جدید، حتماً یک‌بار دکمه <em>«Report not spam / گزارش به عنوان غیراسپم»</em> را بزنید تا هوش مصنوعی گوگل این فرستنده را برای همیشه سفید (Whitelist) کند.</li>
+                </ul>
               </div>
 
               <div className="pt-2">
