@@ -217,6 +217,15 @@ export default function Header() {
 
                     <div className="py-1">
                       <Link
+                        href="/profile"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-slate-800 text-neutral-700 dark:text-slate-200 font-medium transition-colors"
+                      >
+                        <User className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                        <span>پروفایل و مشخصات من</span>
+                      </Link>
+
+                      <Link
                         href="/orders"
                         onClick={() => setUserDropdownOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-slate-800 text-neutral-700 dark:text-slate-200 font-medium transition-colors"
@@ -406,6 +415,13 @@ export default function Header() {
               className="block p-2 text-brand-primary dark:text-teal-300 font-bold hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
             >
               کاتالوگ جامع محصولات
+            </Link>
+            <Link
+              href="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded"
+            >
+              پروفایل و مشخصات کاربری
             </Link>
             <Link
               href="/orders"

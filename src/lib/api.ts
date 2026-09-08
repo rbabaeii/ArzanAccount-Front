@@ -291,4 +291,22 @@ export const api = {
       method: "POST",
       body: JSON.stringify(orderData),
     }),
+
+  updateUserProfile: (id: string, data: any) =>
+    request<any>(`/users/${id}/profile`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  topUpWallet: (id: string, amountToman: number) =>
+    request<any>(`/users/${id}/topup-wallet`, {
+      method: "POST",
+      body: JSON.stringify({ amountToman }),
+    }),
+
+  convertPoints: (id: string, points: number) =>
+    request<any>(`/users/${id}/convert-points`, {
+      method: "POST",
+      body: JSON.stringify({ points }),
+    }),
 };

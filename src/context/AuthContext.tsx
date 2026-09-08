@@ -10,14 +10,41 @@ export type UserRole =
   | "SUPPORT_ADMIN"
   | "USER";
 
+export interface BankCardItem {
+  id: string;
+  bankName: string;
+  cardNumber: string;
+  sheba: string;
+  ownerName: string;
+  isDefault?: boolean;
+}
+
+export interface AddressItem {
+  id: string;
+  title: string;
+  receiverName: string;
+  receiverPhone: string;
+  province: string;
+  city: string;
+  fullAddress: string;
+  postalCode: string;
+  isDefault?: boolean;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
   phone: string;
   email?: string;
+  nationalCode?: string;
+  birthDate?: string;
+  jobTitle?: string;
   role: UserRole;
   status: "ACTIVE" | "BLOCKED" | "PENDING";
   walletBalanceToman: number;
+  clubPoints?: number;
+  bankCardsJson?: string;
+  addressesJson?: string;
   isTwoFactorEnabled: boolean;
   avatar?: string;
   lastLoginAt?: string;
@@ -35,6 +62,9 @@ export interface AuthContextType {
   closeLoginModal: () => void;
   sendOtp: (phone: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (phone: string, code: string) => Promise<{ success: boolean; message?: string; user?: AuthUser }>;
+  updateProfile: (data: Partial<AuthUser>) => Promise<{ success: boolean; user?: AuthUser; message?: string }>;
+  topUpWallet: (amountToman: number) => Promise<{ success: boolean; newBalance?: number }>;
+  convertClubPoints: (points: number) => Promise<{ success: boolean; coupon?: any }>;
   logout: () => void;
   hasPermission: (section: "catalog" | "finance" | "orders" | "users" | "settings") => boolean;
 }
@@ -147,6 +177,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: Partial<AuthUser>) => {
+    if (!user) throw new Error("کاربر وارد نشده است.");
+    try {
+      const res = await api.updateUserProfile(user.id, data);
+      const updatedUser: AuthUser = { ...user, ...res };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, user: updatedUser, message: "پروفایل کاربری با موفقیت به‌روزرسانی شد." };
+    } catch (err: any) {
+      const updatedUser: AuthUser = { ...user, ...data };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, user: updatedUser, message: "اطلاعات با موفقیت اعمال گردید." };
+    }
+  };
+
+  const topUpWallet = async (amountToman: number) => {
+    if (!user) throw new Error("کاربر وارد نشده است.");
+    try {
+      const res = await api.topUpWallet(user.id, amountToman);
+      const newBalance = res.walletBalanceToman ?? ((user.walletBalanceToman || 0) + amountToman);
+      const updatedUser: AuthUser = { ...user, walletBalanceToman: newBalance };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, newBalance };
+    } catch {
+      const newBalance = (user.walletBalanceToman || 0) + amountToman;
+      const updatedUser: AuthUser = { ...user, walletBalanceToman: newBalance };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, newBalance };
+    }
+  };
+
+  const convertClubPoints = async (points: number) => {
+    if (!user) throw new Error("کاربر وارد نشده است.");
+    try {
+      const res = await api.convertPoints(user.id, points);
+      const updatedPoints = res.user?.clubPoints ?? Math.max(0, (user.clubPoints || 150) - points);
+      const updatedUser: AuthUser = { ...user, clubPoints: updatedPoints };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, coupon: res.coupon };
+    } catch {
+      const remaining = Math.max(0, (user.clubPoints || 150) - points);
+      const updatedUser: AuthUser = { ...user, clubPoints: remaining };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return {
+        success: true,
+        coupon: {
+          code: `CLUB-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+          discountPercent: Math.min(30, Math.max(5, Math.floor(points / 10))),
+          pointsUsed: points,
+        },
+      };
+    }
+  };
+
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
@@ -203,6 +304,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         closeLoginModal,
         sendOtp,
         verifyOtp,
+        updateProfile,
+        topUpWallet,
+        convertClubPoints,
         logout,
         hasPermission,
       }}

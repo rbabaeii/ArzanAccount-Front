@@ -393,7 +393,7 @@ export default function AdminLayout({
         <div className="pt-4 border-t border-white/10 space-y-3">
           {/* Admin Profile Card */}
           <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 overflow-hidden">
+            <NextLink href="/profile" className="flex items-center gap-2.5 overflow-hidden hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-teal-400 text-teal-950 font-black text-xs flex items-center justify-center shrink-0">
                 {user?.name ? user.name.slice(0, 1) : <Shield className="w-4 h-4" />}
               </div>
@@ -401,7 +401,7 @@ export default function AdminLayout({
                 <div className="text-xs font-bold text-white truncate">{user?.name || user?.phone}</div>
                 <div className="text-[10px] text-teal-300 font-semibold">{getRoleBadge(user?.role)}</div>
               </div>
-            </div>
+            </NextLink>
             <button
               onClick={logout}
               title="خروج از حساب مدیریت"
