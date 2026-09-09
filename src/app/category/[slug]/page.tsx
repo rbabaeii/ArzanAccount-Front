@@ -102,21 +102,15 @@ export default function CategoryPage() {
               هنوز محصولی در این دسته‌بندی فعال نشده است
             </h3>
             <p className="text-xs text-brand-muted dark:text-slate-400 mt-2">
-              با مراجعه به پنل مدیریت، محصولات این شاخه را انتخاب و فعال کنید.
+              محصولات این دسته‌بندی به‌زودی اضافه خواهند شد. می‌توانید سایر محصولات فروشگاه را مشاهده نمایید.
             </p>
             <div className="mt-6 flex justify-center gap-4">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-300 bg-teal-50 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 px-5 py-2.5 rounded-xl hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-primary hover:bg-brand-primaryDark px-6 py-2.5 rounded-xl shadow-xs transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
                 <span>مشاهده تمام محصولات</span>
-              </Link>
-              <Link
-                href="/admin/products"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-primary hover:bg-brand-primaryDark px-4 py-2.5 rounded-xl transition-colors"
-              >
-                <span>مدیریت در پنل ادمین</span>
               </Link>
             </div>
           </div>

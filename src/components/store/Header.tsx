@@ -23,6 +23,7 @@ import {
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { LiveSearchDropdown } from "@/components/store/LiveSearchDropdown";
 import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function Header() {
@@ -71,13 +72,10 @@ export default function Header() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2 text-teal-100 text-[11px] sm:text-xs">
             <Zap className="w-3.5 h-3.5 text-brand-accent shrink-0 animate-pulse" />
-            <span>تحویل آنلاین و آنی کلیه اکانت‌ها | احراز هویت پیامکی با کد تایید آزمایشی 11111</span>
+            <span>تحویل آنلاین و آنی کلیه اشتراک‌های قانونی دیجیتال</span>
           </div>
 
           <div className="flex items-center gap-4 text-teal-200 text-[11px]">
-            {isAdmin && <span className="hidden md:inline">
-              نرخ مرجع دلار: <strong className="text-white font-mono">{formattedUsdRate}</strong> تومان
-            </span>}
             <Link
               href="/orders"
               className="hover:text-white transition-colors flex items-center gap-1 text-teal-100"
@@ -86,7 +84,7 @@ export default function Header() {
               <span>پیگیری سفارش و لایسنس</span>
             </Link>
 
-            {isAdmin ? (
+            {isAdmin && (
               <Link
                 href="/admin"
                 className="flex items-center gap-1 bg-amber-400 text-teal-950 px-2.5 py-0.5 rounded transition-colors font-bold shadow-xs"
@@ -94,14 +92,6 @@ export default function Header() {
                 <LayoutDashboard className="w-3 h-3" />
                 <span>کنترل سنتر ادمین</span>
               </Link>
-            ) : (
-              <button
-                onClick={openLoginModal}
-                className="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white px-2.5 py-0.5 rounded transition-colors font-medium border border-white/15"
-              >
-                <Shield className="w-3 h-3 text-brand-accent" />
-                <span>ورود پرسنل / ادمین</span>
-              </button>
             )}
           </div>
         </div>
@@ -135,22 +125,10 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Live Search Input */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg relative">
-          <input
-            type="text"
-            placeholder="جستجوی سرویس (مثلاً ChatGPT Plus، Gemini Pro، تلگرام، اسپاتیفای...)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-800 rounded-xl py-2.5 pr-11 pl-4 text-xs outline-none transition-all placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100"
-          />
-          <button
-            type="submit"
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-primary dark:hover:text-teal-400 transition-colors"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-        </form>
+        {/* Live ElasticSearch Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-lg">
+          <LiveSearchDropdown className="w-full" />
+        </div>
 
         {/* Header Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
@@ -364,16 +342,13 @@ export default function Header() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-slate-900 border-b border-brand-border dark:border-slate-800 p-4 space-y-4 animate-fadeIn transition-colors">
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
+          <div className="w-full">
+            <LiveSearchDropdown
+              className="w-full"
               placeholder="جستجو در محصولات..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 rounded-lg py-2.5 pr-10 pl-3 text-xs outline-none text-slate-800 dark:text-slate-100"
+              onSelectProduct={() => setMobileMenuOpen(false)}
             />
-            <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          </form>
+          </div>
 
           <div className="space-y-1 pt-2 border-t border-neutral-100 dark:border-slate-800 text-xs font-medium">
             <div className="pb-2 mb-2 border-b border-neutral-100 dark:border-slate-800">

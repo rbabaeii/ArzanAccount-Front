@@ -529,19 +529,19 @@ export default function HomePage() {
             />
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-dashed border-neutral-300 dark:border-slate-800 rounded-xl p-12 text-center my-8">
+          <div className="bg-white dark:bg-slate-900 border border-dashed border-neutral-300 dark:border-slate-800 rounded-2xl p-12 text-center my-8">
             <p className="text-sm font-semibold text-neutral-600 dark:text-slate-300">
-              هیچ محصول فعالی در این دسته‌بندی یافت نشد.
+              هیچ محصولی مطابق با فیلتر انتخاب شده یافت نشد.
             </p>
             <p className="text-xs text-neutral-400 dark:text-slate-500 mt-2">
-              شما می‌توانید با ورود به پنل ادمین، محصولات مورد نظر خود را در این دسته فعال کنید.
+              می‌توانید فیلترهای دیگر را انتخاب کرده یا تمامی محصولات کاتالوگ را مشاهده فرمایید.
             </p>
-            <Link
-              href="/admin/products"
-              className="inline-block mt-4 text-xs font-bold text-brand-primary dark:text-teal-400 underline"
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className="mt-4 px-5 py-2 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primaryDark transition-colors inline-block"
             >
-              مدیریت محصولات در پنل ادمین
-            </Link>
+              مشاهده تمامی محصولات
+            </button>
           </div>
         )}
       </main>

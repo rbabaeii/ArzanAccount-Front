@@ -62,7 +62,13 @@ export const api = {
   // Settings & System
   getSettings: () => request<any>("/settings"),
 
-  updateCurrency: (params: { rate?: number; margin?: number; user?: string }) =>
+  updateCurrency: (params: {
+    rate?: number;
+    margin?: number;
+    maxPurchaseRatioDenominator?: number;
+    purchaseRatioExemptionThreshold?: number;
+    user?: string;
+  }) =>
     request<any>("/settings/currency", {
       method: "PUT",
       body: JSON.stringify(params),
@@ -95,6 +101,17 @@ export const api = {
 
   getProductById: (id: string) => request<any>(`/catalog/products/${id}`),
 
+  getLiveProduct: (id: string) => request<any>(`/catalog/products/${id}/live-sync`),
+
+  validateLiveStock: (id: string, quantity = 1) =>
+    request<{ valid: boolean; stockCount: number; inStock: boolean }>(
+      `/catalog/products/${id}/validate-stock`,
+      {
+        method: "POST",
+        body: JSON.stringify({ quantity }),
+      }
+    ),
+
   toggleProductActive: (id: string, user = "مدیر سیستم") =>
     request<any>(`/catalog/products/${id}/toggle-active`, {
       method: "PUT",
@@ -105,6 +122,40 @@ export const api = {
     request<any>(`/catalog/products/${id}`, {
       method: "PUT",
       body: JSON.stringify({ ...updates, user }),
+    }),
+
+  createProduct: (data: any, user = "مدیر سیستم") =>
+    request<any>("/catalog/products", {
+      method: "POST",
+      body: JSON.stringify({ ...data, user }),
+    }),
+
+  // Tag Management
+  getAllTags: () =>
+    request<{ name: string; count: number; sampleProducts: { id: string; title: string }[] }[]>("/catalog/tags"),
+
+  createTag: (data: { tag: string; productIds?: string[]; user?: string }) =>
+    request<{ tag: string; affectedCount: number }>("/catalog/tags", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  renameTag: (data: { oldTag: string; newTag: string; user?: string }) =>
+    request<{ oldTag: string; newTag: string; affectedCount: number }>("/catalog/tags/rename", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  deleteTag: (tag: string, user = "مدیر سیستم") =>
+    request<{ tag: string; affectedCount: number }>(`/catalog/tags/${encodeURIComponent(tag)}`, {
+      method: "DELETE",
+      body: JSON.stringify({ user }),
+    }),
+
+  assignTag: (data: { tag: string; productIds: string[]; action?: "add" | "remove"; user?: string }) =>
+    request<{ tag: string; action: string; updatedCount: number }>("/catalog/tags/assign", {
+      method: "POST",
+      body: JSON.stringify(data),
     }),
 
   // Categories
@@ -232,7 +283,38 @@ export const api = {
       body: JSON.stringify({ phone, code }),
     }),
 
+  sendDirectEmailOtp: (email: string) =>
+    request<{ success: boolean; message: string; email: string }>("/auth/send-email-otp-direct", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  verifyEmailOtp: (email: string, code: string) =>
+    request<{ accessToken: string; user: any }>("/auth/verify-email-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    }),
+
   getMe: () => request<any>("/auth/me"),
+
+  // Live ElasticSearch
+  searchLive: (query: string, scope: "public" | "admin" | "all" = "public", limit = 10) =>
+    request<{
+      products: { item: any; score: number; highlights: string[] }[];
+      categories: { item: any; score: number }[];
+      orders: { item: any; score: number }[];
+      users: { item: any; score: number }[];
+      suggestions: string[];
+      totalMatches: number;
+      query: string;
+      tookMs: number;
+    }>(`/search/live?q=${encodeURIComponent(query)}&scope=${scope}&limit=${limit}`),
+
+  searchByTag: (tag: string, limit = 20) =>
+    request<any[]>(`/search/by-tag?tag=${encodeURIComponent(tag)}&limit=${limit}`),
+
+  getRelatedProducts: (productId: string, limit = 4) =>
+    request<any[]>(`/search/related/${productId}?limit=${limit}`),
 
   // Media / File Upload
   uploadFile: async (file: File, folder = "products"): Promise<{ success: boolean; url: string; filename: string; size: number }> => {
@@ -292,6 +374,21 @@ export const api = {
       body: JSON.stringify(orderData),
     }),
 
+  sendCustomEmail: (data: {
+    recipientEmail: string;
+    recipientName?: string;
+    subject: string;
+    message: string;
+    badge?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+    adminSender?: string;
+  }) =>
+    request<any>("/email/send-custom", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   updateUserProfile: (id: string, data: any) =>
     request<any>(`/users/${id}/profile`, {
       method: "PUT",
@@ -308,5 +405,66 @@ export const api = {
     request<any>(`/users/${id}/convert-points`, {
       method: "POST",
       body: JSON.stringify({ points }),
+    }),
+
+  // Auth & Passwords
+  sendEmailOtp: (phone: string) =>
+    request<{ success: boolean; message: string; maskedEmail: string }>("/auth/send-email-otp", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+    }),
+
+  loginWithPassword: (phone: string, password: string) =>
+    request<{ accessToken: string; user: any }>("/auth/login-password", {
+      method: "POST",
+      body: JSON.stringify({ phone, password }),
+    }),
+
+  updatePassword: (newPassword: string, currentPassword?: string) =>
+    request<{ success: boolean; message: string }>("/auth/update-password", {
+      method: "POST",
+      body: JSON.stringify({ newPassword, currentPassword }),
+    }),
+
+  // Orders & Refunds
+  createBackendOrder: (dto: any) =>
+    request<any>("/orders", {
+      method: "POST",
+      body: JSON.stringify(dto),
+    }),
+
+  getBackendOrders: (params?: { status?: string; customerEmail?: string; limit?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set("status", params.status);
+    if (params?.customerEmail) q.set("customerEmail", params.customerEmail);
+    if (params?.limit) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    return request<{ orders: any[]; totalCount: number }>(`/orders${qs ? `?${qs}` : ""}`);
+  },
+
+  getRefundRequests: (role = "SUPER_ADMIN") =>
+    request<any[]>(`/orders/refund-requests?role=${role}`),
+
+  processRefund: (dto: any, role = "SUPER_ADMIN") =>
+    request<any>("/orders/process-refund", {
+      method: "POST",
+      body: JSON.stringify({ ...dto, role }),
+    }),
+
+  requestRefund: (orderId: string, refundReason: string, refundCardNumber?: string, refundIban?: string) =>
+    request<any>(`/orders/${orderId}/request-refund`, {
+      method: "POST",
+      body: JSON.stringify({ refundReason, refundCardNumber, refundIban }),
+    }),
+
+  updateOrderStatus: (orderId: string, status: string, adminName = "مدیر سیستم", role = "SUPER_ADMIN") =>
+    request<any>(`/orders/${orderId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status, adminName, role }),
+    }),
+
+  reindexSearch: () =>
+    request<any>("/search/reindex", {
+      method: "POST",
     }),
 };

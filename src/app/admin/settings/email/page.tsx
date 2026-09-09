@@ -33,7 +33,19 @@ import {
 export default function AdminEmailSettingsPage() {
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"config" | "preview" | "logs">("config");
+  const [activeTab, setActiveTab] = useState<"config" | "compose" | "preview" | "logs">("config");
+
+  // Compose Custom Direct Email
+  const [composeRecipientEmail, setComposeRecipientEmail] = useState("");
+  const [composeRecipientName, setComposeRecipientName] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBadge, setComposeBadge] = useState("پیام اختصاصی مدیریت");
+  const [composeMessage, setComposeMessage] = useState("");
+  const [composeButtonText, setComposeButtonText] = useState("");
+  const [composeButtonUrl, setComposeButtonUrl] = useState("");
+  const [composeAdminSender, setComposeAdminSender] = useState("مدیریت و پشتیبانی ارزان اکانت");
+  const [isSendingCustom, setIsSendingCustom] = useState(false);
+  const [customSendResult, setCustomSendResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // SMTP Settings
   const [host, setHost] = useState("smtp.gmail.com");
@@ -201,6 +213,60 @@ export default function AdminEmailSettingsPage() {
     }
   };
 
+  // Send Custom Direct Email
+  const handleSendCustomEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!composeRecipientEmail.trim() || !composeRecipientEmail.includes("@")) {
+      showNotification("error", "لطفاً آدرس ایمیل معتبر برای گیرنده وارد نمایید.");
+      return;
+    }
+    if (!composeSubject.trim()) {
+      showNotification("error", "موضوع ایمیل نمی‌تواند خالی باشد.");
+      return;
+    }
+    if (!composeMessage.trim()) {
+      showNotification("error", "متن پیام ایمیل نمی‌تواند خالی باشد.");
+      return;
+    }
+
+    setIsSendingCustom(true);
+    setCustomSendResult(null);
+
+    try {
+      const res = await api.sendCustomEmail({
+        recipientEmail: composeRecipientEmail.trim(),
+        recipientName: composeRecipientName.trim() || undefined,
+        subject: composeSubject.trim(),
+        badge: composeBadge.trim() || undefined,
+        message: composeMessage.trim(),
+        buttonText: composeButtonText.trim() || undefined,
+        buttonUrl: composeButtonUrl.trim() || undefined,
+        adminSender: composeAdminSender.trim() || undefined,
+      });
+
+      if (res && res.success) {
+        setCustomSendResult({ success: true, message: "ایمیل سفارشی با موفقیت به آدرس گیرنده ارسال گردید." });
+        showNotification("success", "ایمیل سفارشی با موفقیت به گیرنده ارسال شد.");
+        loadLogs();
+        loadData();
+      } else {
+        const errorMsg = res?.message || res?.error || "ارسال ایمیل ناموفق بود.";
+        setCustomSendResult({ success: false, message: errorMsg });
+        showNotification("error", errorMsg);
+        loadLogs();
+        loadData();
+      }
+    } catch (error: any) {
+      const errorMsg = error?.message || "خطای ارتباط با سرور در ارسال ایمیل.";
+      setCustomSendResult({ success: false, message: errorMsg });
+      showNotification("error", errorMsg);
+      loadLogs();
+      loadData();
+    } finally {
+      setIsSendingCustom(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Toast */}
@@ -308,6 +374,21 @@ export default function AdminEmailSettingsPage() {
         >
           <Server className="w-4 h-4" />
           <span>پیکربندی SMTP و تست لایو</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("compose")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "compose"
+              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+          }`}
+        >
+          <Mail className="w-4 h-4" />
+          <span>ارسال ایمیل اختصاصی به کاربران</span>
+          <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            مستقیم
+          </span>
         </button>
 
         <button
@@ -642,6 +723,310 @@ export default function AdminEmailSettingsPage() {
               <p className="text-[11.5px] leading-relaxed">
                 رمز عبور <strong>{smtpPass}</strong> یک کلید اختصاصی ۱۶ کاراکتری جیمیل است. نیازی به ورود با پسورد اصلی حساب کاربری گوگل نیست و این روش ۱۰۰٪ امن و مورد تایید گوگل است.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB: COMPOSE & SEND CUSTOM EMAIL TO USERS */}
+      {/* ========================================================================= */}
+      {activeTab === "compose" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Form Side - 7 Cols */}
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-admin-borderLight dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-brand-primary" />
+                <div>
+                  <h3 className="font-bold text-sm text-admin-text dark:text-white">ارسال ایمیل مستقیم با متن دلخواه به کاربران</h3>
+                  <p className="text-[11px] text-admin-textMuted dark:text-slate-400 mt-0.5">
+                    ارسال پیام رسمی، اطلاعیه، رفع اشکال یا پیشنهاد ویژه به هر کاربر با قالب واکنش‌گرای ارزان اکانت
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Template Presets */}
+            <div>
+              <label className="block font-semibold text-xs text-admin-text dark:text-slate-200 mb-2">
+                الگوهای آماده برای متن پیام (پیش‌تنظیم):
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("اطلاع‌رسانی مهم پیرامون حساب کاربری شما در ارزان اکانت");
+                    setComposeBadge("اطلاعیه مهم حساب");
+                    setComposeMessage("کاربر گرامی،\n\nاین پیام جهت اطلاع‌رسانی در خصوص وضعیت خدمات و حساب کاربری شما ارسال گردیده است. لطفاً جهت بررسی جزئیات به بخش پنل کاربری خود مراجعه فرمایید.\n\nدر صورت وجود هرگونه ابهام یا سوال، تیم پشتیبانی ارزان اکانت به صورت ۲۴ ساعته در خدمت شماست.");
+                    setComposeButtonText("مشاهده پنل کاربری");
+                    setComposeButtonUrl("https://arzanaccount.com/profile");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  📢 اطلاعیه حساب کاربری
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("راهنمای فعال‌سازی و تحویل اطلاعات اشتراک");
+                    setComposeBadge("اطلاعات تکمیلی اشتراک");
+                    setComposeMessage("کاربر گرامی،\n\nپیرو سفارش شما در ارزان اکانت، اطلاعات تکمیلی و راهنمای راه‌اندازی اشتراک برای شما آماده گردیده است. خواهشمندیم قبل از استفاده، دستورالعمل مندرج در پنل کاربری را به دقت مطالعه فرمایید.\n\nتیم پشتیبانی ما تا تحویل کامل و فعال‌سازی موفقیت‌آمیز در کنار شما خواهد بود.");
+                    setComposeButtonText("بررسی سفارش و لایسنس");
+                    setComposeButtonUrl("https://arzanaccount.com/profile?tab=orders");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  🔑 راهنمای لایسنس و اشتراک
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("هدیه ویژه و کد تخفیف اختصاصی برای شما - ارزان اکانت");
+                    setComposeBadge("کد تخفیف اختصاصی");
+                    setComposeMessage("کاربر عزیز و همراه همیشگی ارزان اکانت،\n\nبه پاس قدردانی از اعتماد شما، کد تخفیف ویژه خرید بعدی به حساب شما اختصاص داده شد:\n\nکد تخفیف: SPECIAL-2026\nدرصد تخفیف: ۲۰٪ تخفیف بدون سقف بر روی تمام لایسنس‌ها\nمهلت استفاده: تا ۷ روز آینده");
+                    setComposeButtonText("خرید با تخفیف ویژه");
+                    setComposeButtonUrl("https://arzanaccount.com");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  🎁 کد تخفیف و هدیه
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("پاسخ پشتیبانی به پیام شما در ارزان اکانت");
+                    setComposeBadge("پشتیبانی مشتریان");
+                    setComposeMessage("کاربر گرامی،\n\nدرخواست پشتیبانی و تیکت ارسالی شما توسط کارشناسان فنی ارزان اکانت بررسی گردید و مشکل مورد نظر به طور کامل برطرف شد.\n\nدر صورتی که نیاز به پیگیری مجدد یا هرگونه راهنمایی بیشتر دارید، لطفاً با پشتیبانی تلگرام در ارتباط باشید.");
+                    setComposeButtonText("ارتباط با پشتیبانی");
+                    setComposeButtonUrl("https://t.me/ArzanAccount_Support");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  💬 پاسخ پشتیبانی
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSendCustomEmail} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    آدرس ایمیل گیرنده (کاربر): <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={composeRecipientEmail}
+                    onChange={(e) => setComposeRecipientEmail(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    placeholder="customer@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    نام یا لقب گیرنده (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={composeRecipientName}
+                    onChange={(e) => setComposeRecipientName(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                    placeholder="مثال: علی احمدی (یا خالی برای «کاربر گرامی»)"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    موضوع ایمیل (Subject): <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                    placeholder="مثلاً: پیام اختصاصی از طرف مدیریت ارزان اکانت"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    بج سربرگ ایمیل:
+                  </label>
+                  <input
+                    type="text"
+                    value={composeBadge}
+                    onChange={(e) => setComposeBadge(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                    placeholder="مثال: پیام اختصاصی مدیریت"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                  متن پیام ایمیل (دلخواه و چندخطی): <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={6}
+                  value={composeMessage}
+                  onChange={(e) => setComposeMessage(e.target.value)}
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3 outline-none leading-relaxed resize-y font-sans"
+                  placeholder="متن دلخواه خود را اینجا بنویسید... (پاراگراف‌ها و خطوط جدید دقیقاً در ایمیل نمایش داده می‌شوند)"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    عنوان دکمه اقدام (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={composeButtonText}
+                    onChange={(e) => setComposeButtonText(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                    placeholder="مثال: ورود به پنل کاربری"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    لینک دکمه اقدام (اختیاری):
+                  </label>
+                  <input
+                    type="url"
+                    value={composeButtonUrl}
+                    onChange={(e) => setComposeButtonUrl(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    placeholder="https://arzanaccount.com/..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                  عنوان امضا / ارسال‌کننده:
+                </label>
+                <input
+                  type="text"
+                  value={composeAdminSender}
+                  onChange={(e) => setComposeAdminSender(e.target.value)}
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                  placeholder="مثال: مدیریت و پشتیبانی ارزان اکانت"
+                />
+              </div>
+
+              {/* Status Alert */}
+              {customSendResult && (
+                <div
+                  className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                    customSendResult.success
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200"
+                      : "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-200"
+                  }`}
+                >
+                  {customSendResult.success ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  )}
+                  <span>{customSendResult.message}</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeRecipientEmail("");
+                    setComposeRecipientName("");
+                    setComposeSubject("");
+                    setComposeMessage("");
+                    setComposeButtonText("");
+                    setComposeButtonUrl("");
+                    setCustomSendResult(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-admin-borderLight dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold transition-colors"
+                >
+                  پاک‌کردن فرم
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingCustom}
+                  className="flex items-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-teal-500/20 disabled:opacity-50"
+                >
+                  <Send className={`w-4 h-4 ${isSendingCustom ? "animate-pulse" : ""}`} />
+                  <span>{isSendingCustom ? "در حال ارسال ایمیل..." : "ارسال ایمیل به کاربر"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Live Preview Side - 5 Cols */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-4 shadow-card">
+              <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight dark:border-slate-800 mb-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-teal-600" />
+                  <span className="font-bold text-xs text-admin-text dark:text-white">پیش‌نمایش زنده ایمیل خروجی</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">HTML Email Mock</span>
+              </div>
+
+              {/* Email Card Container */}
+              <div className="bg-slate-100 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white text-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-200 text-right text-xs">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-teal-900 to-teal-700 text-white p-4 text-center">
+                    <div className="inline-block bg-white/20 text-teal-100 text-[10px] px-2 py-0.5 rounded-full font-bold mb-1">
+                      {composeBadge || "پیام اختصاصی مدیریت"}
+                    </div>
+                    <div className="text-sm font-black tracking-tight">⚡ ارزان اکانت (Arzan Account)</div>
+                    <div className="text-[10px] text-teal-200 mt-0.5">سامانه هوشمند اشتراک‌ها و لایسنس‌های قانونی</div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-4 space-y-3">
+                    <div className="text-xs font-bold text-teal-950">
+                      سلام {composeRecipientName || "کاربر گرامی"}،
+                    </div>
+
+                    {composeSubject && (
+                      <div className="text-xs font-bold text-slate-800 pb-1 border-b border-slate-100">
+                        موضوع: {composeSubject}
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-[11px] text-slate-700 leading-relaxed whitespace-pre-line min-h-[80px]">
+                      {composeMessage || "متن پیام در اینجا به صورت زنده نمایش داده خواهد شد..."}
+                    </div>
+
+                    {composeButtonText && (
+                      <div className="text-center pt-1">
+                        <span className="inline-block bg-teal-800 text-white text-[11px] font-bold px-4 py-1.5 rounded-lg shadow-xs">
+                          {composeButtonText} ←
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="pt-3 border-t border-slate-100 text-[10px] text-slate-500">
+                      با احترام،<br />
+                      <strong className="text-slate-800">{composeAdminSender || "مدیریت ارزان اکانت"}</strong>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="bg-slate-50 border-t border-slate-100 p-2.5 text-center text-[9.5px] text-slate-400">
+                    پشتیبانی ۲۴ ساعته در تلگرام: @arzan_support
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

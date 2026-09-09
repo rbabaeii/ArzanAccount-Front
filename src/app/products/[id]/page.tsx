@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/store/Header";
 import Footer from "@/components/store/Footer";
 import ProductCard from "@/components/store/ProductCard";
 import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { useStore } from "@/context/StoreContext";
+import { api } from "@/lib/api";
 import { formatPrice, formatNumber } from "@/lib/format";
 import {
   ShieldCheck,
@@ -20,16 +21,66 @@ import {
   Layers,
   Star,
   ShoppingBag,
+  RefreshCw,
+  AlertTriangle,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { products, categories, calculateProductPrice, addToCart } = useStore();
+  const { products, categories, calculateProductPrice, addToCart, getMaxAllowedPurchase } = useStore();
 
   const productId = params?.id as string;
-  const product = products.find((p) => p.id === productId);
+  const initialProduct = products.find((p) => p.id === productId);
+
+  const [currentProduct, setCurrentProduct] = useState(initialProduct);
+  const [isSyncingLive, setIsSyncingLive] = useState(false);
+  const [liveSyncMessage, setLiveSyncMessage] = useState<string | null>(null);
+  const [apiRelated, setApiRelated] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    if (!productId) return;
+    let isMounted = true;
+    setIsSyncingLive(true);
+    api
+      .getLiveProduct(productId)
+      .then((liveData) => {
+        if (isMounted && liveData) {
+          setCurrentProduct((prev) => ({ ...(prev || initialProduct), ...liveData }));
+          setLiveSyncMessage(
+            liveData.inStock
+              ? `موجودی زنده تأمین‌کننده: ${liveData.stockCount !== null ? formatNumber(liveData.stockCount) + ' عدد موجود' : 'موجود در انبار'}`
+              : "ناموجود در انبار تأمین‌کننده"
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn("Live sync error with irMarket:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsSyncingLive(false);
+      });
+
+    // Fetch related products from backend tag-matching algorithm
+    api
+      .getRelatedProducts(productId, 4)
+      .then((res) => {
+        if (isMounted && res && Array.isArray(res) && res.length > 0) {
+          setApiRelated(res);
+        }
+      })
+      .catch((err) => {
+        console.warn("Related products fetch error:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [productId]);
+
+  const product = currentProduct || initialProduct;
 
   const [quantity, setQuantity] = useState<number>(
     product?.pricingUnit === "per_1000" ? (product?.minQty || 1000) : 1
@@ -37,6 +88,27 @@ export default function ProductDetailPage() {
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerLink, setCustomerLink] = useState("");
   const [addedToast, setAddedToast] = useState(false);
+
+  const relatedProducts = React.useMemo(() => {
+    if (apiRelated && apiRelated.length > 0) return apiRelated;
+    if (!product) return [];
+
+    const productTags = product.tags || [];
+    return products
+      .filter((p) => p.id !== product.id && p.isActive)
+      .map((p) => {
+        let score = 0;
+        if (p.categoryId === product.categoryId) score += 20;
+        if (p.tags && productTags.length > 0) {
+          const common = p.tags.filter((t) => productTags.includes(t));
+          score += common.length * 40;
+        }
+        return { product: p, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map((item) => item.product);
+  }, [apiRelated, product, products]);
 
   if (!product) {
     return (
@@ -62,6 +134,7 @@ export default function ProductDetailPage() {
 
   const category = categories.find((c) => c.id === product.categoryId);
   const price = calculateProductPrice(product);
+  const maxAllowed = product ? getMaxAllowedPurchase(product) : 100;
 
   const totalPriceToman = price.isPerThousand
     ? Math.round((price.toman * quantity) / 1000)
@@ -79,10 +152,6 @@ export default function ProductDetailPage() {
     addToCart(product, quantity, customerEmail, customerLink);
     router.push("/cart");
   };
-
-  const relatedProducts = products
-    .filter((p) => p.categoryId === product.categoryId && p.id !== product.id && p.isActive)
-    .slice(0, 4);
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-surfaceDim dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
@@ -178,6 +247,25 @@ export default function ProductDetailPage() {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-brand-dark dark:text-white leading-snug">
                   {product.customTitle}
                 </h1>
+
+                {/* Product Tags */}
+                {product.tags && product.tags.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
+                    <span className="text-[11px] text-slate-400 font-bold flex items-center gap-1">
+                      <Tag className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                      تگ‌ها:
+                    </span>
+                    {product.tags.map((tag: string, idx: number) => (
+                      <Link
+                        key={idx}
+                        href={`/products?search=${encodeURIComponent(tag)}`}
+                        className="inline-flex items-center gap-1 text-[11px] bg-teal-50/80 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-300 font-medium px-2.5 py-0.5 rounded-lg border border-teal-200/70 dark:border-teal-800/70 transition-colors shadow-2xs"
+                      >
+                        #{tag}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -297,6 +385,32 @@ export default function ProductDetailPage() {
                     آنلاین و آنی
                   </span>
                 </div>
+
+                {/* Live Stock Synchronization Badge */}
+                <div className="mt-3 p-2.5 rounded-xl border text-[11px] flex items-center justify-between gap-2 transition-all bg-teal-50/70 dark:bg-slate-800/80 border-teal-200/80 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5">
+                    <RefreshCw className={`w-3.5 h-3.5 text-brand-primary dark:text-teal-400 ${isSyncingLive ? "animate-spin" : ""}`} />
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {isSyncingLive
+                        ? "در حال استعلام لحظه‌ای موجودی از تامین‌کننده..."
+                        : liveSyncMessage || (product.inStock ? "موجود در انبار تامین‌کننده" : "ناموجود در انبار")}
+                    </span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    product.inStock
+                      ? "bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-400"
+                      : "bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-400"
+                  }`}>
+                    {product.inStock ? "موجود" : "ناموجود"}
+                  </span>
+                </div>
+
+                {!product.inStock && (
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <span>متأسفانه در حال حاضر این کالا در انبار تأمین‌کننده موجود نیست و امکان ثبت سفارش وجود ندارد.</span>
+                  </div>
+                )}
               </div>
 
               {/* Dynamic Inputs according to irMarket */}
@@ -354,24 +468,36 @@ export default function ProductDetailPage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-brand-dark dark:text-slate-200">تعداد اکانت:</span>
-                    <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-3.5 py-2 text-sm font-bold text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-2 font-mono font-bold text-brand-dark dark:text-white">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-3.5 py-2 text-sm font-bold text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700"
-                      >
-                        +
-                      </button>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-brand-dark dark:text-slate-200 block">تعداد اکانت:</span>
+                        <span className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                          سقف سفارش: <strong className="font-mono text-teal-600 dark:text-teal-400">{maxAllowed}</strong> عدد
+                        </span>
+                      </div>
+                      <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="px-3.5 py-2 text-sm font-bold text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="px-4 py-2 font-mono font-bold text-brand-dark dark:text-white">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => setQuantity(Math.min(maxAllowed, quantity + 1))}
+                          disabled={quantity >= maxAllowed}
+                          className={`px-3.5 py-2 text-sm font-bold transition-colors ${
+                            quantity >= maxAllowed
+                              ? "text-neutral-300 dark:text-slate-600 cursor-not-allowed"
+                              : "text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                          }`}
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -389,18 +515,28 @@ export default function ProductDetailPage() {
               <div className="space-y-2.5 pt-2">
                 <button
                   onClick={handleBuyNow}
-                  className="w-full bg-brand-accent hover:bg-brand-accentHover text-slate-950 font-black text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md hover:scale-101"
+                  disabled={!product.inStock}
+                  className={`w-full font-black text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md ${
+                    product.inStock
+                      ? "bg-brand-accent hover:bg-brand-accentHover text-slate-950 hover:scale-101 cursor-pointer"
+                      : "bg-neutral-300 dark:bg-slate-800 text-neutral-500 dark:text-slate-500 cursor-not-allowed opacity-60"
+                  }`}
                 >
                   <Zap className="w-4 h-4" />
-                  <span>خرید فوری و تسویه</span>
+                  <span>{product.inStock ? "خرید فوری و تسویه" : "این محصول ناموجود است"}</span>
                 </button>
 
                 <button
                   onClick={handleAddToCart}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  disabled={!product.inStock}
+                  className={`w-full font-bold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                    product.inStock
+                      ? "bg-brand-primary hover:bg-brand-primaryDark text-white cursor-pointer"
+                      : "bg-neutral-200 dark:bg-slate-800 text-neutral-400 dark:text-slate-600 cursor-not-allowed opacity-50"
+                  }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>افزودن به سبد خرید</span>
+                  <span>{product.inStock ? "افزودن به سبد خرید" : "امکان افزودن وجود ندارد"}</span>
                 </button>
               </div>
 

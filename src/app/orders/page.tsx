@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { formatPrice, formatNumber } from "@/lib/format";
 import {
   PackageCheck,
+  Package,
   Search,
   Copy,
   Check,
@@ -15,9 +16,12 @@ import {
   AlertCircle,
   CheckCircle2,
   Key,
+  Undo2,
 } from "lucide-react";
 import Link from "next/link";
 import { toPersianDateTime } from "@/lib/date";
+import { CustomerRefundModal } from "@/components/store/CustomerRefundModal";
+import { Order } from "@/types";
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
@@ -26,6 +30,7 @@ function OrderTrackingContent() {
 
   const [query, setQuery] = useState(initialId);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [refundModalOrder, setRefundModalOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (initialId) setQuery(initialId);
@@ -110,6 +115,18 @@ function OrderTrackingContent() {
                       در حال پردازش در سرور
                     </span>
                   )}
+                  {searchedOrder.status === "refund_requested" && (
+                    <span className="bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      درخواست استرداد وجه ثبت شده (در دست بررسی مالی)
+                    </span>
+                  )}
+                  {searchedOrder.status === "refunded" && (
+                    <span className="bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      وجه سفارش مسترد گردید
+                    </span>
+                  )}
                   {searchedOrder.status === "failed" && (
                     <span className="bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -122,11 +139,24 @@ function OrderTrackingContent() {
                 </span>
               </div>
 
-              <div className="text-left">
-                <span className="text-xs text-brand-muted dark:text-slate-400 block">مبلغ کل سفارش:</span>
-                <span className="text-xl font-black text-brand-dark dark:text-white font-mono">
-                  {formatPrice(searchedOrder.totalPriceToman)} تومان
-                </span>
+              <div className="text-left flex flex-col sm:items-end gap-2">
+                <div>
+                  <span className="text-xs text-brand-muted dark:text-slate-400 block">مبلغ کل سفارش:</span>
+                  <span className="text-xl font-black text-brand-dark dark:text-white font-mono">
+                    {formatPrice(searchedOrder.totalPriceToman)} تومان
+                  </span>
+                </div>
+
+                {(searchedOrder.status === "delivered" || searchedOrder.status === "processing") && (
+                  <button
+                    type="button"
+                    onClick={() => setRefundModalOrder(searchedOrder)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold transition-colors"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                    <span>درخواست عودت وجه</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -200,15 +230,15 @@ function OrderTrackingContent() {
               </div>
             </div>
           </div>
-        ) : (
-          /* Recent Demo Orders */
+        ) : orders.length > 0 ? (
+          /* Recent Orders */
           <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
             <h3 className="font-bold text-xs text-brand-dark dark:text-white pb-3 border-b border-brand-border dark:border-slate-800">
-              سفارشات نمونه در دسترس برای آزمایش رهگیری:
+              آخرین سفارش‌های ثبت‌شده شما:
             </h3>
 
             <div className="divide-y divide-brand-border dark:divide-slate-800">
-              {orders.slice(0, 4).map((o) => (
+              {orders.slice(0, 5).map((o) => (
                 <div
                   key={o.id}
                   onClick={() => setQuery(o.orderNumber)}
@@ -235,7 +265,18 @@ function OrderTrackingContent() {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-8 shadow-card text-center text-xs text-brand-muted dark:text-slate-400 space-y-2">
+            <Package className="w-8 h-8 mx-auto text-brand-muted/50 mb-2" />
+            <p>شماره سفارش یا ایمیل خرید خود را در کادر بالا وارد کرده و دکمه پیگیری را بزنید.</p>
+          </div>
         )}
+
+        <CustomerRefundModal
+          isOpen={!!refundModalOrder}
+          order={refundModalOrder}
+          onClose={() => setRefundModalOrder(null)}
+        />
       </main>
 
       <Footer />

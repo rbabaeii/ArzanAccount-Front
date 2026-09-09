@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { Product } from "@/types";
 import {
@@ -18,6 +18,14 @@ import {
   Star,
   Info,
   Package,
+  AlertTriangle,
+  ArrowUpDown,
+  Filter,
+  Plus,
+  Tag,
+  Hash,
+  Layers,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import ImageUploader from "@/components/ui/ImageUploader";
@@ -29,13 +37,24 @@ export default function AdminProductsPage() {
     products,
     categories,
     settings,
+    createProduct,
     toggleProductActive,
     updateProduct,
     calculateProductPrice,
   } = useStore();
 
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get("search");
+      if (s) setSearch(s);
+    }
+  }, []);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [stockFilter, setStockFilter] = useState<"all" | "out_of_stock" | "in_stock">("all");
+  const [sortBy, setSortBy] = useState<"default" | "stock_asc" | "stock_desc" | "price_asc" | "price_desc" | "margin_desc">("default");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -43,8 +62,11 @@ export default function AdminProductsPage() {
   // Edit Modal State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "general" | "pricing" | "media" | "requirements" | "visibility"
+    "general" | "pricing" | "tags" | "media" | "requirements" | "visibility"
   >("general");
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [tagInputText, setTagInputText] = useState("");
 
   // Editable fields state
   const [editTitle, setEditTitle] = useState("");
@@ -78,8 +100,134 @@ export default function AdminProductsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+
+  const PRESET_CLUSTERS = [
+    {
+      title: "هوش مصنوعی (AI)",
+      icon: "🤖",
+      tags: ["هوش مصنوعی", "چت جی‌پی‌تی", "chatgpt", "openai", "gpt-4o", "اشتراک پلاس"],
+    },
+    {
+      title: "تلگرام و استارز",
+      icon: "✈️",
+      tags: ["تلگرام", "پرمیوم", "استارز", "اکانت قانونی", "telegram"],
+    },
+    {
+      title: "فیلم و استریمینگ",
+      icon: "🎬",
+      tags: ["نتفلیکس", "فیلم و سریال", "netflix", "یوتیوب پرمیوم", "4k"],
+    },
+    {
+      title: "موسیقی و اسپاتیفای",
+      icon: "🎵",
+      tags: ["اسپاتیفای", "موزیک", "spotify", "پرمیوم موزیک", "فمیلی"],
+    },
+    {
+      title: "وی‌پی‌ان و امنیت",
+      icon: "🛡️",
+      tags: ["وی پی ان", "vpn", "اینترنت آزاد", "آی پی ثابت"],
+    },
+    {
+      title: "گیمینگ و استیم",
+      icon: "🎮",
+      tags: ["گیمینگ", "استیم", "پلی استیشن", "اکانت بازی"],
+    },
+    {
+      title: "ضمانت و تحویل فوری",
+      icon: "✨",
+      tags: ["اشتراک قانونی", "تحویل فوری", "ضمانت بازگشت وجه"],
+    },
+  ];
+
+  const allExistingTags = React.useMemo(() => {
+    const set = new Set<string>();
+    products.forEach((p) => {
+      (p.tags || []).forEach((t) => {
+        if (t && t.trim()) set.add(t.trim());
+      });
+    });
+    return Array.from(set);
+  }, [products]);
+
+  const handleAddTag = (tagToAdd?: string) => {
+    const raw = tagToAdd || tagInputText;
+    if (!raw.trim()) return;
+    const parts = raw.split(",").map((t) => t.trim()).filter(Boolean);
+    const updated = Array.from(new Set([...editTags, ...parts]));
+    setEditTags(updated);
+    setTagInputText("");
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setEditTags(editTags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleAddPresetCluster = (clusterTags: string[]) => {
+    const updated = Array.from(new Set([...editTags, ...clusterTags]));
+    setEditTags(updated);
+  };
+
+  const handleOpenCreate = () => {
+    setIsCreatingProduct(true);
+    setEditingProduct({
+      id: "",
+      externalId: 0,
+      name: "",
+      customTitle: "",
+      costPriceUsd: 5.0,
+      retailPriceUsd: 7.0,
+      pricingUnit: "unit",
+      stockCount: 100,
+      inStock: true,
+      rating: 5,
+      reviewCount: 12,
+      isActive: true,
+      isFeatured: false,
+      isFlashDeal: false,
+      categoryId: categories[0]?.id || "",
+      description: "",
+      persianDescription: "",
+      tags: [],
+    } as any);
+    setActiveTab("general");
+
+    setEditTitle("");
+    setEditCategoryId(categories[0]?.id ?? "");
+    setEditDescription("");
+    setEditPersianDescription("");
+    setEditBadge("");
+
+    setEditCostPriceUsd(5.0);
+    setEditRetailPriceUsd(7.0);
+    setEditMargin(settings.defaultMarginPercent || 15);
+    setEditSalePriceToman("");
+    setEditDiscountPercent("");
+
+    setEditImage("");
+
+    setEditRequiresEmail(false);
+    setEditRequiresPassword(false);
+    setEditRequiresLink(false);
+    setEditRequiresComments(false);
+    setEditPricingUnit("unit");
+    setEditMinQty(1);
+    setEditMaxQty(1);
+    setEditStockCount(100);
+    setEditInStock(true);
+
+    setEditIsActive(true);
+    setEditIsFeatured(false);
+    setEditIsFlashDeal(false);
+
+    setEditTags([]);
+    setTagInputText("");
+  };
+
   // Open Edit Modal
   const handleOpenEdit = (product: Product) => {
+    setIsCreatingProduct(false);
+    setEditTags(product.tags ? [...product.tags] : []);
+    setTagInputText("");
     setEditingProduct(product);
     setActiveTab("general");
 
@@ -155,7 +303,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Filter products
+  // Filter and sort products
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -172,7 +320,38 @@ export default function AdminProductsPage() {
     const matchesCategory =
       categoryFilter === "all" ? true : p.categoryId === categoryFilter;
 
-    return matchesSearch && matchesStatus && matchesCategory;
+    const isOutOfStock = p.stockCount === 0 || p.inStock === false;
+    const matchesStock =
+      stockFilter === "all"
+        ? true
+        : stockFilter === "out_of_stock"
+        ? isOutOfStock
+        : !isOutOfStock;
+
+    return matchesSearch && matchesStatus && matchesCategory && matchesStock;
+  }).sort((a, b) => {
+    if (sortBy === "stock_asc") {
+      const stockA = a.inStock === false ? 0 : (a.stockCount ?? 0);
+      const stockB = b.inStock === false ? 0 : (b.stockCount ?? 0);
+      return stockA - stockB;
+    }
+    if (sortBy === "stock_desc") {
+      const stockA = a.inStock === false ? 0 : (a.stockCount ?? 0);
+      const stockB = b.inStock === false ? 0 : (b.stockCount ?? 0);
+      return stockB - stockA;
+    }
+    if (sortBy === "price_asc") {
+      return a.costPriceUsd - b.costPriceUsd;
+    }
+    if (sortBy === "price_desc") {
+      return b.costPriceUsd - a.costPriceUsd;
+    }
+    if (sortBy === "margin_desc") {
+      const marginA = a.customMarginPercent ?? settings.defaultMarginPercent ?? 15;
+      const marginB = b.customMarginPercent ?? settings.defaultMarginPercent ?? 15;
+      return marginB - marginA;
+    }
+    return 0;
   });
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -222,14 +401,38 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <div className="text-xs text-admin-textMuted dark:text-slate-400 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-2xs">
-          <span>
-            تعداد کل محصولات: <strong className="text-black dark:text-white font-mono">{products.length}</strong>
-          </span>
-          <span>|</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
-            فعال در سایت: {products.filter((p) => p.isActive).length}
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-xs text-admin-textMuted dark:text-slate-400 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-2xs">
+            <span>
+              کل محصولات: <strong className="text-black dark:text-white font-mono">{products.length}</strong>
+            </span>
+            <span>|</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+              فعال: {products.filter((p) => p.isActive).length}
+            </span>
+            <span>|</span>
+            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              ناموجود: {products.filter((p) => p.stockCount === 0 || !p.inStock).length}
+            </span>
+          </div>
+
+          <Link
+            href="/admin/tags"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-teal-950/40 text-brand-primary dark:text-teal-300 text-xs font-bold hover:bg-teal-100 transition-colors"
+          >
+            <Tag className="w-3.5 h-3.5" />
+            <span>مدیریت برچسب‌ها</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-primary hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-900/10 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>افزودن محصول جدید</span>
+          </button>
         </div>
       </div>
 
@@ -303,6 +506,53 @@ export default function AdminProductsPage() {
           </button>
         </div>
 
+        {/* Stock Filter (موجودی انبار) */}
+        <div className="flex items-center gap-1 bg-admin-bg dark:bg-slate-800 p-1 rounded-lg border border-admin-borderLight dark:border-slate-700 text-xs shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setStockFilter("all");
+              setCurrentPage(1);
+            }}
+            className={`px-2.5 py-1.5 rounded-md font-bold transition-all ${
+              stockFilter === "all"
+                ? "bg-white dark:bg-slate-700 text-brand-dark dark:text-white shadow-xs"
+                : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+            }`}
+          >
+            همه موجودی‌ها
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStockFilter("out_of_stock");
+              setCurrentPage(1);
+            }}
+            className={`px-2.5 py-1.5 rounded-md font-bold transition-all flex items-center gap-1 ${
+              stockFilter === "out_of_stock"
+                ? "bg-rose-600 text-white shadow-xs"
+                : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+            }`}
+          >
+            <AlertTriangle className="w-3 h-3" />
+            <span>فقط ناموجودها (۰)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStockFilter("in_stock");
+              setCurrentPage(1);
+            }}
+            className={`px-2.5 py-1.5 rounded-md font-bold transition-all ${
+              stockFilter === "in_stock"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+            }`}
+          >
+            فقط موجودها
+          </button>
+        </div>
+
         {/* Category Select */}
         <select
           value={categoryFilter}
@@ -319,6 +569,23 @@ export default function AdminProductsPage() {
             </option>
           ))}
         </select>
+
+        {/* Sort Select */}
+        <select
+          value={sortBy}
+          onChange={(e) => {
+            setSortBy(e.target.value as any);
+            setCurrentPage(1);
+          }}
+          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200 font-medium"
+        >
+          <option value="default">مرتب‌سازی: پیش‌فرض</option>
+          <option value="stock_asc">کمترین موجودی (ابتدا ناموجودها)</option>
+          <option value="stock_desc">بیشترین موجودی</option>
+          <option value="price_asc">ارزان‌ترین خرید تامین</option>
+          <option value="price_desc">گران‌ترین خرید تامین</option>
+          <option value="margin_desc">بالاترین حاشیه سود</option>
+        </select>
       </div>
 
       {/* High Density Products Table */}
@@ -330,6 +597,7 @@ export default function AdminProductsPage() {
                 <th className="py-3 px-4 w-16">کد مرجع</th>
                 <th className="py-3 px-4">عنوان نمایشی و نام در API</th>
                 <th className="py-3 px-4">دسته‌بندی</th>
+                <th className="py-3 px-4 text-center">موجودی انبار</th>
                 <th className="py-3 px-4">قیمت خرید (تامین)</th>
                 <th className="py-3 px-4">قیمت عمومی بازار</th>
                 <th className="py-3 px-4">قیمت فروش سایت و سود</th>
@@ -345,7 +613,11 @@ export default function AdminProductsPage() {
                 return (
                   <tr
                     key={product.id}
-                    className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors"
+                    className={`transition-colors ${
+                      product.stockCount === 0 || product.inStock === false
+                        ? "bg-rose-50/60 dark:bg-rose-950/25 border-r-4 border-r-rose-500 hover:bg-rose-100/60 dark:hover:bg-rose-950/40"
+                        : "hover:bg-teal-50/20 dark:hover:bg-slate-800/50"
+                    }`}
                   >
                     {/* External ID */}
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-500 dark:text-slate-400">
@@ -407,6 +679,21 @@ export default function AdminProductsPage() {
                         </span>
                       ) : (
                         <span className="text-neutral-400 dark:text-slate-500 italic">بدون دسته</span>
+                      )}
+                    </td>
+
+                    {/* Stock Count (Red if 0) */}
+                    <td className="py-3.5 px-4 text-center font-mono">
+                      {product.stockCount === 0 || product.inStock === false ? (
+                        <span className="inline-flex items-center gap-1 bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 px-2 py-0.5 rounded-lg text-xs font-bold shadow-xs">
+                          <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />
+                          <span>ناموجود (۰)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-lg text-xs font-bold">
+                          <span>{product.stockCount}</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-slate-400 font-sans">عدد</span>
+                        </span>
                       )}
                     </td>
 
@@ -549,7 +836,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <h3 className="font-black text-base text-admin-text dark:text-white">
-                    ویرایش جامع محصول #{editingProduct.externalId}
+                    {isCreatingProduct ? "افزودن محصول جدید به کاتالوگ" : `ویرایش جامع محصول #${editingProduct.externalId}`}
                   </h3>
                   <span className="text-xs text-neutral-400 dark:text-slate-500 font-mono">
                     {editingProduct.name}
@@ -562,6 +849,35 @@ export default function AdminProductsPage() {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Pre-edit live preview info bar with Stock Count */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 dark:text-slate-400">کد مرجع:</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">#{editingProduct.externalId}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">تعداد موجودی محصول:</span>
+                <span className={`font-mono font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
+                  editingProduct.stockCount === 0 || !editingProduct.inStock
+                    ? "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 shadow-xs"
+                    : "bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
+                }`}>
+                  {(editingProduct.stockCount === 0 || !editingProduct.inStock) && <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
+                  <span>{editingProduct.inStock !== false && editingProduct.stockCount > 0 ? `${editingProduct.stockCount} عدد موجود` : "ناموجود (۰ عدد)"}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 dark:text-slate-400">وضعیت فعلی در سایت:</span>
+                <span className={`font-bold px-2 py-0.5 rounded-md text-[11px] ${
+                  editingProduct.isActive
+                    ? "bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300"
+                    : "bg-neutral-200 dark:bg-slate-700 text-neutral-600 dark:text-slate-300"
+                }`}>
+                  {editingProduct.isActive ? "فعال در ویترین" : "غیرفعال"}
+                </span>
+              </div>
             </div>
 
             {/* Navigation Tabs */}
@@ -577,6 +893,19 @@ export default function AdminProductsPage() {
               >
                 <Info className="w-3.5 h-3.5" />
                 <span>مشخصات عمومی</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("tags")}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all ${
+                  activeTab === "tags"
+                    ? "bg-admin-primary dark:bg-teal-600 text-white shadow-xs"
+                    : "text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>برچسب‌ها و تگ‌ها ({editTags.length})</span>
               </button>
 
               <button
@@ -838,8 +1167,29 @@ export default function AdminProductsPage() {
                       </span>
                     </div>
 
-                    {/* 4 Metric Cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    {/* 5 Metric Cards including Stock Count */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                      {/* Stock Count Preview */}
+                      <div className={`p-3 rounded-lg border ${
+                        editStockCount === 0 || !editInStock
+                          ? "bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800"
+                          : "bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-800"
+                      }`}>
+                        <span className={`text-[10px] block ${
+                          editStockCount === 0 || !editInStock
+                            ? "text-rose-700 dark:text-rose-400 font-bold"
+                            : "text-neutral-400 dark:text-slate-500"
+                        }`}>
+                          تعداد موجودی محصول:
+                        </span>
+                        <span className={`font-black text-sm mt-0.5 block font-mono ${
+                          editStockCount === 0 || !editInStock
+                            ? "text-rose-600 dark:text-rose-300"
+                            : "text-slate-800 dark:text-slate-200"
+                        }`}>
+                          {editInStock && editStockCount > 0 ? `${editStockCount} عدد` : "ناموجود (۰)"}
+                        </span>
+                      </div>
                       {/* Cost */}
                       <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-neutral-200 dark:border-slate-800">
                         <span className="text-[10px] text-neutral-400 dark:text-slate-500 block">قیمت خرید (تامین):</span>
@@ -1008,6 +1358,36 @@ export default function AdminProductsPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Stock Count and In Stock adjustment */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-admin-borderLight dark:border-slate-700">
+                    <div>
+                      <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5">
+                        تعداد موجودی محصول در انبار:
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editStockCount}
+                        onChange={(e) => setEditStockCount(Number(e.target.value))}
+                        className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg py-2.5 px-3 text-xs outline-none font-mono font-bold"
+                      />
+                    </div>
+
+                    <div className="flex items-center pt-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editInStock}
+                          onChange={(e) => setEditInStock(e.target.checked)}
+                          className="w-4 h-4 rounded text-admin-primary focus:ring-0"
+                        />
+                        <span className="font-bold text-neutral-800 dark:text-slate-200 text-xs">
+                          کالا موجود و قابل سفارش است (In Stock)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1091,6 +1471,157 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
+
+              {/* TAB: TAGS MANAGEMENT */}
+              {activeTab === "tags" && (
+                <div className="space-y-5 animate-fadeIn">
+                  {/* Current Active Tags */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-neutral-800 dark:text-slate-200">
+                        برچسب‌های متصل به این محصول ({editTags.length} تگ):
+                      </label>
+                      {editTags.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setEditTags([])}
+                          className="text-[11px] text-rose-500 hover:underline"
+                        >
+                          پاک کردن همه برچسب‌ها
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="min-h-[60px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-wrap gap-2 items-center">
+                      {editTags.length === 0 ? (
+                        <span className="text-xs text-slate-400 italic">
+                          هیچ برچسبی برای این محصول انتخاب نشده است. از کادر زیر برچسب اضافه کنید یا یک دسته پیشنهادی را انتخاب نمایید.
+                        </span>
+                      ) : (
+                        editTags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800 text-brand-primary dark:text-teal-300 text-xs font-bold group shadow-2xs"
+                          >
+                            <Hash className="w-3 h-3 opacity-60" />
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTag(tag)}
+                              className="text-slate-400 hover:text-rose-500 transition-colors p-0.5"
+                              title="حذف برچسب"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Add Tag Input */}
+                  <div className="space-y-2">
+                    <label className="font-bold text-neutral-800 dark:text-slate-200 block">
+                      افزودن برچسب جدید (کلمه کلیدی):
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="text"
+                          value={tagInputText}
+                          onChange={(e) => setTagInputText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddTag();
+                            }
+                          }}
+                          placeholder="عنوان برچسب را بنویسید (برای چند مورد از کاما استفاده کنید)..."
+                          className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-neutral-800 dark:text-slate-200 rounded-xl py-2.5 pr-10 pl-3 text-xs outline-none focus:border-brand-primary"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddTag()}
+                        disabled={!tagInputText.trim()}
+                        className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-teal-700 text-white font-bold text-xs transition-colors disabled:opacity-40"
+                      >
+                        + افزودن
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Preset Clusters Section */}
+                  <div className="space-y-2.5 p-4 rounded-2xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-brand-primary dark:text-teal-300 flex items-center gap-1.5">
+                        <Layers className="w-4 h-4" />
+                        <span>دسته‌های پیشنهادی برچسب (افزودن دسته جمعی تگ‌ها به محصول):</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400">یک کلیک برای الحاق کل دسته</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {PRESET_CLUSTERS.map((cluster, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => handleAddPresetCluster(cluster.tags)}
+                          className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700 hover:border-brand-primary dark:hover:border-teal-400 cursor-pointer transition-all flex items-center justify-between group shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2 truncate pl-2">
+                            <span className="text-base">{cluster.icon}</span>
+                            <div>
+                              <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block truncate">
+                                {cluster.title}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block truncate">
+                                {cluster.tags.slice(0, 3).join(", ")}...
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-brand-primary dark:text-teal-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            + الحاق دسته
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Popular Existing Tags */}
+                  {allExistingTags.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        تگ‌های موجود در سیستم (کلیک جهت افزودن سریع):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                        {allExistingTags.slice(0, 40).map((tag, idx) => {
+                          const isSelected = editTags.includes(tag);
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) handleRemoveTag(tag);
+                                else handleAddTag(tag);
+                              }}
+                              className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                                isSelected
+                                  ? "bg-teal-600 text-white border-teal-600 font-bold"
+                                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brand-primary"
+                              }`}
+                            >
+                              <span>#{tag}</span>
+                              {isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3 opacity-60" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Modal Actions Footer */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-admin-borderLight dark:border-slate-800">
                 <button
@@ -1106,7 +1637,7 @@ export default function AdminProductsPage() {
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-admin-primary dark:bg-teal-600 hover:bg-admin-primaryDark dark:hover:bg-teal-700 text-white font-bold shadow-md transition-all disabled:opacity-70"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{isSaving ? "در حال ذخیره..." : "ذخیره تغییرات محصول"}</span>
+                  <span>{isSaving ? "در حال ذخیره..." : isCreatingProduct ? "ثبت و ایجاد محصول جدید" : "ذخیره تغییرات محصول"}</span>
                 </button>
               </div>
             </form>

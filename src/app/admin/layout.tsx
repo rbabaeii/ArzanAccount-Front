@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { LiveSearchDropdown } from "@/components/store/LiveSearchDropdown";
 import { formatPrice } from "@/lib/format";
 import {
   LayoutDashboard,
@@ -34,6 +35,8 @@ import {
   User,
   Lock,
   ArrowRight,
+  Undo2,
+  Tag,
 } from "lucide-react";
 
 interface NavItem {
@@ -85,14 +88,15 @@ export default function AdminLayout({
 
   const isItemVisible = (itemHref: string) => {
     if (itemHref === "/admin/admin-activities") return user?.role === "SUPER_ADMIN";
+    if (itemHref === "/admin/orders/refunds") return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (itemHref === "/admin/settings/email") return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (itemHref === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
-      return ["/admin/products", "/admin/inventory", "/admin/categories"].includes(itemHref);
+      return ["/admin/products", "/admin/inventory", "/admin/categories", "/admin/tags"].includes(itemHref);
     }
     if (user?.role === "FINANCE_ADMIN") {
-      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics"].includes(itemHref);
+      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics", "/admin/orders/refunds"].includes(itemHref);
     }
     if (user?.role === "SUPPORT_ADMIN") {
       return ["/admin/orders"].includes(itemHref);
@@ -102,17 +106,18 @@ export default function AdminLayout({
 
   const isCurrentRouteAllowed = () => {
     if (pathname.startsWith("/admin/admin-activities")) return user?.role === "SUPER_ADMIN";
+    if (pathname.startsWith("/admin/orders/refunds")) return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (pathname.startsWith("/admin/settings/email")) return user?.role === "SUPER_ADMIN" || user?.role === "FINANCE_ADMIN";
     if (user?.role === "SUPER_ADMIN") return true;
     if (pathname === "/admin") return true;
     if (user?.role === "CATALOG_MANAGER") {
-      return ["/admin/products", "/admin/inventory", "/admin/categories"].some((p) => pathname.startsWith(p));
+      return ["/admin/products", "/admin/inventory", "/admin/categories", "/admin/tags"].some((p) => pathname.startsWith(p));
     }
     if (user?.role === "FINANCE_ADMIN") {
-      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics"].some((p) => pathname.startsWith(p));
+      return ["/admin/settings/currency", "/admin/discounts", "/admin/analytics", "/admin/orders/refunds"].some((p) => pathname.startsWith(p));
     }
     if (user?.role === "SUPPORT_ADMIN") {
-      return ["/admin/orders"].some((p) => pathname.startsWith(p));
+      return ["/admin/orders"].some((p) => pathname.startsWith(p)) && !pathname.startsWith("/admin/orders/refunds");
     }
     return false;
   };
@@ -139,6 +144,13 @@ export default function AdminLayout({
           icon: <ShoppingCart className="w-4 h-4" />,
         },
         {
+          title: "درخواست‌های عودت وجه",
+          href: "/admin/orders/refunds",
+          icon: <Undo2 className="w-4 h-4" />,
+          badge: "مالی / شبا",
+          badgeColor: "bg-rose-600 text-white font-bold",
+        },
+        {
           title: "انبار و کنترل موجودی",
           href: "/admin/inventory",
           icon: <Boxes className="w-4 h-4" />,
@@ -147,6 +159,13 @@ export default function AdminLayout({
           title: "دسته‌بندی‌ها",
           href: "/admin/categories",
           icon: <FolderTree className="w-4 h-4" />,
+        },
+        {
+          title: "مدیریت برچسب‌ها و تگ‌ها",
+          href: "/admin/tags",
+          icon: <Tag className="w-4 h-4" />,
+          badge: "Smart Tags",
+          badgeColor: "bg-teal-700/80 text-teal-100 font-bold",
         },
       ].filter((item) => isItemVisible(item.href)),
     },
@@ -444,9 +463,18 @@ export default function AdminLayout({
               <span className="font-bold text-brand-primary dark:text-teal-400 font-mono">{formattedTomanRate} تومان</span>
             </div>
 
-            <div className="text-neutral-400 dark:text-slate-500">
+            <div className="text-neutral-400 dark:text-slate-500 hidden xl:block">
               <span>آخرین همگام‌سازی کاتالوگ: {settings.lastSyncTime}</span>
             </div>
+          </div>
+
+          {/* Admin Live Search */}
+          <div className="flex-1 max-w-sm mx-4">
+            <LiveSearchDropdown
+              scope="admin"
+              placeholder="جستجوی سریع در کاتالوگ و تگ‌ها..."
+              className="w-full"
+            />
           </div>
 
           <div className="flex items-center gap-3">

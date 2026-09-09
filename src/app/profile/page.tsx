@@ -38,9 +38,12 @@ import {
   Clock,
   LogOut,
   Sliders,
+  Undo2,
 } from "lucide-react";
+import { Order } from "@/types";
+import { CustomerRefundModal } from "@/components/store/CustomerRefundModal";
 
-type ProfileTab = "personal" | "cards" | "addresses" | "orders" | "security";
+type ProfileTab = "personal" | "cards" | "addresses" | "orders" | "password";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -49,6 +52,7 @@ export default function ProfilePage() {
     isAuthenticated,
     openLoginModal,
     updateProfile,
+    updatePassword,
     topUpWallet,
     convertClubPoints,
     logout,
@@ -58,6 +62,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [refundModalOrder, setRefundModalOrder] = useState<Order | null>(null);
 
   // Edit Personal Details State
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -102,9 +107,13 @@ export default function ProfilePage() {
     postalCode: "",
   });
 
-  // Security 2FA toggle state
-  const [isTwoFactorActive, setIsTwoFactorActive] = useState(false);
-  const [isSaving2FA, setIsSaving2FA] = useState(false);
+  // Password Management state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   // Sync user data to local forms
   useEffect(() => {
@@ -116,7 +125,6 @@ export default function ProfilePage() {
         birthDate: user.birthDate || "1372/06/15",
         jobTitle: user.jobTitle || "توسعه‌دهنده نرم‌افزار / فریلنسر",
       });
-      setIsTwoFactorActive(user.isTwoFactorEnabled || false);
     }
   }, [user]);
 
@@ -336,18 +344,34 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle 2FA Toggle
-  const handleToggle2FA = async () => {
-    setIsSaving2FA(true);
-    const nextState = !isTwoFactorActive;
+  // Handle Save Password
+  const handleSavePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordForm.newPassword) {
+      showToast("error", "رمز عبور جدید را وارد فرمایید.");
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      showToast("error", "رمز عبور جدید باید حداقل دارای ۶ کاراکتر باشد.");
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      showToast("error", "تکرار رمز عبور جدید با رمز وارد شده مطابقت ندارد.");
+      return;
+    }
+
+    setIsSavingPassword(true);
     try {
-      await updateProfile({ isTwoFactorEnabled: nextState });
-      setIsTwoFactorActive(nextState);
-      showToast("success", nextState ? "ورود دو مرحله‌ای پیامکی فعال شد." : "ورود دو مرحله‌ای غیرفعال گردید.");
+      const res = await updatePassword(
+        passwordForm.newPassword,
+        passwordForm.currentPassword || undefined
+      );
+      showToast("success", res.message || "رمز عبور با موفقیت ثبت و ذخیره شد.");
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err: any) {
-      showToast("error", err?.message || "خطا در تغییر وضعیت احراز دو مرحله‌ای.");
+      showToast("error", err?.message || "خطا در تنظیم رمز عبور.");
     } finally {
-      setIsSaving2FA(false);
+      setIsSavingPassword(false);
     }
   };
 
@@ -626,15 +650,15 @@ export default function ProfilePage() {
           </button>
 
           <button
-            onClick={() => setActiveTab("security")}
+            onClick={() => setActiveTab("password")}
             className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
-              activeTab === "security"
+              activeTab === "password"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <Shield className="w-4 h-4" />
-            <span>امنیت و ورود دو مرحله‌ای</span>
+            <Lock className="w-4 h-4" />
+            <span>رمز عبور و امنیت ورود</span>
           </button>
         </div>
 
@@ -1054,13 +1078,39 @@ export default function ProfilePage() {
                         <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
                           order.status === "delivered"
                             ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300"
-                            : "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
+                            : order.status === "processing"
+                            ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
+                            : order.status === "refund_requested"
+                            ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700"
+                            : order.status === "refunded"
+                            ? "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700"
+                            : "bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300"
                         }`}>
-                          {order.status === "delivered" ? "تحویل شده و فعال" : "در حال پردازش / آماده‌سازی"}
+                          {order.status === "delivered"
+                            ? "تحویل شده و فعال"
+                            : order.status === "processing"
+                            ? "در حال پردازش / آماده‌سازی"
+                            : order.status === "refund_requested"
+                            ? "درخواست استرداد ثبت شده (در دست بررسی)"
+                            : order.status === "refunded"
+                            ? "مسترد شده"
+                            : "ناموفق"}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                        مبلغ: <strong className="text-brand-primary dark:text-teal-300 font-bold">{new Intl.NumberFormat("en-US").format(order.totalPriceToman)}</strong> تومان
+                      <div className="flex items-center gap-3">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                          مبلغ: <strong className="text-brand-primary dark:text-teal-300 font-bold">{new Intl.NumberFormat("en-US").format(order.totalPriceToman)}</strong> تومان
+                        </div>
+                        {(order.status === "delivered" || order.status === "processing") && (
+                          <button
+                            type="button"
+                            onClick={() => setRefundModalOrder(order)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-[11px] font-bold transition-colors"
+                          >
+                            <Undo2 className="w-3 h-3" />
+                            <span>درخواست عودت وجه</span>
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1112,113 +1162,97 @@ export default function ProfilePage() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 5: SECURITY, 2FA & ACTIVE SESSIONS                                    */}
+        {/* TAB 5: PASSWORD MANAGEMENT (تنظیم و تغییر رمز عبور)                        */}
         {/* ========================================================================= */}
-        {activeTab === "security" && (
+        {activeTab === "password" && (
           <div className="space-y-6 animate-fadeIn">
-            {/* 2FA Toggle Card */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white">ورود دو مرحله‌ای پیامکی (2FA)</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      ارسال کد یکبار مصرف ۶ رقمی به شماره همراه {user.phone} هنگام هر بار ورود به پنل
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggle2FA}
-                  disabled={isSaving2FA}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
-                    isTwoFactorActive ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                      isTwoFactorActive ? "-translate-x-6" : "-translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>
-                  حفاظت از موجودی کیف پول و لایسنس‌های شما در بالاترین سطح امنیتی قرار دارد.
-                </span>
-              </div>
-            </div>
-
-            {/* Active Sessions List (Stitch Screen 2 & 3) */}
+            {/* Password Form Card */}
             <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center shrink-0 shadow-sm">
+                  <Key className="w-6 h-6" />
+                </div>
                 <div>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white">نشست‌های فعال و دستگاه‌های متصل</h3>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">تنظیم و تغییر رمز عبور ثابت</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    مرورگرها و سیستم‌عامل‌هایی که هم‌اکنون به حساب کاربری شما متصل هستند
+                    با تعیین رمز عبور، می‌توانید علاوه بر کد یکبار مصرف پیامکی و ایمیلی، با شماره موبایل و این رمز عبور نیز وارد سایت شوید.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => showToast("success", "سایر نشست‌های فعال با موفقیت خاتمه یافتند.")}
-                  className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-800 transition-colors flex items-center gap-1.5"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>خروج از تمامی دستگاه‌های دیگر</span>
-                </button>
               </div>
 
-              <div className="space-y-3.5">
-                {/* Session 1: Current Windows */}
-                <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-slate-800/60 border border-teal-200/80 dark:border-slate-700 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center">
-                      <Laptop className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong className="text-slate-900 dark:text-white">Chrome در ویندوز (Windows 11)</strong>
-                        <span className="bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          دستگاه فعلی شما
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                        IP: 185.190.24.11 • تهران، ایران • فعال هم‌اکنون
-                      </div>
-                    </div>
-                  </div>
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <form onSubmit={handleSavePassword} className="space-y-5 max-w-xl">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    رمز عبور فعلی (در صورت وجود)
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="اگر برای نخستین بار رمز عبور تنظیم می‌کنید این فیلد را خالی بگذارید"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-mono"
+                  />
                 </div>
 
-                {/* Session 2: Mobile Safari */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center">
-                      <Smartphone className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong className="text-slate-900 dark:text-white">Safari در آیفون (iOS 17)</strong>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                        IP: 5.200.81.44 • تهران، همراه اول • آخرین بازدید: ۲ ساعت پیش
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      رمز عبور جدید <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="حداقل ۶ کاراکتر"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      required
+                      minLength={6}
+                      className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-mono"
+                    />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      تکرار رمز عبور جدید <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="تکرار همان رمز عبور"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      required
+                      minLength={6}
+                      className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">روش‌های ورود فعال به حساب کاربری:</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                      <li>ورود با کد تأیید پیامکی (پیش‌فرض سریع)</li>
+                      <li>ورود با کد تأیید ایمیلی (پشتیبان در صورت عدم دریافت پیامک)</li>
+                      <li>ورود مستقیم با شماره موبایل و رمز عبور ثابت</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-2">
                   <button
-                    onClick={() => showToast("success", "نشست آیفون با موفقیت مسدود شد.")}
-                    className="text-xs text-rose-600 dark:text-rose-400 hover:underline font-bold"
+                    type="submit"
+                    disabled={isSavingPassword}
+                    className="bg-brand-primary hover:bg-teal-700 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    خروج نشست
+                    {isSavingPassword ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    <span>{isSavingPassword ? "در حال ذخیره سازی..." : "ذخیره و به‌روزرسانی رمز عبور"}</span>
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         )}
@@ -1573,6 +1607,12 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      <CustomerRefundModal
+        isOpen={!!refundModalOrder}
+        order={refundModalOrder}
+        onClose={() => setRefundModalOrder(null)}
+      />
 
       <Footer />
     </div>

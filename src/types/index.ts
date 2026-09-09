@@ -22,6 +22,7 @@ export interface Product {
   rating: number; // For SEO & Social proof, e.g. 4.9
   reviewCount: number; // e.g. 128
   requiresEmail?: boolean;
+  requiresPassword?: boolean;
   requiresLink?: boolean;
   requiresComments?: boolean;
   isActive: boolean;
@@ -36,6 +37,7 @@ export interface Product {
   specs?: { label: string; value: string }[];
   salePriceToman?: number;
   discountPercent?: number;
+  tags?: string[];
 }
 
 export interface CartItem {
@@ -62,10 +64,30 @@ export interface Order {
   }[];
   totalPriceToman: number;
   totalPriceUsd: number;
-  status: "delivered" | "processing" | "failed" | "cancelled";
+  status: "delivered" | "processing" | "failed" | "cancelled" | "refund_requested" | "refunded";
   deliveredAccounts?: string[]; // e.g. ["user@domain.com:Pass123 (pin: 4421)"]
   paymentGateway: "zarinpal" | "nextpay" | "crypto";
   discountAppliedToman?: number;
+  deliveryType?: string; // "link" | "credentials" | "account_activation"
+  targetAccountEmail?: string;
+  targetAccountPassword?: string;
+  accountCredentials?: {
+    index: number;
+    email: string;
+    password?: string;
+    productTitle?: string;
+  }[];
+  isHybridOrder?: boolean;
+  instantItemsCount?: number;
+  activationItemsCount?: number;
+  refundReason?: string;
+  refundCardNumber?: string;
+  refundIban?: string;
+  refundAmountToman?: number;
+  refundReceiptUrl?: string;
+  refundTrackingCode?: string;
+  refundedAt?: string;
+  refundedByAdminName?: string;
   approvedByAdminId?: string;
   approvedByAdminName?: string;
   approvedByAdminPhone?: string;
@@ -106,7 +128,9 @@ export interface SystemSettings {
   irMarketApiKey: string;
   siteName: string;
   supportTelegram: string;
-  supportPhone: string;
+  supportPhone?: string;
   enableAutomaticSync: boolean;
+  maxPurchaseRatioDenominator?: number; // e.g. 3 for 1/3 max quota
+  purchaseRatioExemptionThreshold?: number; // e.g. 10 (when stock <= 10, fraction limit relaxes to full stock)
 }
 

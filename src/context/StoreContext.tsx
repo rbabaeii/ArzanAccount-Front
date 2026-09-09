@@ -48,6 +48,7 @@ interface StoreContextType {
   isBackendConnected: boolean;
 
   // Actions
+  createProduct: (product: Partial<Product>) => Promise<Product | undefined>;
   toggleProductActive: (id: string) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   addCategory: (category: Omit<Category, "id">) => Promise<void>;
@@ -67,7 +68,7 @@ interface StoreContextType {
   removeCoupon: () => void;
 
   // Order Actions
-  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt">) => Order;
+  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string }) => Order;
   updateOrderStatus: (
     orderId: string,
     status: Order["status"],
@@ -75,8 +76,10 @@ interface StoreContextType {
     adminInfo?: { id?: string; name?: string; phone?: string }
   ) => void;
   addAdminAuditLog: (log: Omit<AuditLog, "id" | "timestamp">) => void;
+  getMaxAllowedPurchase: (product: Product) => number;
   addCoupon: (coupon: Omit<Coupon, "id">) => void;
   toggleCoupon: (couponId: string) => void;
+  requestRefund: (orderId: string, reason: string, cardNumber?: string, sheba?: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -108,6 +111,15 @@ function mapBackendProduct(bp: any): Product {
     persianDescription: bp.persianDescription || undefined,
     salePriceToman: bp.salePriceToman,
     discountPercent: bp.discountPercent,
+    tags: bp.tags
+      ? Array.isArray(bp.tags)
+        ? bp.tags
+        : typeof bp.tags === "string" && bp.tags.startsWith("[")
+        ? (() => { try { return JSON.parse(bp.tags); } catch { return []; } })()
+        : typeof bp.tags === "string"
+        ? bp.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+        : []
+      : [],
     badge: bp.isFlashDeal ? "تخفیف ویژه" : bp.isFeatured ? "ویژه" : undefined,
     image:
       bp.image ||
@@ -124,6 +136,61 @@ function mapBackendCategory(bc: any): Category {
     description: bc.description || "",
     icon: bc.icon || "Sparkles",
     orderIndex: bc.orderIndex ?? 0,
+  };
+}
+
+function mapBackendOrder(bo: any): Order {
+  return {
+    id: bo.id,
+    orderNumber: bo.orderNumber,
+    externalOrderId: bo.externalOrderId || undefined,
+    createdAt: toEnglishDigits(
+      new Intl.DateTimeFormat("fa-IR", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(new Date(bo.createdAt || Date.now()))
+    ),
+    customerEmail: bo.customerEmail,
+    customerPhone: bo.customerPhone || undefined,
+    customerLink: bo.customerLink || undefined,
+    totalPriceToman: bo.totalPriceToman,
+    totalPriceUsd: bo.totalPriceUsd || 0,
+    status: (bo.status as any) || "processing",
+    deliveredAccounts: Array.isArray(bo.deliveredAccounts) ? bo.deliveredAccounts : [],
+    paymentGateway: bo.gateway || "zarinpal",
+    approvedByAdminId: bo.approvedByAdminId || undefined,
+    approvedByAdminName: bo.approvedByAdminName || undefined,
+    approvedByAdminPhone: bo.approvedByAdminPhone || undefined,
+    approvedAt: bo.approvedAt
+      ? toEnglishDigits(
+          new Intl.DateTimeFormat("fa-IR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          }).format(new Date(bo.approvedAt))
+        )
+      : undefined,
+    refundReason: bo.refundReason || undefined,
+    refundCardNumber: bo.refundCardNumber || undefined,
+    refundIban: bo.refundIban || undefined,
+    refundAmountToman: bo.refundAmount || undefined,
+    refundTrackingCode: bo.refundTrackingNumber || undefined,
+    refundedAt: bo.refundDate
+      ? toEnglishDigits(
+          new Intl.DateTimeFormat("fa-IR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          }).format(new Date(bo.refundDate))
+        )
+      : undefined,
+    items: Array.isArray(bo.items)
+      ? bo.items.map((it: any) => ({
+          productId: it.productId || "prod-1",
+          productTitle: it.productTitle || "محصول دیجیتال",
+          quantity: it.quantity || 1,
+          priceToman: it.priceToman || 0,
+          priceUsd: it.priceUsd || 0,
+        }))
+      : [],
   };
 }
 
@@ -164,15 +231,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ]);
 
       if (backendSettings) {
-        setSettings((prev) => ({
-          ...prev,
-          usdToRialRate: backendSettings.usdToRialRate ?? prev.usdToRialRate,
-          defaultMarginPercent: backendSettings.defaultMarginPercent ?? prev.defaultMarginPercent,
-          walletBalanceUsd: backendSettings.walletBalanceUsd ?? prev.walletBalanceUsd,
-          lastSyncTime: backendSettings.lastSyncTime || prev.lastSyncTime,
-          siteName: backendSettings.siteName || prev.siteName,
-          supportTelegram: backendSettings.supportTelegram || prev.supportTelegram,
-        }));
+        setSettings((prev) => {
+          const next = {
+            ...prev,
+            usdToRialRate: backendSettings.usdToRialRate ?? prev.usdToRialRate,
+            defaultMarginPercent: backendSettings.defaultMarginPercent ?? prev.defaultMarginPercent,
+            walletBalanceUsd: backendSettings.walletBalanceUsd ?? prev.walletBalanceUsd,
+            lastSyncTime: backendSettings.lastSyncTime || prev.lastSyncTime,
+            siteName: backendSettings.siteName || prev.siteName,
+            supportTelegram: backendSettings.supportTelegram || prev.supportTelegram,
+            maxPurchaseRatioDenominator:
+              backendSettings.maxPurchaseRatioDenominator !== undefined && backendSettings.maxPurchaseRatioDenominator !== null
+                ? Number(backendSettings.maxPurchaseRatioDenominator)
+                : (prev.maxPurchaseRatioDenominator ?? 3),
+            purchaseRatioExemptionThreshold:
+              backendSettings.purchaseRatioExemptionThreshold !== undefined && backendSettings.purchaseRatioExemptionThreshold !== null
+                ? Number(backendSettings.purchaseRatioExemptionThreshold)
+                : (prev.purchaseRatioExemptionThreshold ?? 10),
+          };
+          try {
+            localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
+          } catch (e) {
+            console.warn(e);
+          }
+          return next;
+        });
         setIsBackendConnected(true);
       }
 
@@ -201,6 +284,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }))
         );
       }
+
+      // Fetch live real database orders (No mock data)
+      const backendOrdersData = await api.getBackendOrders({ limit: 100 }).catch((e) => {
+        console.warn("Failed to fetch orders from backend", e);
+        return null;
+      });
+
+      if (backendOrdersData && Array.isArray(backendOrdersData.orders)) {
+        const mappedOrders = backendOrdersData.orders.map(mapBackendOrder);
+        setOrders(mappedOrders);
+        try {
+          localStorage.setItem("arzan_orders_v2", JSON.stringify(mappedOrders));
+        } catch (e) {
+          console.warn(e);
+        }
+      }
     } catch (err) {
       console.warn("Could not connect to NestJS backend, falling back to local state", err);
       setIsBackendConnected(false);
@@ -216,10 +315,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const so = localStorage.getItem("arzan_orders_v2");
       const scoup = localStorage.getItem("arzan_coupons_v2");
       const scart = localStorage.getItem("arzan_cart_v2");
+      const ssettings = localStorage.getItem("arzan_settings_v2");
 
       if (so) setOrders(JSON.parse(so));
       if (scoup) setCoupons(JSON.parse(scoup));
       if (scart) setCart(JSON.parse(scart));
+      if (ssettings) setSettings((prev) => ({ ...prev, ...JSON.parse(ssettings) }));
     } catch (e) {
       console.warn("Could not restore localStorage", e);
     }
@@ -293,6 +394,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Create new Product
+  const createProduct = async (productData: Partial<Product>) => {
+    try {
+      const created = await api.createProduct(productData, "مدیر فروشگاه");
+      if (created) {
+        const mapped = mapBackendProduct(created);
+        setProducts((prev) => [mapped, ...prev]);
+        return mapped;
+      }
+    } catch (error) {
+      console.error("Error creating product on backend:", error);
+      throw error;
+    }
+  };
+
   // Update Product details (Title, Margin, Category)
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     setProducts((prev) =>
@@ -353,23 +469,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Update Settings (USD Rate & Margin)
   const updateSettings = async (updates: Partial<SystemSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+    setSettings((prev) => {
+      const next = { ...prev, ...updates };
+      try {
+        localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
+      } catch (e) {
+        console.warn(e);
+      }
+      return next;
+    });
 
     try {
       if (
         updates.usdToRialRate !== undefined ||
-        updates.defaultMarginPercent !== undefined
+        updates.defaultMarginPercent !== undefined ||
+        updates.maxPurchaseRatioDenominator !== undefined ||
+        updates.purchaseRatioExemptionThreshold !== undefined
       ) {
         await api.updateCurrency({
           rate: updates.usdToRialRate,
           margin: updates.defaultMarginPercent,
+          maxPurchaseRatioDenominator: updates.maxPurchaseRatioDenominator,
+          purchaseRatioExemptionThreshold: updates.purchaseRatioExemptionThreshold,
           user: "مدیر سیستم (پنل ادمین)",
         });
         // Refresh logs & products with new calculations
         refreshFromBackend();
       }
     } catch (error) {
-      console.error("Error updating currency settings on backend:", error);
+      console.error("Error updating currency and stock quota settings on backend:", error);
     }
   };
 
@@ -456,24 +584,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
+  // Dynamic stock limit and purchase ratio calculation (Priority 4)
+  const getMaxAllowedPurchase = useCallback((product: Product): number => {
+    const stock = product.stockCount !== null && product.stockCount !== undefined ? product.stockCount : 100;
+    if (stock <= 0 || product.inStock === false) return 0;
+
+    const denom = settings.maxPurchaseRatioDenominator && settings.maxPurchaseRatioDenominator > 0
+      ? settings.maxPurchaseRatioDenominator
+      : 3;
+    const threshold = settings.purchaseRatioExemptionThreshold !== undefined
+      ? settings.purchaseRatioExemptionThreshold
+      : 10;
+
+    // If stock is less than or equal to threshold (e.g. 10), allow purchasing all remaining stock
+    if (stock <= threshold) {
+      return stock;
+    }
+    // Otherwise, fraction of total stock: floor(stock / denom)
+    return Math.min(stock, Math.max(1, Math.floor(stock / denom)));
+  }, [settings.maxPurchaseRatioDenominator, settings.purchaseRatioExemptionThreshold]);
+
   // Cart operations
   const addToCart = (product: Product, quantity = 1, email?: string, link?: string) => {
+    const maxAllowed = getMaxAllowedPurchase(product);
+    if (maxAllowed <= 0) return;
+
     const existingIndex = cart.findIndex((item) => item.product.id === product.id);
     let updatedCart: CartItem[] = [];
 
     if (existingIndex > -1) {
+      const currentQty = cart[existingIndex].quantity;
+      const targetQty = Math.min(maxAllowed, currentQty + quantity);
       updatedCart = cart.map((item, idx) =>
         idx === existingIndex
           ? {
               ...item,
-              quantity: item.quantity + quantity,
+              quantity: targetQty,
               customerEmail: email || item.customerEmail,
               customerLink: link || item.customerLink,
             }
           : item
       );
     } else {
-      updatedCart = [...cart, { product, quantity, customerEmail: email, customerLink: link }];
+      const targetQty = Math.min(maxAllowed, Math.max(1, quantity));
+      updatedCart = [...cart, { product, quantity: targetQty, customerEmail: email, customerLink: link }];
     }
     saveCart(updatedCart);
   };
@@ -487,9 +641,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeFromCart(productId);
       return;
     }
+    const cartItem = cart.find((item) => item.product.id === productId);
+    const product = products.find((p) => p.id === productId) || cartItem?.product;
+    const maxAllowed = product ? getMaxAllowedPurchase(product) : quantity;
+    const finalQuantity = Math.min(quantity, maxAllowed);
+
     saveCart(
       cart.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product.id === productId ? { ...item, quantity: finalQuantity } : item
       )
     );
   };
@@ -528,17 +687,54 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Orders
-  const createOrder = (orderData: Omit<Order, "id" | "orderNumber" | "createdAt">): Order => {
+  const createOrder = (
+    orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string }
+  ): Order => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newOrder: Order = {
       ...orderData,
       id: `ord-${Date.now()}`,
-      orderNumber: `ARZ-${randomSuffix}`,
+      orderNumber: orderData.orderNumber || `ARZ-${randomSuffix}`,
       createdAt: "هم‌اکنون",
     };
     const updated = [newOrder, ...orders];
     saveOrders(updated);
     clearCart();
+
+    // Persist real order to NestJS backend database
+    api
+      .createBackendOrder({
+        orderNumber: newOrder.orderNumber,
+        customerEmail: newOrder.customerEmail,
+        customerPhone: newOrder.customerPhone,
+        customerLink: newOrder.customerLink,
+        totalPriceToman: newOrder.totalPriceToman,
+        totalPriceUsd: newOrder.totalPriceUsd,
+        gateway: newOrder.paymentGateway,
+        deliveryType: newOrder.deliveryType || "link",
+        targetAccountEmail: newOrder.targetAccountEmail,
+        targetAccountPassword: newOrder.targetAccountPassword,
+        isHybridOrder: newOrder.isHybridOrder,
+        items: newOrder.items.map((it) => ({
+          productId: it.productId,
+          productTitle: it.productTitle,
+          quantity: it.quantity,
+          priceToman: it.priceToman,
+          priceUsd: it.priceUsd,
+        })),
+      })
+      .then((created) => {
+        if (created && created.id) {
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.orderNumber === newOrder.orderNumber ? { ...o, id: created.id } : o
+            )
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn("Backend order save notice:", err);
+      });
 
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
@@ -614,6 +810,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const requestRefund = async (
+    orderId: string,
+    reason: string,
+    cardNumber?: string,
+    sheba?: string
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      await api.requestRefund(orderId, reason, cardNumber, sheba);
+    } catch (err) {
+      console.warn("Backend requestRefund notice:", err);
+    }
+
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: "refund_requested" as const,
+            refundReason: reason,
+            refundCardNumber: cardNumber,
+            refundIban: sheba,
+          }
+        : o
+    );
+    saveOrders(updated);
+    return { success: true, message: "درخواست عودت وجه با موفقیت ثبت گردید و در صف بررسی مالی قرار گرفت." };
+  };
+
   const addAdminAuditLog = (log: Omit<AuditLog, "id" | "timestamp">) => {
     const newLog: AuditLog = {
       ...log,
@@ -667,6 +890,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         isLoadingSync,
         isLoadingInitial,
         isBackendConnected,
+        createProduct,
         toggleProductActive,
         updateProduct,
         addCategory,
@@ -685,8 +909,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         createOrder,
         updateOrderStatus,
         addAdminAuditLog,
+        getMaxAllowedPurchase,
         addCoupon,
         toggleCoupon,
+        requestRefund,
       }}
     >
       {children}

@@ -30,6 +30,7 @@ export default function CartPage() {
     applyCoupon,
     removeCoupon,
     calculateProductPrice,
+    getMaxAllowedPurchase,
   } = useStore();
 
   const [couponCode, setCouponCode] = useState("");
@@ -171,15 +172,22 @@ export default function CartPage() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            const maxAllowed = getMaxAllowedPurchase(item.product);
                             updateCartQuantity(
                               item.product.id,
                               price.isPerThousand
-                                ? item.quantity + 500
-                                : item.quantity + 1
-                            )
-                          }
-                          className="p-1.5 text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                                ? Math.min(maxAllowed, item.quantity + 500)
+                                : Math.min(maxAllowed, item.quantity + 1)
+                            );
+                          }}
+                          disabled={item.quantity >= getMaxAllowedPurchase(item.product)}
+                          className={`p-1.5 transition-colors ${
+                            item.quantity >= getMaxAllowedPurchase(item.product)
+                              ? "text-neutral-300 dark:text-slate-600 cursor-not-allowed"
+                              : "text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                          }`}
+                          title={item.quantity >= getMaxAllowedPurchase(item.product) ? `سقف مجاز خرید: ${getMaxAllowedPurchase(item.product)} عدد` : "افزایش تعداد"}
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -190,6 +198,11 @@ export default function CartPage() {
                         <span className="text-sm font-black text-brand-dark dark:text-white block">
                           {formatPrice(itemTotal)} تومان
                         </span>
+                        {item.quantity >= getMaxAllowedPurchase(item.product) && (
+                          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block mt-0.5">
+                            (سقف سفارش {getMaxAllowedPurchase(item.product)})
+                          </span>
+                        )}
                       </div>
 
                       {/* Delete */}

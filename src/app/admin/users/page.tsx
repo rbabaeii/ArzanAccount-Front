@@ -22,6 +22,8 @@ import {
   Check,
   Minus,
   Activity,
+  Mail,
+  Send,
 } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
 
@@ -75,6 +77,70 @@ export default function AdminUsersPage() {
   const [new2FA, setNew2FA] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // User Direct Email Modal State
+  const [selectedUserForEmail, setSelectedUserForEmail] = useState<UserItem | null>(null);
+  const [emailModalSubject, setEmailModalSubject] = useState("");
+  const [emailModalMessage, setEmailModalMessage] = useState("");
+  const [emailModalBadge, setEmailModalBadge] = useState("پیام اختصاصی مدیریت");
+  const [emailModalButtonText, setEmailModalButtonText] = useState("");
+  const [emailModalButtonUrl, setEmailModalButtonUrl] = useState("");
+  const [isSendingEmailModal, setIsSendingEmailModal] = useState(false);
+  const [emailModalError, setEmailModalError] = useState<string | null>(null);
+
+  const handleOpenEmailModal = (targetUser: UserItem) => {
+    setSelectedUserForEmail(targetUser);
+    setEmailModalSubject(`پیام اختصاصی از طرف مدیریت ارزان اکانت به ${targetUser.name || "کاربر گرامی"}`);
+    setEmailModalMessage(`سلام ${targetUser.name || "کاربر گرامی"}،\n\nاین پیام از طرف تیم مدیریت ارزان اکانت برای شما ارسال گردیده است.`);
+    setEmailModalBadge("پیام اختصاصی مدیریت");
+    setEmailModalButtonText("ورود به پنل کاربری");
+    setEmailModalButtonUrl("https://arzanaccount.com/profile");
+    setEmailModalError(null);
+  };
+
+  const handleSendDirectEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForEmail || !selectedUserForEmail.email) {
+      setEmailModalError("کاربر انتخاب‌شده فاقد آدرس ایمیل معتبر است.");
+      return;
+    }
+    if (!emailModalSubject.trim()) {
+      setEmailModalError("موضوع ایمیل نمی‌تواند خالی باشد.");
+      return;
+    }
+    if (!emailModalMessage.trim()) {
+      setEmailModalError("متن پیام نمی‌تواند خالی باشد.");
+      return;
+    }
+
+    setIsSendingEmailModal(true);
+    setEmailModalError(null);
+
+    try {
+      const res = await api.sendCustomEmail({
+        recipientEmail: selectedUserForEmail.email,
+        recipientName: selectedUserForEmail.name || undefined,
+        subject: emailModalSubject.trim(),
+        badge: emailModalBadge.trim() || undefined,
+        message: emailModalMessage.trim(),
+        buttonText: emailModalButtonText.trim() || undefined,
+        buttonUrl: emailModalButtonUrl.trim() || undefined,
+        adminSender: currentUser?.name ? `مدیریت ارزان اکانت (${currentUser.name})` : "مدیریت ارزان اکانت",
+      });
+
+      if (res && res.success) {
+        setToastMessage(`ایمیل اختصاصی با موفقیت برای کاربر ${selectedUserForEmail.name || selectedUserForEmail.email} ارسال شد.`);
+        setTimeout(() => setToastMessage(null), 3500);
+        setSelectedUserForEmail(null);
+      } else {
+        setEmailModalError(res?.message || res?.error || "ارسال ایمیل با خطا مواجه شد.");
+      }
+    } catch (err: any) {
+      setEmailModalError(err?.message || "خطای سرور در ارسال ایمیل.");
+    } finally {
+      setIsSendingEmailModal(false);
+    }
+  };
 
   // Fetch users & stats
   const loadData = useCallback(async () => {
@@ -559,6 +625,16 @@ export default function AdminUsersPage() {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
+                        {u.email && (
+                          <button
+                            onClick={() => handleOpenEmailModal(u)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 transition-colors shadow-2xs shrink-0"
+                            title="ارسال ایمیل مستقیم با متن دلخواه به این کاربر"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>ارسال ایمیل</span>
+                          </button>
+                        )}
                         {currentUser?.role === "SUPER_ADMIN" && u.role !== "USER" && (
                           <Link
                             href={`/admin/admin-activities?adminId=${u.id}`}
@@ -813,6 +889,134 @@ export default function AdminUsersPage() {
                 >
                   <Save className="w-4 h-4" />
                   <span>{isSubmitting ? "در حال ثبت..." : "ثبت کاربر"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* User Direct Custom Email Modal */}
+      {selectedUserForEmail && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-8">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-admin-borderLight dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 flex items-center justify-center">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-admin-text dark:text-white">
+                    ارسال ایمیل مستقیم به کاربر
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-admin-textMuted dark:text-slate-400 mt-0.5">
+                    <span>{selectedUserForEmail.name || "کاربر"}</span>
+                    <span>•</span>
+                    <span className="font-mono text-teal-600 dark:text-teal-400">{selectedUserForEmail.email}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedUserForEmail(null)}
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-white rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSendDirectEmail} className="p-5 space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1">
+                  موضوع ایمیل (Subject): <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={emailModalSubject}
+                  onChange={(e) => setEmailModalSubject(e.target.value)}
+                  placeholder="موضوع ایمیل را وارد نمایید..."
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1">
+                  نشان / بج بالای ایمیل:
+                </label>
+                <input
+                  type="text"
+                  value={emailModalBadge}
+                  onChange={(e) => setEmailModalBadge(e.target.value)}
+                  placeholder="مثال: پیام اختصاصی مدیریت"
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1">
+                  متن پیام (دلخواه و چندخطی): <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={5}
+                  value={emailModalMessage}
+                  onChange={(e) => setEmailModalMessage(e.target.value)}
+                  placeholder="متن دلخواه خود را تایپ نمایید..."
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3 outline-none leading-relaxed resize-y font-sans"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1">
+                    عنوان دکمه (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={emailModalButtonText}
+                    onChange={(e) => setEmailModalButtonText(e.target.value)}
+                    placeholder="مثال: ورود به پنل کاربری"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1">
+                    لینک دکمه (اختیاری):
+                  </label>
+                  <input
+                    type="url"
+                    value={emailModalButtonUrl}
+                    onChange={(e) => setEmailModalButtonUrl(e.target.value)}
+                    placeholder="https://arzanaccount.com/..."
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                  />
+                </div>
+              </div>
+
+              {emailModalError && (
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{emailModalError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-admin-borderLight dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setSelectedUserForEmail(null)}
+                  className="px-4 py-2 rounded-xl text-neutral-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 font-semibold transition-colors"
+                >
+                  انصراف
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingEmailModal}
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-md shadow-teal-600/20 transition-all disabled:opacity-60"
+                >
+                  <Send className={`w-4 h-4 ${isSendingEmailModal ? "animate-pulse" : ""}`} />
+                  <span>{isSendingEmailModal ? "در حال ارسال..." : "ارسال ایمیل به کاربر"}</span>
                 </button>
               </div>
             </form>
