@@ -28,34 +28,50 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...(options.headers as Record<string, string>),
-    },
-    cache: "no-store",
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    let parsedMsg = "";
-    try {
-      const errJson = JSON.parse(errorBody);
-      parsedMsg = Array.isArray(errJson.message)
-        ? errJson.message.join("، ")
-        : errJson.message || errJson.error;
-    } catch {
-      parsedMsg = errorBody;
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: options.signal || controller.signal,
+      headers: {
+        ...defaultHeaders,
+        ...(options.headers as Record<string, string>),
+      },
+      cache: "no-store",
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      let parsedMsg = "";
+      try {
+        const errJson = JSON.parse(errorBody);
+        parsedMsg = Array.isArray(errJson.message)
+          ? errJson.message.join("، ")
+          : errJson.message || errJson.error;
+      } catch {
+        parsedMsg = errorBody;
+      }
+      throw new Error(parsedMsg || `خطای سرور [${response.status}]`);
     }
-    throw new Error(parsedMsg || `خطای سرور [${response.status}]`);
-  }
 
-  const json: any = await response.json();
-  if (json && json.data !== undefined) {
-    return json.data;
+    const json: any = await response.json();
+    if (json && json.data !== undefined) {
+      return json.data;
+    }
+    return json;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError") {
+      throw new Error(
+        "پاسخی از سرور در زمان مقرر دریافت نشد (اتمام مهلت ارتباط). لطفاً اتصال اینترنت خود را بررسی و مجدداً تلاش نمایید."
+      );
+    }
+    throw err;
   }
-  return json;
 }
 
 export const api = {

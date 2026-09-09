@@ -211,19 +211,25 @@ export default function CheckoutPage() {
     for (const item of cart) {
       try {
         const validation = await api.validateLiveStock(item.product.id, item.quantity);
-        if (!validation.valid || !validation.inStock) {
+        if (!validation || !validation.valid || !validation.inStock) {
           setStockError(
             `متأسفانه موجودی محصول "${item.product.customTitle}" نزد تامین‌کننده کافی نمی‌باشد یا به اتمام رسیده است.`
           );
           setIsSubmitting(false);
           return;
         }
-      } catch (err) {
-        console.warn("Stock check warning:", err);
+      } catch (err: any) {
+        console.error("Stock check error:", err);
+        setStockError(
+          err?.message ||
+            `متأسفانه در حال حاضر امکان تایید موجودی محصول "${item.product.customTitle}" وجود ندارد یا محصول غیرفعال است.`
+        );
+        setIsSubmitting(false);
+        return;
       }
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulated gateway contact
+    await new Promise((resolve) => setTimeout(resolve, 400)); // Smooth UX transition
 
     // Compute delivery attributes
     const computedDeliveryType = isHybridOrder
@@ -278,7 +284,7 @@ export default function CheckoutPage() {
 
     let backendOrderNumber: string | undefined;
 
-    // Backend registration (creates DB order & dispatches hybrid or standard receipt email)
+    // Backend registration (creates DB order & dispatches hybrid or standard receipt email in background)
     try {
       const backendRes = await api.createBackendOrder({
         customerEmail: email,
@@ -299,9 +305,14 @@ export default function CheckoutPage() {
       });
       if (backendRes && backendRes.orderNumber) {
         backendOrderNumber = backendRes.orderNumber;
+      } else {
+        throw new Error("پاسخ دریافتی از سرور برای ثبت سفارش نامعتبر است.");
       }
-    } catch (err) {
-      console.warn("Backend order creation warning:", err);
+    } catch (err: any) {
+      console.error("Backend order creation error:", err);
+      setStockError(err?.message || "خطا در برقراری ارتباط با سرور و ثبت سفارش. سفارش ثبت نشد.");
+      setIsSubmitting(false);
+      return;
     }
 
     // Local context sync
@@ -792,6 +803,13 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {stockError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 flex items-start gap-2 animate-shake text-xs">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <p className="leading-relaxed">{stockError}</p>
+              </div>
+            )}
 
             <button
               type="submit"

@@ -701,40 +701,42 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     saveOrders(updated);
     clearCart();
 
-    // Persist real order to NestJS backend database
-    api
-      .createBackendOrder({
-        orderNumber: newOrder.orderNumber,
-        customerEmail: newOrder.customerEmail,
-        customerPhone: newOrder.customerPhone,
-        customerLink: newOrder.customerLink,
-        totalPriceToman: newOrder.totalPriceToman,
-        totalPriceUsd: newOrder.totalPriceUsd,
-        gateway: newOrder.paymentGateway,
-        deliveryType: newOrder.deliveryType || "link",
-        targetAccountEmail: newOrder.targetAccountEmail,
-        targetAccountPassword: newOrder.targetAccountPassword,
-        isHybridOrder: newOrder.isHybridOrder,
-        items: newOrder.items.map((it) => ({
-          productId: it.productId,
-          productTitle: it.productTitle,
-          quantity: it.quantity,
-          priceToman: it.priceToman,
-          priceUsd: it.priceUsd,
-        })),
-      })
-      .then((created) => {
-        if (created && created.id) {
-          setOrders((prev) =>
-            prev.map((o) =>
-              o.orderNumber === newOrder.orderNumber ? { ...o, id: created.id } : o
-            )
-          );
-        }
-      })
-      .catch((err) => {
-        console.warn("Backend order save notice:", err);
-      });
+    // Persist real order to NestJS backend database ONLY if not already persisted by checkout
+    if (!orderData.orderNumber) {
+      api
+        .createBackendOrder({
+          orderNumber: newOrder.orderNumber,
+          customerEmail: newOrder.customerEmail,
+          customerPhone: newOrder.customerPhone,
+          customerLink: newOrder.customerLink,
+          totalPriceToman: newOrder.totalPriceToman,
+          totalPriceUsd: newOrder.totalPriceUsd,
+          gateway: newOrder.paymentGateway,
+          deliveryType: newOrder.deliveryType || "link",
+          targetAccountEmail: newOrder.targetAccountEmail,
+          targetAccountPassword: newOrder.targetAccountPassword,
+          isHybridOrder: newOrder.isHybridOrder,
+          items: newOrder.items.map((it) => ({
+            productId: it.productId,
+            productTitle: it.productTitle,
+            quantity: it.quantity,
+            priceToman: it.priceToman,
+            priceUsd: it.priceUsd,
+          })),
+        })
+        .then((created) => {
+          if (created && created.id) {
+            setOrders((prev) =>
+              prev.map((o) =>
+                o.orderNumber === newOrder.orderNumber ? { ...o, id: created.id } : o
+              )
+            );
+          }
+        })
+        .catch((err) => {
+          console.warn("Backend order save notice:", err);
+        });
+    }
 
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
