@@ -48,7 +48,26 @@ export default function ProductDetailPage() {
       .getLiveProduct(productId)
       .then((liveData) => {
         if (isMounted && liveData) {
-          setCurrentProduct((prev) => ({ ...(prev || initialProduct), ...liveData }));
+          let safeTags: string[] = [];
+          if (Array.isArray(liveData.tags)) {
+            safeTags = liveData.tags;
+          } else if (typeof liveData.tags === "string") {
+            try {
+              safeTags = liveData.tags.startsWith("[")
+                ? JSON.parse(liveData.tags)
+                : liveData.tags.split(",").map((t: string) => t.trim()).filter(Boolean);
+            } catch {
+              safeTags = [];
+            }
+          } else if (initialProduct?.tags) {
+            safeTags = Array.isArray(initialProduct.tags) ? initialProduct.tags : [];
+          }
+
+          setCurrentProduct((prev) => ({
+            ...(prev || initialProduct),
+            ...liveData,
+            tags: safeTags,
+          }));
           setLiveSyncMessage(
             liveData.inStock
               ? `موجودی زنده تأمین‌کننده: ${liveData.stockCount !== null ? formatNumber(liveData.stockCount) + ' عدد موجود' : 'موجود در انبار'}`
@@ -82,6 +101,20 @@ export default function ProductDetailPage() {
 
   const product = currentProduct || initialProduct;
 
+  const productTags: string[] = React.useMemo(() => {
+    if (!product || !product.tags) return [];
+    if (Array.isArray(product.tags)) return product.tags;
+    if (typeof product.tags === "string") {
+      try {
+        const parsed = JSON.parse(product.tags);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return (product.tags as string).split(",").map((t) => t.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  }, [product]);
+
   const [quantity, setQuantity] = useState<number>(
     product?.pricingUnit === "per_1000" ? (product?.minQty || 1000) : 1
   );
@@ -93,14 +126,14 @@ export default function ProductDetailPage() {
     if (apiRelated && apiRelated.length > 0) return apiRelated;
     if (!product) return [];
 
-    const productTags = product.tags || [];
     return products
       .filter((p) => p.id !== product.id && p.isActive)
       .map((p) => {
         let score = 0;
         if (p.categoryId === product.categoryId) score += 20;
-        if (p.tags && productTags.length > 0) {
-          const common = p.tags.filter((t) => productTags.includes(t));
+        const pTags = Array.isArray(p.tags) ? p.tags : [];
+        if (pTags.length > 0 && productTags.length > 0) {
+          const common = pTags.filter((t) => productTags.includes(t));
           score += common.length * 40;
         }
         return { product: p, score };
@@ -108,7 +141,7 @@ export default function ProductDetailPage() {
       .sort((a, b) => b.score - a.score)
       .slice(0, 4)
       .map((item) => item.product);
-  }, [apiRelated, product, products]);
+  }, [apiRelated, product, products, productTags]);
 
   if (!product) {
     return (
@@ -249,13 +282,13 @@ export default function ProductDetailPage() {
                 </h1>
 
                 {/* Product Tags */}
-                {product.tags && product.tags.length > 0 && (
+                {productTags.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
                     <span className="text-[11px] text-slate-400 font-bold flex items-center gap-1">
                       <Tag className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                       تگ‌ها:
                     </span>
-                    {product.tags.map((tag: string, idx: number) => (
+                    {productTags.map((tag: string, idx: number) => (
                       <Link
                         key={idx}
                         href={`/products?search=${encodeURIComponent(tag)}`}

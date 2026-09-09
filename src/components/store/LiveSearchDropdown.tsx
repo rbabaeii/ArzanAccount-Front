@@ -298,7 +298,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
                             </div>
 
                             {/* Tags Chips */}
-                            {item.tags && item.tags.length > 0 && (
+                            {Array.isArray(item.tags) && item.tags.length > 0 && (
                               <div className="flex items-center gap-1 mt-1 overflow-hidden flex-nowrap">
                                 {item.tags.slice(0, 3).map((t: string, idx: number) => (
                                   <span
