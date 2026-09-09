@@ -5,7 +5,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/store/Header";
 import Footer from "@/components/store/Footer";
-import Link from "next/link";
 import {
   Phone,
   KeyRound,
@@ -15,7 +14,6 @@ import {
   AlertCircle,
   ShieldCheck,
   RotateCcw,
-  Sparkles,
   Lock,
   Mail,
   User,
@@ -83,8 +81,7 @@ const USER_ACCOUNT = {
 function LoginContent() {
   const {
     sendOtp,
-    sendDirectEmailOtp,
-    verifyEmailOtp,
+    sendEmailOtp,
     verifyOtp,
     loginWithPassword,
     isAuthenticated,
@@ -94,13 +91,14 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
-  const [authMode, setAuthMode] = useState<"phone" | "email" | "password">("phone");
+  // Auth mode: ONLY "phone" (OTP) or "password"
+  const [authMode, setAuthMode] = useState<"phone" | "password">("phone");
   const [step, setStep] = useState<"input" | "otp">("input");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(120);
@@ -154,30 +152,30 @@ function LoginContent() {
     }
   };
 
-  const handleSendEmailOtp = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
-      setErrorMessage("لطفاً یک آدرس ایمیل معتبر وارد فرمایید.");
+  const handleSendRegisteredEmailOtp = async () => {
+    const phoneNumber = phone.trim();
+    if (!phoneNumber) {
+      setErrorMessage("شماره تلفن مشخص نیست.");
       return;
     }
 
     setErrorMessage(null);
-    setIsLoading(true);
+    setIsSendingEmailOtp(true);
 
     try {
-      const res = await sendDirectEmailOtp(cleanEmail);
+      const res = await sendEmailOtp(phoneNumber);
       if (res.success) {
-        setStep("otp");
-        setCountdown(120);
         setSuccessMessage(res.message);
-        setOtp("");
+        setCountdown(120);
       } else {
         setErrorMessage(res.message || "خطا در ارسال کد به ایمیل.");
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "خطا در ارسال ایمیل. لطفاً مجدداً تلاش کنید.");
+      setErrorMessage(
+        err.message || "برای این شماره، هیچ آدرس ایمیلی در حساب کاربری ثبت نشده است."
+      );
     } finally {
-      setIsLoading(false);
+      setIsSendingEmailOtp(false);
     }
   };
 
@@ -191,13 +189,7 @@ function LoginContent() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    let res: { success: boolean; message?: string; user?: any };
-    if (authMode === "email") {
-      res = await verifyEmailOtp(email.trim().toLowerCase(), otp.trim());
-    } else {
-      res = await verifyOtp(phone.trim(), otp.trim());
-    }
-
+    const res = await verifyOtp(phone.trim(), otp.trim());
     setIsLoading(false);
 
     if (res.success && res.user) {
@@ -267,8 +259,6 @@ function LoginContent() {
         <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3">
           {authMode === "password" ? (
             <Lock className="w-6 h-6 text-brand-accent" />
-          ) : authMode === "email" ? (
-            <Mail className="w-6 h-6 text-brand-accent" />
           ) : step === "input" ? (
             <Phone className="w-6 h-6 text-brand-accent" />
           ) : (
@@ -279,28 +269,20 @@ function LoginContent() {
         <h1 className="text-xl font-black">
           {authMode === "password"
             ? "ورود با رمز عبور"
-            : authMode === "email"
-            ? step === "input"
-              ? "ورود با کد تایید ایمیل"
-              : "تایید کد ارسال‌شده به ایمیل"
             : step === "input"
-            ? "ورود با شماره موبایل"
+            ? "ورود با کد یکبار مصرف (OTP)"
             : "تایید شماره موبایل با کد OTP"}
         </h1>
         <p className="text-xs text-teal-100/90 mt-1">
           {authMode === "password"
             ? "شماره موبایل و رمز عبور حساب خود را وارد فرمایید"
-            : authMode === "email"
-            ? step === "input"
-              ? "کد تایید ۵ رقمی مستقیماً به ایمیل شما ارسال می‌شود"
-              : `کد ۵ رقمی ارسال‌شده به ${email} را وارد کنید`
             : step === "input"
-            ? "کد تایید یکبار مصرف به شماره همراه شما ارسال خواهد شد"
+            ? "کد تایید ۵ رقمی به شماره همراه شما ارسال خواهد شد"
             : `کد تایید ارسال‌شده به شماره ${phone} را وارد کنید`}
         </p>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs: Only 2 official modes */}
       <div className="flex border-b border-brand-border dark:border-slate-800 bg-neutral-50/70 dark:bg-slate-800/50">
         <button
           type="button"
@@ -315,22 +297,7 @@ function LoginContent() {
               : "border-transparent text-neutral-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
-          پیامک همراه
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setAuthMode("email");
-            setStep("input");
-            setErrorMessage(null);
-          }}
-          className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${
-            authMode === "email"
-              ? "border-brand-primary text-brand-primary dark:text-teal-400 bg-white dark:bg-slate-900"
-              : "border-transparent text-neutral-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-          }`}
-        >
-          ورود با ایمیل ✉️
+          ورود با کد یکبار مصرف (OTP)
         </button>
         <button
           type="button"
@@ -345,7 +312,7 @@ function LoginContent() {
               : "border-transparent text-neutral-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
-          رمز عبور
+          ورود با رمز عبور
         </button>
       </div>
 
@@ -365,7 +332,7 @@ function LoginContent() {
           </div>
         )}
 
-        {/* MODE 1: PHONE */}
+        {/* MODE 1: PHONE OTP */}
         {authMode === "phone" && (
           <>
             {step === "input" ? (
@@ -428,6 +395,7 @@ function LoginContent() {
                     ))}
                   </div>
 
+                  {/* Regular Customer Account */}
                   <button
                     type="button"
                     onClick={() => {
@@ -496,6 +464,7 @@ function LoginContent() {
                   />
                 </div>
 
+                {/* Actions & Resend */}
                 <div className="space-y-2 pt-1 border-t border-brand-border/70 dark:border-slate-800">
                   <div className="flex items-center justify-between text-[11px]">
                     <button
@@ -522,6 +491,23 @@ function LoginContent() {
                       </button>
                     )}
                   </div>
+
+                  {/* Fallback Option: Send to Registered Email */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleSendRegisteredEmailOtp}
+                      disabled={isSendingEmailOtp}
+                      className="w-full py-2.5 px-3 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 shadow-xs"
+                    >
+                      <Mail className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span>
+                        {isSendingEmailOtp
+                          ? "در حال ارسال به ایمیل حساب..."
+                          : "کد را دریافت نکردید؟ ارسال به ایمیل ثبت‌شده در حساب"}
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -543,113 +529,7 @@ function LoginContent() {
           </>
         )}
 
-        {/* MODE 2: EMAIL */}
-        {authMode === "email" && (
-          <>
-            {step === "input" ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block font-bold text-brand-dark dark:text-white mb-1.5">
-                    آدرس ایمیل:
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="yourname@gmail.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      dir="ltr"
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
-                    />
-                    <Mail className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  </div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1.5">
-                    کد تایید یکبار مصرف ۵ رقمی از طریق سرور رسمی Gmail ارسال می‌گردد.
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleSendEmailOtp()}
-                  disabled={isLoading}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <span>در حال ارسال ایمیل...</span>
-                  ) : (
-                    <>
-                      <span>ارسال کد تایید به ایمیل</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div>
-                  <label className="block font-bold text-brand-dark dark:text-white mb-1.5">
-                    کد تایید ۵ رقمی دریافتی در ایمیل:
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={5}
-                    placeholder="• • • • •"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    dir="ltr"
-                    autoFocus
-                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none text-slate-800 dark:text-slate-100"
-                  />
-                </div>
-
-                <div className="space-y-2 pt-1 border-t border-brand-border/70 dark:border-slate-800">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <button
-                      type="button"
-                      onClick={() => setStep("input")}
-                      className="text-neutral-500 dark:text-slate-400 hover:text-brand-dark dark:hover:text-white flex items-center gap-1"
-                    >
-                      <ArrowRight className="w-3.5 h-3.5" />
-                      <span>تغییر ایمیل ({email})</span>
-                    </button>
-
-                    {countdown > 0 ? (
-                      <span className="text-neutral-400 dark:text-slate-500 font-mono">
-                        ارسال مجدد ({countdown} ثانیه)
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSendEmailOtp()}
-                        className="text-brand-primary dark:text-teal-400 hover:underline font-bold flex items-center gap-1"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>ارسال مجدد به ایمیل</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-sm"
-                >
-                  {isLoading ? (
-                    <span>در حال بررسی کد...</span>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>تایید و ورود به سایت</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-          </>
-        )}
-
-        {/* MODE 3: PASSWORD */}
+        {/* MODE 2: PASSWORD */}
         {authMode === "password" && (
           <form onSubmit={handleLoginWithPassword} className="space-y-4">
             <div>
