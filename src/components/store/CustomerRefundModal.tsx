@@ -94,9 +94,9 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-fadeIn relative">
+      <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn relative">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-teal-900 via-brand-primary to-teal-800 p-6 text-white relative">
+        <div className="bg-gradient-to-r from-teal-900 via-brand-primary to-teal-800 p-4 sm:p-6 text-white relative">
           <button
             onClick={onClose}
             className="absolute top-4 left-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
@@ -106,12 +106,12 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300">
-              <Undo2 className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300 shrink-0">
+              <Undo2 className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="text-base font-black">درخواست استرداد و عودت وجه</h3>
-              <p className="text-xs text-teal-100/90 mt-0.5">
+              <h3 className="text-sm sm:text-base font-black">درخواست استرداد و عودت وجه</h3>
+              <p className="text-[11px] sm:text-xs text-teal-100/90 mt-0.5">
                 سفارش <span className="font-mono font-bold text-amber-300">#{order.orderNumber}</span>
               </p>
             </div>
@@ -119,7 +119,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
         </div>
 
         {/* Order Info Strip */}
-        <div className="bg-teal-50 dark:bg-slate-800/60 px-6 py-3 border-b border-teal-100 dark:border-slate-800 flex items-center justify-between text-xs">
+        <div className="bg-teal-50 dark:bg-slate-800/60 px-4 sm:px-6 py-2.5 sm:py-3 border-b border-teal-100 dark:border-slate-800 flex items-center justify-between text-xs">
           <span className="text-slate-600 dark:text-slate-400">مبلغ قابل استرداد:</span>
           <span className="font-mono font-black text-brand-primary dark:text-teal-300 text-sm">
             {formatPrice(order.totalPriceToman)} <span className="font-sans text-xs">تومان</span>
@@ -127,7 +127,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 text-xs">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-800/60 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />

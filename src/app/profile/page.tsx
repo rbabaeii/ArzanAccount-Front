@@ -538,127 +538,129 @@ export default function ProfilePage() {
         {/* ========================================================================= */}
         {/* HERO BANNER: AMBIENT HORIZON GRADIENT & USER SUMMARY (Stitch Screen 1)   */}
         {/* ========================================================================= */}
-        <section className="relative rounded-3xl bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 shadow-md overflow-hidden transition-colors">
+        <section className="relative rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 shadow-md overflow-hidden transition-colors">
           {/* Ambient Horizon Top Gradient */}
-          <div className="h-36 sm:h-44 w-full bg-gradient-to-r from-[#004153] via-[#005a71] to-[#21667d] relative overflow-hidden">
+          <div className="h-28 sm:h-44 w-full bg-gradient-to-r from-[#004153] via-[#005a71] to-[#21667d] relative overflow-hidden">
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#b9eaff_1px,transparent_1px)] [background-size:16px_16px]"></div>
             <div className="absolute -top-12 -left-12 w-56 h-56 rounded-full bg-sky-400/20 blur-2xl"></div>
             <div className="absolute -bottom-8 right-16 w-44 h-44 rounded-full bg-teal-300/15 blur-xl"></div>
           </div>
 
-          <div className="px-6 sm:px-8 pb-8 pt-0">
-            <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 -mt-16 sm:-mt-20 relative z-10">
+          <div className="px-4 sm:px-8 pb-6 sm:pb-8 pt-0">
+            <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-5 sm:gap-6 -mt-12 sm:-mt-20 relative z-10">
               {/* User Avatar & Identity Details */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
-                <div className="relative group">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden shadow-xl bg-white dark:bg-slate-800 p-1.5 bg-gradient-to-tr from-[#004153] to-[#81d1f0]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3.5 sm:gap-5">
+                <div className="relative group shrink-0">
+                  <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl bg-white dark:bg-slate-800 p-1 sm:p-1.5 bg-gradient-to-tr from-[#004153] to-[#81d1f0]">
                     {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-2xl" />
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
                     ) : (
-                      <div className="w-full h-full bg-teal-50 dark:bg-slate-800 flex items-center justify-center text-brand-primary dark:text-teal-400 font-black text-3xl rounded-2xl">
+                      <div className="w-full h-full bg-teal-50 dark:bg-slate-800 flex items-center justify-center text-brand-primary dark:text-teal-400 font-black text-2xl sm:text-3xl rounded-xl sm:rounded-2xl">
                         {user.name ? user.name.slice(0, 1) : "ک"}
                       </div>
                     )}
                   </div>
                   <button
                     onClick={() => showToast("success", "قابلیت انتخاب تصویر به‌زودی فعال می‌شود.")}
-                    className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-[#005a71] text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+                    className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#005a71] text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform"
                     title="تغییر عکس نمایه"
                   >
-                    <Camera className="w-4 h-4" />
+                    <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
 
-                <div className="flex flex-col space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                <div className="flex flex-col space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white truncate">
                       {user.name || "کاربر گرامی"}
                     </h1>
                     {/* Platinum VIP Badge */}
-                    <div className="flex items-center gap-1.5 bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800/80 text-brand-primary dark:text-teal-300 px-3 py-1 rounded-full text-xs font-bold shadow-xs">
-                      <BadgeCheck className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                    <div className="flex items-center gap-1 bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800/80 text-brand-primary dark:text-teal-300 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold shadow-xs">
+                      <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-primary dark:text-teal-400 shrink-0" />
                       <span>سطح پلاتینیوم (VIP)</span>
                     </div>
-                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-2.5 py-1 rounded-lg font-mono font-bold">
+                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs px-2 py-0.5 rounded-lg font-mono font-bold">
                       {customerId}
                     </span>
                   </div>
 
                   {/* Chips: Phone, Email, Location */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400 pt-1">
+                  <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 pt-0.5">
                     <span className="flex items-center gap-1 font-mono text-left dir-ltr">
-                      <Smartphone className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
+                      <Smartphone className="w-3 h-3 text-brand-primary dark:text-teal-400 shrink-0" />
                       <span>{user.phone}</span>
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                      <span>{user.email || "ایمیل ثبت نشده"}</span>
+                      <span className="truncate max-w-[180px] sm:max-w-none">{user.email || "ایمیل ثبت نشده"}</span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
+                      <MapPin className="w-3 h-3 text-brand-primary dark:text-teal-400 shrink-0" />
                       <span>تهران، ایران</span>
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Financial Balances & Actions (Wallet with Direct vs Cashback Breakdown) */}
-              <div className="flex flex-wrap items-center gap-3.5 w-full lg:w-auto justify-start lg:justify-end mt-2 lg:mt-0">
-                {/* Wallet Balance Widget */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-teal-50/70 dark:bg-slate-800/90 border border-teal-100 dark:border-slate-700 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 dark:bg-teal-400/10 text-brand-primary dark:text-teal-400 flex items-center justify-center">
-                    <Wallet className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">موجودی کل کیف پول</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-base font-black font-mono text-brand-primary dark:text-teal-300">
-                        {walletFormatted}
-                      </span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">تومان</span>
+              {/* Financial Balances & Actions (Mobile-First Card) */}
+              <div className="w-full lg:w-auto flex flex-col gap-2.5 mt-1 lg:mt-0">
+                <div className="bg-teal-50/80 dark:bg-slate-800/90 border border-teal-100 dark:border-slate-700 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-primary/10 dark:bg-teal-400/10 text-brand-primary dark:text-teal-400 flex items-center justify-center shrink-0">
+                        <Wallet className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">موجودی کیف پول</span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-base sm:text-lg font-black font-mono text-brand-primary dark:text-teal-300">
+                            {walletFormatted}
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium">تومان</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => setIsTopUpOpen(true)}
+                        className="bg-brand-primary hover:bg-teal-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>شارژ</span>
+                      </button>
+                      <button
+                        onClick={() => setIsWithdrawModalOpen(true)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                        <span>تسویه</span>
+                      </button>
                     </div>
                   </div>
-                  <div className="mr-2 flex items-center gap-1.5">
+
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-teal-100/80 dark:border-slate-700/80 text-[10px] sm:text-[11px]">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold">
+                        برداشت: {new Intl.NumberFormat("en-US").format(user.directDepositBalance || 0)} ت
+                      </span>
+                      <span className="px-2 py-0.5 rounded-lg bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-bold">
+                        کش‌بک: {new Intl.NumberFormat("en-US").format(user.cashbackBonusBalance || 0)} ت
+                      </span>
+                    </div>
+
                     <button
-                      onClick={() => setIsTopUpOpen(true)}
-                      className="bg-brand-primary hover:bg-teal-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                      onClick={() => {
+                        setActiveTab("personal");
+                        setIsEditingPersonal(true);
+                      }}
+                      className="flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 hover:underline px-1 py-0.5 shrink-0"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>شارژ</span>
-                    </button>
-                    <button
-                      onClick={() => setIsWithdrawModalOpen(true)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
-                    >
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                      <span>تسویه</span>
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>ویرایش نمایه</span>
                     </button>
                   </div>
                 </div>
-
-                {/* Direct Withdrawable vs Cashback Quick Badges */}
-                <div className="flex flex-col gap-1 text-[10px]">
-                  <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 font-bold">
-                    <span>قابل برداشت:</span>
-                    <span className="font-mono">{new Intl.NumberFormat("en-US").format(user.directDepositBalance || 0)} ت</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-indigo-800 dark:text-indigo-300 font-bold">
-                    <span>هدیه کش‌بک:</span>
-                    <span className="font-mono">{new Intl.NumberFormat("en-US").format(user.cashbackBonusBalance || 0)} ت</span>
-                  </div>
-                </div>
-
-                {/* Quick Edit Profile Button */}
-                <button
-                  onClick={() => {
-                    setActiveTab("personal");
-                    setIsEditingPersonal(true);
-                  }}
-                  className="flex items-center gap-1.5 bg-[#004153] hover:bg-[#005a71] text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-sm transition-all"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>ویرایش نمایه</span>
-                </button>
               </div>
             </div>
           </div>
@@ -667,17 +669,18 @@ export default function ProfilePage() {
         {/* ========================================================================= */}
         {/* INTERACTIVE NAVIGATION TABS                                              */}
         {/* ========================================================================= */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 no-scrollbar scrollbar-none snap-x snap-mandatory">
           <button
             onClick={() => setActiveTab("personal")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "personal"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <User className="w-4 h-4" />
-            <span>اطلاعات فردی و هویتی</span>
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">اطلاعات فردی</span>
+            <span className="hidden sm:inline">اطلاعات فردی و هویتی</span>
           </button>
 
           <button
@@ -685,61 +688,64 @@ export default function ProfilePage() {
               setActiveTab("wallet");
               fetchWithdrawals();
             }}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "wallet"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <Wallet className="w-4 h-4" />
-            <span>کیف پول و تسویه حساب</span>
-            <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+            <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">کیف پول</span>
+            <span className="hidden sm:inline">کیف پول و تسویه حساب</span>
+            <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold">
               جدید
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("cards")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "cards"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <CreditCard className="w-4 h-4" />
-            <span>کارت‌ها و حساب‌های بانکی</span>
-            <span className="bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] px-2 py-0.5 rounded-full font-mono">
+            <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">کارت‌های بانکی</span>
+            <span className="hidden sm:inline">کارت‌ها و حساب‌های بانکی</span>
+            <span className="bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono">
               {bankCards.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("addresses")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "addresses"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <MapPin className="w-4 h-4" />
-            <span>دفترچه آدرس‌ها</span>
-            <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-mono">
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span>آدرس‌ها</span>
+            <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] px-1.5 py-0.2 rounded-full font-mono">
               {addresses.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("orders")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "orders"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <PackageCheck className="w-4 h-4" />
-            <span>سفارش‌ها و اشتراک‌ها</span>
+            <PackageCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">سفارش‌ها</span>
+            <span className="hidden sm:inline">سفارش‌ها و اشتراک‌ها</span>
             {userOrders.length > 0 && (
-              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold">
                 {userOrders.length}
               </span>
             )}
@@ -747,14 +753,15 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setActiveTab("password")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
               activeTab === "password"
                 ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
-            <Lock className="w-4 h-4" />
-            <span>رمز عبور و امنیت ورود</span>
+            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">رمز عبور</span>
+            <span className="hidden sm:inline">رمز عبور و امنیت ورود</span>
           </button>
         </div>
 
@@ -1098,15 +1105,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Withdrawal Requests History */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card space-y-5 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>
                   <h3 className="font-bold text-base text-slate-900 dark:text-white">درخواست‌های تسویه حساب و برداشت وجه</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     لیست کامل درخواست‌های واریز وجه به شماره شبا و پیگیری وضعیت آن‌ها توسط واحد مالی
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <button
                     type="button"
                     onClick={fetchWithdrawals}
@@ -1120,7 +1127,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => setIsWithdrawModalOpen(true)}
                     disabled={(user.directDepositBalance || 0) <= 0}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 flex-1 sm:flex-initial"
                   >
                     <Plus className="w-4 h-4" />
                     <span>درخواست تسویه جدید</span>
@@ -1142,82 +1149,160 @@ export default function ProfilePage() {
                   <p className="text-[11px]">واریزی‌های مستقیم نقدی شما در هر زمان قابل ثبت جهت انتقال به حساب بانکی می‌باشند.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold">
-                        <th className="pb-3 pr-2">شناسه</th>
-                        <th className="pb-3">مبلغ تسویه</th>
-                        <th className="pb-3">مقصد واریز (شبا / کارت)</th>
-                        <th className="pb-3">تاریخ ثبت</th>
-                        <th className="pb-3">وضعیت</th>
-                        <th className="pb-3 pl-2">توضیحات و کد پیگیری</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                      {withdrawals.map((req) => (
-                        <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                          <td className="py-3.5 pr-2 font-mono text-[11px] text-slate-500">
+                <>
+                  {/* Mobile Cards View (sm:hidden) */}
+                  <div className="block md:hidden space-y-3">
+                    {withdrawals.map((req) => (
+                      <div
+                        key={req.id}
+                        className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2.5"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-mono text-[11px] text-slate-500 font-bold">
                             #{req.id.slice(-6).toUpperCase()}
-                          </td>
-                          <td className="py-3.5 font-bold font-mono text-slate-900 dark:text-white">
-                            {new Intl.NumberFormat("en-US").format(req.amountToman)} تومان
-                          </td>
-                          <td className="py-3.5 text-slate-700 dark:text-slate-300">
-                            {req.sheba ? (
-                              <div className="font-mono dir-ltr text-left text-[11px]">{req.sheba}</div>
-                            ) : req.cardNumber ? (
-                              <div className="font-mono dir-ltr text-left text-[11px]">{req.cardNumber}</div>
-                            ) : (
-                              "—"
-                            )}
-                            {req.accountOwnerName && (
-                              <span className="text-[10px] text-slate-400 block">{req.accountOwnerName}</span>
-                            )}
-                          </td>
-                          <td className="py-3.5 text-slate-500 text-[11px]">
-                            {new Date(req.createdAt).toLocaleDateString("fa-IR")}
-                          </td>
-                          <td className="py-3.5">
+                          </span>
+                          <div>
                             {req.status === "PENDING" && (
-                              <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                              <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 rounded-full text-[10px] font-bold">
                                 <Clock className="w-3 h-3" />
                                 <span>در انتظار بررسی</span>
                               </span>
                             )}
                             {req.status === "APPROVED" && (
-                              <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                              <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full text-[10px] font-bold">
                                 <CheckCircle2 className="w-3 h-3" />
                                 <span>واریز شد</span>
                               </span>
                             )}
                             {req.status === "REJECTED" && (
-                              <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                              <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2 py-0.5 rounded-full text-[10px] font-bold">
                                 <X className="w-3 h-3" />
                                 <span>رد شد</span>
                               </span>
                             )}
-                          </td>
-                          <td className="py-3.5 pl-2 text-[11px] text-slate-600 dark:text-slate-400">
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">مبلغ تسویه:</span>
+                          <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat("en-US").format(req.amountToman)} تومان
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">مقصد واریز:</span>
+                            <span className="font-mono text-left dir-ltr font-medium">
+                              {req.sheba || req.cardNumber || "—"}
+                            </span>
+                          </div>
+                          {req.accountOwnerName && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">صاحب حساب:</span>
+                              <span className="font-medium">{req.accountOwnerName}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">تاریخ ثبت:</span>
+                            <span>{new Date(req.createdAt).toLocaleDateString("fa-IR")}</span>
+                          </div>
+                        </div>
+
+                        {(req.bankTrackingCode || req.adminNote) && (
+                          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 text-[10px] space-y-1">
                             {req.bankTrackingCode && (
                               <div className="text-emerald-700 dark:text-emerald-400 font-bold">
                                 کد رهگیری: <span className="font-mono">{req.bankTrackingCode}</span>
                               </div>
                             )}
                             {req.adminNote && (
-                              <div className="text-slate-500 mt-0.5">
-                                پیام مدیریت: {req.adminNote}
-                              </div>
+                              <div className="text-slate-500">پیام مدیریت: {req.adminNote}</div>
                             )}
-                            {!req.bankTrackingCode && !req.adminNote && (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table (hidden md:block) */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-right text-xs">
+                      <thead>
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold">
+                          <th className="pb-3 pr-2">شناسه</th>
+                          <th className="pb-3">مبلغ تسویه</th>
+                          <th className="pb-3">مقصد واریز (شبا / کارت)</th>
+                          <th className="pb-3">تاریخ ثبت</th>
+                          <th className="pb-3">وضعیت</th>
+                          <th className="pb-3 pl-2">توضیحات و کد پیگیری</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        {withdrawals.map((req) => (
+                          <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td className="py-3.5 pr-2 font-mono text-[11px] text-slate-500">
+                              #{req.id.slice(-6).toUpperCase()}
+                            </td>
+                            <td className="py-3.5 font-bold font-mono text-slate-900 dark:text-white">
+                              {new Intl.NumberFormat("en-US").format(req.amountToman)} تومان
+                            </td>
+                            <td className="py-3.5 text-slate-700 dark:text-slate-300">
+                              {req.sheba ? (
+                                <div className="font-mono dir-ltr text-left text-[11px]">{req.sheba}</div>
+                              ) : req.cardNumber ? (
+                                <div className="font-mono dir-ltr text-left text-[11px]">{req.cardNumber}</div>
+                              ) : (
+                                "—"
+                              )}
+                              {req.accountOwnerName && (
+                                <span className="text-[10px] text-slate-400 block">{req.accountOwnerName}</span>
+                              )}
+                            </td>
+                            <td className="py-3.5 text-slate-500 text-[11px]">
+                              {new Date(req.createdAt).toLocaleDateString("fa-IR")}
+                            </td>
+                            <td className="py-3.5">
+                              {req.status === "PENDING" && (
+                                <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                  <Clock className="w-3 h-3" />
+                                  <span>در انتظار بررسی</span>
+                                </span>
+                              )}
+                              {req.status === "APPROVED" && (
+                                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>واریز شد</span>
+                                </span>
+                              )}
+                              {req.status === "REJECTED" && (
+                                <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                  <X className="w-3 h-3" />
+                                  <span>رد شد</span>
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 pl-2 text-[11px] text-slate-600 dark:text-slate-400">
+                              {req.bankTrackingCode && (
+                                <div className="text-emerald-700 dark:text-emerald-400 font-bold">
+                                  کد رهگیری: <span className="font-mono">{req.bankTrackingCode}</span>
+                                </div>
+                              )}
+                              {req.adminNote && (
+                                <div className="text-slate-500 mt-0.5">
+                                  پیام مدیریت: {req.adminNote}
+                                </div>
+                              )}
+                              {!req.bankTrackingCode && !req.adminNote && (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -1246,26 +1331,26 @@ export default function ProfilePage() {
             </div>
 
             {/* Visual Bank Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {bankCards.map((card) => (
                 <div
                   key={card.id}
-                  className={`relative rounded-3xl p-6 shadow-lg bg-gradient-to-br ${getCardGradient(card.bankName)} flex flex-col justify-between h-56 transition-transform hover:-translate-y-1`}
+                  className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg bg-gradient-to-br ${getCardGradient(card.bankName)} flex flex-col justify-between min-h-[13.5rem] sm:h-56 transition-transform hover:-translate-y-1`}
                 >
                   {/* Top Bar: Bank Logo & Default Badge */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-6 h-6 text-white/80" />
-                      <span className="font-bold text-sm tracking-tight">{card.bankName}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white/80 shrink-0" />
+                      <span className="font-bold text-xs sm:text-sm tracking-tight truncate">{card.bankName}</span>
                     </div>
                     {card.isDefault ? (
-                      <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/30">
+                      <span className="bg-white/20 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 sm:px-2.5 rounded-full border border-white/30 shrink-0">
                         پیش‌فرض عودت وجه
                       </span>
                     ) : (
                       <button
                         onClick={() => handleSetDefaultCard(card.id)}
-                        className="text-[10px] text-white/70 hover:text-white bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full transition-colors"
+                        className="text-[9px] sm:text-[10px] text-white/70 hover:text-white bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full transition-colors shrink-0"
                       >
                         انتخاب به عنوان پیش‌فرض
                       </button>
@@ -1273,31 +1358,31 @@ export default function ProfilePage() {
                   </div>
 
                   {/* EMV Chip & Card Number */}
-                  <div className="space-y-3">
-                    <div className="w-10 h-7 rounded-md bg-amber-300/80 border border-amber-400/90 flex items-center justify-center">
-                      <div className="w-6 h-4 border border-amber-500/50 rounded-xs"></div>
+                  <div className="space-y-2.5 sm:space-y-3 my-auto py-2">
+                    <div className="w-9 h-6 sm:w-10 sm:h-7 rounded-md bg-amber-300/80 border border-amber-400/90 flex items-center justify-center">
+                      <div className="w-5 h-3.5 sm:w-6 sm:h-4 border border-amber-500/50 rounded-xs"></div>
                     </div>
                     <div
                       onClick={() => copyToClipboard(card.cardNumber.replace(/\s/g, ""), "شماره کارت")}
-                      className="text-lg sm:text-xl font-mono font-bold tracking-widest text-left dir-ltr cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
+                      className="text-sm sm:text-lg font-mono font-bold tracking-wider sm:tracking-widest text-left dir-ltr cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-between sm:justify-start gap-2"
                       title="کلیک جهت کپی"
                     >
-                      <span>{card.cardNumber}</span>
-                      <Copy className="w-3.5 h-3.5 opacity-60" />
+                      <span className="truncate">{card.cardNumber}</span>
+                      <Copy className="w-3.5 h-3.5 opacity-60 shrink-0" />
                     </div>
                   </div>
 
                   {/* Bottom: Sheba & Owner */}
-                  <div className="flex items-end justify-between text-xs pt-2 border-t border-white/15">
-                    <div>
-                      <div className="text-[10px] text-white/70">دارنده حساب:</div>
-                      <div className="font-bold">{card.ownerName}</div>
+                  <div className="flex items-end justify-between text-xs pt-2 border-t border-white/15 gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[9px] sm:text-[10px] text-white/70">دارنده حساب:</div>
+                      <div className="font-bold truncate text-[11px] sm:text-xs">{card.ownerName}</div>
                     </div>
-                    <div className="text-left dir-ltr">
+                    <div className="text-left dir-ltr shrink-0">
                       <div className="text-[9px] text-white/70 font-sans">شماره شبا:</div>
                       <div
                         onClick={() => copyToClipboard(card.sheba, "شماره شبا")}
-                        className="font-mono text-[11px] font-bold cursor-pointer hover:opacity-80"
+                        className="font-mono text-[10px] sm:text-[11px] font-bold cursor-pointer hover:opacity-80"
                         title="کلیک جهت کپی شبا"
                       >
                         {card.sheba.slice(0, 10)}...{card.sheba.slice(-4)}
@@ -1305,7 +1390,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => handleDeleteCard(card.id)}
-                      className="text-white/60 hover:text-rose-300 transition-colors p-1"
+                      className="text-white/60 hover:text-rose-300 transition-colors p-1 shrink-0"
                       title="حذف کارت"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1339,15 +1424,15 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
+                  className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                      <MapPin className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0" />
                       <span className="font-bold text-sm text-slate-900 dark:text-white">{addr.title}</span>
                       {addr.isDefault && (
                         <span className="bg-teal-100 dark:bg-teal-950 text-brand-primary dark:text-teal-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -1357,7 +1442,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => handleDeleteAddress(addr.id)}
-                      className="text-slate-400 hover:text-rose-500 transition-colors"
+                      className="text-slate-400 hover:text-rose-500 transition-colors p-1"
                       title="حذف آدرس"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1368,20 +1453,20 @@ export default function ProfilePage() {
                     {addr.province}، {addr.city}، {addr.fullAddress}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3 pt-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-2 text-xs text-slate-500 dark:text-slate-400">
                     <div>
                       <span className="block text-[11px] text-slate-400 dark:text-slate-500">تحویل‌گیرنده:</span>
-                      <strong className="text-slate-800 dark:text-slate-200">{addr.receiverName}</strong>
+                      <strong className="text-slate-800 dark:text-slate-200 truncate block">{addr.receiverName}</strong>
                     </div>
                     <div>
                       <span className="block text-[11px] text-slate-400 dark:text-slate-500">شماره تماس:</span>
-                      <span className="font-mono text-left dir-ltr font-bold text-slate-800 dark:text-slate-200">
+                      <span className="font-mono text-left dir-ltr font-bold text-slate-800 dark:text-slate-200 block">
                         {addr.receiverPhone}
                       </span>
                     </div>
                     <div>
                       <span className="block text-[11px] text-slate-400 dark:text-slate-500">کد پستی:</span>
-                      <span className="font-mono text-slate-800 dark:text-slate-200">{addr.postalCode}</span>
+                      <span className="font-mono text-slate-800 dark:text-slate-200 block">{addr.postalCode}</span>
                     </div>
                   </div>
                 </div>
@@ -1395,7 +1480,7 @@ export default function ProfilePage() {
         {/* ========================================================================= */}
         {activeTab === "orders" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
               <div>
                 <h3 className="font-bold text-base text-slate-900 dark:text-white">سفارش‌ها و اشتراک‌های قانونی شما</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1404,7 +1489,7 @@ export default function ProfilePage() {
               </div>
               <Link
                 href="/orders"
-                className="text-xs font-bold text-brand-primary dark:text-teal-400 hover:underline flex items-center gap-1"
+                className="text-xs font-bold text-brand-primary dark:text-teal-400 hover:underline flex items-center gap-1 shrink-0"
               >
                 <span>مشاهده تاریخچه کامل سفارشات در صفحه اختصاصی</span>
                 <ChevronLeft className="w-4 h-4" />
@@ -1435,14 +1520,14 @@ export default function ProfilePage() {
                 {userOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
+                    className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2.5">
-                        <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono font-bold text-xs px-3 py-1 rounded-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono font-bold text-xs px-2.5 py-1 rounded-xl">
                           #{order.orderNumber}
                         </span>
-                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                        <span className={`text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
                           order.status === "delivered"
                             ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300"
                             : order.status === "processing"
@@ -1464,7 +1549,7 @@ export default function ProfilePage() {
                             : "ناموفق"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0">
                         <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                           مبلغ: <strong className="text-brand-primary dark:text-teal-300 font-bold">{new Intl.NumberFormat("en-US").format(order.totalPriceToman)}</strong> تومان
                         </div>
@@ -1472,7 +1557,7 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             onClick={() => setRefundModalOrder(order)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-[11px] font-bold transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-[11px] font-bold transition-colors shrink-0"
                           >
                             <Undo2 className="w-3 h-3" />
                             <span>درخواست عودت وجه</span>
@@ -1497,22 +1582,22 @@ export default function ProfilePage() {
 
                     {/* Delivered Credentials */}
                     {order.deliveredAccounts && order.deliveredAccounts.length > 0 && (
-                      <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-slate-800/80 border border-teal-200 dark:border-slate-700 space-y-2">
+                      <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-teal-50/70 dark:bg-slate-800/80 border border-teal-200 dark:border-slate-700 space-y-2">
                         <div className="flex items-center justify-between text-xs font-bold text-brand-primary dark:text-teal-300">
                           <span className="flex items-center gap-1.5">
-                            <Key className="w-4 h-4" />
+                            <Key className="w-4 h-4 shrink-0" />
                             <span>لایسنس و اطلاعات دسترسی تحویل‌شده:</span>
                           </span>
                         </div>
                         {order.deliveredAccounts.map((acc, i) => (
                           <div
                             key={i}
-                            className="bg-white dark:bg-slate-900 border border-teal-100 dark:border-slate-800 rounded-xl p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 text-left dir-ltr flex items-center justify-between"
+                            className="bg-white dark:bg-slate-900 border border-teal-100 dark:border-slate-800 rounded-xl p-2 sm:p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 text-left dir-ltr flex items-center justify-between gap-2"
                           >
-                            <span>{acc}</span>
+                            <span className="break-all select-all">{acc}</span>
                             <button
                               onClick={() => copyToClipboard(acc, "لایسنس")}
-                              className="text-slate-400 hover:text-brand-primary dark:hover:text-teal-400 transition-colors p-1"
+                              className="text-slate-400 hover:text-brand-primary dark:hover:text-teal-400 transition-colors p-1 shrink-0"
                               title="کپی مشخصات"
                             >
                               <Copy className="w-3.5 h-3.5" />
@@ -1534,7 +1619,7 @@ export default function ProfilePage() {
         {activeTab === "password" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Password Form Card */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card space-y-5 sm:space-y-6">
               <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center shrink-0 shadow-sm">
                   <Key className="w-6 h-6" />
@@ -1630,7 +1715,7 @@ export default function ProfilePage() {
       {/* ========================================================================= */}
       {isTopUpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 sm:space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-brand-primary dark:text-teal-400">
                 <Wallet className="w-5 h-5" />
@@ -1695,7 +1780,7 @@ export default function ProfilePage() {
       {/* ========================================================================= */}
       {isWithdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 sm:space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                 <ArrowUpRight className="w-5 h-5" />
@@ -1848,7 +1933,7 @@ export default function ProfilePage() {
       {/* ========================================================================= */}
       {isAddCardOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 sm:space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-brand-primary dark:text-teal-400">
                 <CreditCard className="w-5 h-5" />
@@ -1939,7 +2024,7 @@ export default function ProfilePage() {
       {/* ========================================================================= */}
       {isAddAddressOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+          <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 sm:space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-brand-primary dark:text-teal-400">
                 <MapPin className="w-5 h-5" />
