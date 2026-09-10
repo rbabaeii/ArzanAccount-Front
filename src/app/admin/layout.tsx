@@ -70,6 +70,7 @@ export default function AdminLayout({
   };
 
   const pendingOrdersCount = orders.filter((o) => o.status === "processing").length;
+  const pendingRefundsCount = orders.filter((o) => o.status === "refund_requested").length;
 
   const getRoleBadge = (role?: string) => {
     switch (role) {
@@ -139,25 +140,25 @@ export default function AdminLayout({
           icon: <Package className="w-4 h-4" />,
         },
         {
-          title: "مدیریت جامع سفارشات",
+          title: "مدیریت سفارشات",
           href: "/admin/orders",
-          badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} در انتظار` : orders.length > 0 ? orders.length.toString() : undefined,
-          badgeColor: pendingOrdersCount > 0 ? "bg-amber-400 text-teal-950 font-bold" : "bg-white/20 text-white",
+          badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} در انتظار` : undefined,
+          badgeColor: "bg-amber-400 text-teal-950 font-bold",
           icon: <ShoppingCart className="w-4 h-4" />,
         },
         {
           title: "درخواست‌های عودت وجه",
           href: "/admin/orders/refunds",
           icon: <Undo2 className="w-4 h-4" />,
-          badge: "مالی / شبا",
-          badgeColor: "bg-rose-600 text-white font-bold",
+          badge: pendingRefundsCount > 0 ? `${pendingRefundsCount} در انتظار` : "شبا",
+          badgeColor: pendingRefundsCount > 0 ? "bg-amber-400 text-teal-950 font-bold" : "bg-rose-500/90 text-white font-bold",
         },
         {
           title: "تسویه حساب و کیف پول",
           href: "/admin/withdrawals",
           icon: <Wallet className="w-4 h-4" />,
-          badge: "تسویه نقدی",
-          badgeColor: "bg-emerald-600 text-white font-bold",
+          badge: "تسویه",
+          badgeColor: "bg-emerald-600/90 text-white font-bold",
         },
         {
           title: "انبار و کنترل موجودی",
@@ -173,7 +174,7 @@ export default function AdminLayout({
           title: "مدیریت برچسب‌ها و تگ‌ها",
           href: "/admin/tags",
           icon: <Tag className="w-4 h-4" />,
-          badge: "Smart Tags",
+          badge: "هوشمند",
           badgeColor: "bg-teal-700/80 text-teal-100 font-bold",
         },
       ].filter((item) => isItemVisible(item.href)),
@@ -190,8 +191,8 @@ export default function AdminLayout({
           title: "نظارت بر فعالیت مدیران",
           href: "/admin/admin-activities",
           icon: <Activity className="w-4 h-4" />,
-          badge: "ویژه Super Admin",
-          badgeColor: "bg-purple-600 text-white font-bold",
+          badge: "مدیر ارشد",
+          badgeColor: "bg-purple-600/90 text-white font-bold",
         },
         {
           title: "تنظیمات ارز و قیمت‌گذاری",
@@ -358,15 +359,24 @@ export default function AdminLayout({
         </div>
       </div>
 
-      {/* Sidebar (HypeStore Teal Horizon Theme) */}
+      {/* Mobile Drawer Backdrop */}
+      {isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar (HypeStore Teal Horizon Theme) - Fixed full height */}
       <aside
-        className={`fixed md:sticky top-0 z-50 h-screen w-72 bg-gradient-to-b from-teal-950 to-brand-primary text-white flex flex-col justify-between p-5 transition-all duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 h-screen w-72 bg-gradient-to-b from-teal-950 to-brand-primary text-white flex flex-col justify-between p-5 transition-transform duration-300 shadow-2xl ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="overflow-y-auto scrollbar-none pr-1">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none pr-1">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 pb-5 border-b border-white/10">
+          <div className="flex items-center gap-3 pb-5 border-b border-white/10 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-white text-brand-primary flex items-center justify-center font-black text-xl shadow-md">
               ار
             </div>
@@ -390,19 +400,19 @@ export default function AdminLayout({
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsSidebarOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-2 rounded-xl font-semibold transition-all ${
+                      className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
                         isActive
-                          ? "bg-brand-primaryContainer text-white shadow-sm border border-teal-400/30"
+                          ? "bg-brand-primaryContainer text-white shadow-sm border border-teal-400/30 font-semibold"
                           : "text-teal-100 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        {item.icon}
-                        <span>{item.title}</span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="shrink-0 text-teal-300">{item.icon}</span>
+                        <span className="truncate text-xs">{item.title}</span>
                       </div>
                       {item.badge && (
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                          className={`shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full font-sans leading-none shadow-xs ${
                             item.badgeColor || "bg-white/20 text-white"
                           }`}
                         >
@@ -418,7 +428,7 @@ export default function AdminLayout({
         </div>
 
         {/* Sidebar Footer Info & Current Admin Profile */}
-        <div className="pt-4 border-t border-white/10 space-y-3">
+        <div className="pt-4 border-t border-white/10 space-y-3 shrink-0">
           {/* Admin Profile Card */}
           <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
             <NextLink href="/profile" className="flex items-center gap-2.5 overflow-hidden hover:opacity-80 transition-opacity">
@@ -461,6 +471,9 @@ export default function AdminLayout({
           </NextLink>
         </div>
       </aside>
+
+      {/* Desktop spacer for fixed sidebar width */}
+      <div className="hidden md:block w-72 shrink-0" aria-hidden="true" />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
