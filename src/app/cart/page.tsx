@@ -100,7 +100,10 @@ export default function CartPage() {
         {cart.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Cart Items List (8 cols) */}
-            <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card divide-y divide-brand-border dark:divide-slate-800">
+            <div className="lg:col-span-8 group/cart relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 divide-y divide-brand-border dark:divide-slate-800">
+              {/* Corner Glow Orb */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover/cart:scale-150 transition-all duration-500 pointer-events-none" />
+
               {cart.map((item) => {
                 const price = calculateProductPrice(item.product);
                 const itemTotal = price.isPerThousand
@@ -110,16 +113,16 @@ export default function CartPage() {
                 return (
                   <div
                     key={item.product.id}
-                    className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group/item hover:bg-teal-50/20 dark:hover:bg-slate-800/30 -mx-3 px-3 rounded-xl transition-colors duration-200"
                   >
                     {/* Thumbnail & Title */}
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden shrink-0 border border-brand-border dark:border-slate-700">
+                      <div className="w-16 h-16 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden shrink-0 border border-brand-border dark:border-slate-700 group-hover/item:border-teal-400/40 transition-colors">
                         {item.product.image ? (
                           <img
                             src={item.product.image}
                             alt={item.product.customTitle}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-300"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-400">
@@ -131,7 +134,7 @@ export default function CartPage() {
                       <div>
                         <Link
                           href={`/products/${item.product.id}`}
-                          className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white hover:text-brand-primary line-clamp-1"
+                          className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white hover:text-brand-primary dark:hover:text-teal-400 transition-colors line-clamp-1"
                         >
                           {item.product.customTitle}
                         </Link>
@@ -154,7 +157,7 @@ export default function CartPage() {
                     {/* Quantity and Price */}
                     <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-slate-800">
                       {/* Quantity buttons */}
-                      <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-lg bg-brand-surfaceDim dark:bg-slate-800">
+                      <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-lg bg-brand-surfaceDim dark:bg-slate-800 shadow-2xs">
                         <button
                           onClick={() =>
                             updateCartQuantity(
@@ -164,11 +167,11 @@ export default function CartPage() {
                                 : Math.max(1, item.quantity - 1)
                             )
                           }
-                          className="p-1.5 text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                          className="p-1.5 text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700 active:scale-90 transition-all"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="px-3 text-xs font-mono font-bold text-brand-dark dark:text-white">
+                        <span className="px-3 text-xs font-mono font-bold text-brand-dark dark:text-white select-none">
                           {item.quantity}
                         </span>
                         <button
@@ -182,10 +185,10 @@ export default function CartPage() {
                             );
                           }}
                           disabled={item.quantity >= getMaxAllowedPurchase(item.product)}
-                          className={`p-1.5 transition-colors ${
+                          className={`p-1.5 transition-all ${
                             item.quantity >= getMaxAllowedPurchase(item.product)
                               ? "text-neutral-300 dark:text-slate-600 cursor-not-allowed"
-                              : "text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                              : "text-brand-muted dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-700 active:scale-90"
                           }`}
                           title={item.quantity >= getMaxAllowedPurchase(item.product) ? `سقف مجاز خرید: ${getMaxAllowedPurchase(item.product)} عدد` : "افزایش تعداد"}
                         >
@@ -208,7 +211,7 @@ export default function CartPage() {
                       {/* Delete */}
                       <button
                         onClick={() => removeFromCart(item.product.id)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
+                        className="p-2 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg active:scale-90 transition-all"
                         title="حذف از سبد"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -222,7 +225,7 @@ export default function CartPage() {
             {/* Order Summary & Checkout (4 cols) */}
             <div className="lg:col-span-4 space-y-5 sticky top-28">
               {/* Coupon box */}
-              <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-5 shadow-card">
+              <div className="group/coupon relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-5 shadow-card hover:shadow-md transition-all duration-200">
                 <label className="block text-xs font-bold text-brand-dark dark:text-white mb-2 flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-brand-accent" />
                   <span>کد تخفیف دارید؟</span>
@@ -236,7 +239,7 @@ export default function CartPage() {
                     </div>
                     <button
                       onClick={removeCoupon}
-                      className="text-[11px] text-red-600 hover:underline font-semibold"
+                      className="text-[11px] text-rose-600 hover:underline font-semibold"
                     >
                       حذف
                     </button>
@@ -248,11 +251,11 @@ export default function CartPage() {
                       placeholder="کد تخفیف (مثلاً ARZAN20)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none uppercase font-mono"
+                      className="flex-1 bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2 px-3 text-xs outline-none uppercase font-mono transition-all duration-200"
                     />
                     <button
                       type="submit"
-                      className="bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
+                      className="bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 hover:scale-105 shrink-0"
                     >
                       اعمال
                     </button>
@@ -262,7 +265,7 @@ export default function CartPage() {
                 {couponFeedback && (
                   <p
                     className={`text-[11px] mt-2 ${
-                      couponFeedback.success ? "text-emerald-600" : "text-red-500"
+                      couponFeedback.success ? "text-emerald-600" : "text-rose-500"
                     }`}
                   >
                     {couponFeedback.message}
@@ -271,7 +274,10 @@ export default function CartPage() {
               </div>
 
               {/* Invoice Summary */}
-              <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
+              <div className="group/summary relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-4">
+                {/* Corner Glow Orb */}
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover/summary:scale-150 transition-all duration-500 pointer-events-none" />
+
                 <h3 className="font-bold text-sm text-brand-dark dark:text-white pb-3 border-b border-brand-border dark:border-slate-800">
                   خلاصه فاکتور سفارش
                 </h3>
@@ -311,29 +317,30 @@ export default function CartPage() {
 
                 <Link
                   href="/checkout"
-                  className="w-full bg-brand-accent hover:bg-brand-accentHover text-slate-950 font-black text-xs sm:text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md block text-center mt-4"
+                  className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] active:scale-95 block text-center mt-4"
                 >
                   <span>ادامه ثبت سفارش و تسویه</span>
                   <ArrowLeft className="w-4 h-4" />
                 </Link>
 
                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-800/60 p-2.5 rounded-xl">
-                  <ShieldCheck className="w-4 h-4 shrink-0" />
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
                   <span>تحویل بلافاصله پس از پرداخت بانکی</span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-dashed border-brand-border dark:border-slate-800 rounded-2xl p-16 text-center max-w-lg mx-auto shadow-xs">
-            <ShoppingBag className="w-16 h-16 text-neutral-300 dark:text-slate-600 mx-auto mb-4" />
+          <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-dashed border-brand-border dark:border-slate-800 rounded-2xl p-16 text-center max-w-lg mx-auto shadow-card hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300">
+            <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <ShoppingBag className="w-16 h-16 text-neutral-300 dark:text-slate-600 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
             <h2 className="text-base font-bold text-brand-dark dark:text-white">سبد خرید شما خالی است!</h2>
             <p className="text-xs text-brand-muted dark:text-slate-400 mt-1.5">
               هنوز اشتراکی به سبد خرید خود اضافه نکرده‌اید.
             </p>
             <Link
               href="/products"
-              className="mt-6 inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-white px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-sm"
+              className="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white px-6 py-3 rounded-xl text-xs font-bold transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-105 active:scale-95"
             >
               <span>مشاهده محصولات و شروع خرید</span>
               <ArrowLeft className="w-4 h-4" />

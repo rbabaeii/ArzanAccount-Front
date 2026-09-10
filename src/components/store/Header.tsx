@@ -141,12 +141,12 @@ export default function Header() {
           {/* Cart Icon & Badge */}
           <Link
             href="/cart"
-            className="relative p-2.5 text-brand-dark dark:text-slate-200 hover:text-brand-primary dark:hover:text-teal-300 hover:bg-brand-surfaceDim dark:hover:bg-slate-800 rounded-xl border border-brand-border dark:border-slate-700 transition-all flex items-center gap-2"
+            className="relative p-2.5 text-brand-dark dark:text-slate-200 hover:text-brand-primary dark:hover:text-teal-300 hover:bg-brand-surfaceDim dark:hover:bg-slate-800 rounded-xl border border-brand-border dark:border-slate-700 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 shadow-2xs"
           >
             <ShoppingBag className="w-5 h-5 text-brand-primary dark:text-teal-400" />
             <span className="hidden sm:inline text-xs font-bold text-brand-dark dark:text-slate-200">سبد خرید</span>
             {totalCartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brand-accent text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1 -right-1 bg-brand-accent text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs animate-pulse">
                 {totalCartCount}
               </span>
             )}
@@ -157,7 +157,7 @@ export default function Header() {
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 hover:border-brand-primary dark:hover:border-teal-400 bg-white dark:bg-slate-800 hover:bg-brand-surfaceDim dark:hover:bg-slate-700 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 hover:border-brand-primary dark:hover:border-teal-400 bg-white dark:bg-slate-800 hover:bg-brand-surfaceDim dark:hover:bg-slate-700 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
               >
                 <div className="w-7 h-7 rounded-lg bg-brand-primary dark:bg-teal-600 text-white flex items-center justify-center font-bold text-xs">
                   {user?.name ? user.name.slice(0, 1) : <User className="w-3.5 h-3.5" />}
@@ -179,7 +179,7 @@ export default function Header() {
                     className="fixed inset-0 z-40"
                     onClick={() => setUserDropdownOpen(false)}
                   />
-                  <div className="absolute left-0 mt-2 w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-neutral-150 dark:border-slate-800 py-2 z-50 animate-fadeIn text-xs">
+                  <div className="absolute left-0 mt-2 w-60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-neutral-150 dark:border-slate-800 py-2 z-50 animate-fadeIn text-xs">
                     <div className="px-4 py-3 border-b border-neutral-100 dark:border-slate-800 bg-teal-50/40 dark:bg-slate-800/80">
                       <div className="font-bold text-brand-dark dark:text-white">{user?.name || "کاربر گرامی"}</div>
                       <div className="text-[11px] text-neutral-500 dark:text-slate-400 font-mono mt-0.5" dir="ltr">
@@ -241,7 +241,7 @@ export default function Header() {
           ) : (
             <button
               onClick={openLoginModal}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-brand-primary/30 dark:border-teal-600/40 bg-teal-50/60 dark:bg-teal-950/50 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 text-brand-primary dark:text-teal-300 font-bold text-xs transition-all shadow-2xs"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-brand-primary/30 dark:border-teal-600/40 bg-teal-50/60 dark:bg-teal-950/50 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 text-brand-primary dark:text-teal-300 font-bold text-xs transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
             >
               <User className="w-4 h-4 text-brand-primary dark:text-teal-300" />
               <span>ورود / ثبت‌نام</span>

@@ -470,7 +470,8 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between">
         <Header />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-8 text-center shadow-xl space-y-6">
+          <div className="group relative overflow-hidden max-w-md w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-3xl p-8 text-center shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-6">
+            <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="w-16 h-16 bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
               <User className="w-8 h-8" />
             </div>
@@ -483,7 +484,7 @@ export default function ProfilePage() {
 
             <button
               onClick={openLoginModal}
-              className="w-full bg-brand-primary hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-3.5 px-6 rounded-2xl text-xs shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <Smartphone className="w-4 h-4" />
               <span>ورود سریع با شماره همراه (OTP)</span>
@@ -538,7 +539,7 @@ export default function ProfilePage() {
         {/* ========================================================================= */}
         {/* HERO BANNER: AMBIENT HORIZON GRADIENT & USER SUMMARY (Stitch Screen 1)   */}
         {/* ========================================================================= */}
-        <section className="relative rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 shadow-md overflow-hidden transition-colors">
+        <section className="group relative rounded-2xl sm:rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/30 transition-all duration-300 overflow-hidden">
           {/* Ambient Horizon Top Gradient */}
           <div className="h-28 sm:h-44 w-full bg-gradient-to-r from-[#004153] via-[#005a71] to-[#21667d] relative overflow-hidden">
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#b9eaff_1px,transparent_1px)] [background-size:16px_16px]"></div>
@@ -575,7 +576,7 @@ export default function ProfilePage() {
                       {user.name || "کاربر گرامی"}
                     </h1>
                     {/* Platinum VIP Badge */}
-                    <div className="flex items-center gap-1 bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800/80 text-brand-primary dark:text-teal-300 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold shadow-xs">
+                    <div className="flex items-center gap-1 bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800/80 text-brand-primary dark:text-teal-300 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold shadow-xs hover:scale-105 transition-transform duration-200 cursor-default">
                       <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-primary dark:text-teal-400 shrink-0" />
                       <span>سطح پلاتینیوم (VIP)</span>
                     </div>
@@ -624,14 +625,14 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         onClick={() => setIsTopUpOpen(true)}
-                        className="bg-brand-primary hover:bg-teal-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                        className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs hover:shadow-md hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>شارژ</span>
                       </button>
                       <button
                         onClick={() => setIsWithdrawModalOpen(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs hover:shadow-md hover:shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
                       >
                         <ArrowUpRight className="w-3.5 h-3.5" />
                         <span>تسویه</span>
@@ -654,7 +655,7 @@ export default function ProfilePage() {
                         setActiveTab("personal");
                         setIsEditingPersonal(true);
                       }}
-                      className="flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 hover:underline px-1 py-0.5 shrink-0"
+                      className="flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 hover:text-teal-600 dark:hover:text-teal-300 hover:scale-105 active:scale-95 transition-all duration-200 px-1 py-0.5 shrink-0 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>ویرایش نمایه</span>
@@ -672,9 +673,9 @@ export default function ProfilePage() {
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 no-scrollbar scrollbar-none snap-x snap-mandatory">
           <button
             onClick={() => setActiveTab("personal")}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "personal"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -688,9 +689,9 @@ export default function ProfilePage() {
               setActiveTab("wallet");
               fetchWithdrawals();
             }}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "wallet"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -704,9 +705,9 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setActiveTab("cards")}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "cards"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -720,9 +721,9 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setActiveTab("addresses")}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "addresses"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -735,9 +736,9 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setActiveTab("orders")}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "orders"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -753,9 +754,9 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setActiveTab("password")}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all shrink-0 snap-start ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "password"
-                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
             }`}
           >
@@ -771,7 +772,8 @@ export default function ProfilePage() {
         {activeTab === "personal" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Personal Details Form / Grid */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+            <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-6">
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>
                   <h3 className="font-bold text-base text-slate-900 dark:text-white">مشخصات فردی و حساب</h3>
@@ -780,7 +782,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditingPersonal(!isEditingPersonal)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/50 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-teal-800 transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/50 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-teal-800 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>{isEditingPersonal ? "انصراف از ویرایش" : "ویرایش مشخصات"}</span>
@@ -799,7 +801,7 @@ export default function ProfilePage() {
                       disabled={!isEditingPersonal}
                       value={personalForm.name}
                       onChange={(e) => setPersonalForm({ ...personalForm, name: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 disabled:opacity-75 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3.5 outline-none font-medium transition-colors"
+                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-75 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3.5 outline-none font-medium transition-all duration-200"
                       required
                     />
                   </div>
@@ -833,7 +835,7 @@ export default function ProfilePage() {
                       disabled={!isEditingPersonal}
                       value={personalForm.email}
                       onChange={(e) => setPersonalForm({ ...personalForm, email: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 disabled:opacity-75 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3.5 outline-none font-mono text-left dir-ltr transition-colors"
+                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-75 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3.5 outline-none font-mono text-left dir-ltr transition-all duration-200"
                       placeholder="example@gmail.com"
                     />
                   </div>
@@ -904,7 +906,7 @@ export default function ProfilePage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`, "کد معرف اختصاصی")}
-                        className="bg-brand-primary hover:bg-teal-700 text-white p-2 rounded-xl transition-colors"
+                        className="bg-brand-primary hover:bg-teal-700 text-white p-2 rounded-xl hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
                         title="کپی کد معرف"
                       >
                         <Copy className="w-4 h-4" />
@@ -948,7 +950,7 @@ export default function ProfilePage() {
                           type="button"
                           onClick={handleBindInviter}
                           disabled={isBindingInviter || !inviterInput.trim()}
-                          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl transition-colors shrink-0"
+                          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer"
                         >
                           {isBindingInviter ? "در حال ثبت..." : "ثبت معرف"}
                         </button>
@@ -969,7 +971,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={isSavingPersonal}
-                      className="bg-[#005a71] hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                     >
                       {isSavingPersonal ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                       <span>ذخیره تغییرات</span>
@@ -989,7 +991,8 @@ export default function ProfilePage() {
             {/* Top Cards: 3-Way Wallet Breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Card 1: Total Purchasing Balance */}
-              <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+              <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-1.5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-4">
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
                 <div className="flex items-center justify-between">
                   <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
                     <Wallet className="w-6 h-6" />
@@ -1014,7 +1017,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsTopUpOpen(true)}
-                    className="w-full bg-brand-primary hover:bg-teal-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5"
+                    className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm hover:shadow-md hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>افزایش موجودی (شارژ حساب)</span>
@@ -1023,7 +1026,8 @@ export default function ProfilePage() {
               </div>
 
               {/* Card 2: Direct Cash Deposit (Withdrawable) */}
-              <div className="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/60 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+              <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-emerald-200 dark:border-emerald-800/60 rounded-3xl p-6 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:-translate-y-1.5 hover:border-emerald-400/50 transition-all duration-300 space-y-4">
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
                 <div className="flex items-center justify-between">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                     <ArrowDownLeft className="w-6 h-6" />
@@ -1049,7 +1053,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => setIsWithdrawModalOpen(true)}
                     disabled={(user.directDepositBalance || 0) <= 0}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm hover:shadow-md hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ArrowUpRight className="w-4 h-4" />
                     <span>ثبت درخواست تسویه و برداشت</span>
@@ -1058,7 +1062,8 @@ export default function ProfilePage() {
               </div>
 
               {/* Card 3: Cashback & Referral Bonus */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+              <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-indigo-200 dark:border-indigo-800/60 rounded-3xl p-6 shadow-card hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1.5 hover:border-indigo-400/50 transition-all duration-300 space-y-4">
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
                 <div className="flex items-center justify-between">
                   <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                     <Gift className="w-6 h-6" />
@@ -1082,7 +1087,7 @@ export default function ProfilePage() {
                 <div className="pt-2">
                   <Link
                     href="/products"
-                    className="w-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                    className="w-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 py-2.5 rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>خرید با موجودی هدیه</span>
                     <ChevronLeft className="w-4 h-4" />
@@ -1105,7 +1110,8 @@ export default function ProfilePage() {
             </div>
 
             {/* Withdrawal Requests History */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card space-y-5 sm:space-y-6">
+            <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/30 transition-all duration-300 space-y-5 sm:space-y-6">
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>
                   <h3 className="font-bold text-base text-slate-900 dark:text-white">درخواست‌های تسویه حساب و برداشت وجه</h3>
@@ -1118,7 +1124,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={fetchWithdrawals}
                     disabled={isLoadingWithdrawals}
-                    className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
                     title="به‌روزرسانی لیست"
                   >
                     <RefreshCw className={`w-4 h-4 ${isLoadingWithdrawals ? "animate-spin" : ""}`} />
@@ -1127,7 +1133,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => setIsWithdrawModalOpen(true)}
                     disabled={(user.directDepositBalance || 0) <= 0}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 flex-1 sm:flex-initial"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs hover:shadow-md hover:shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-50 flex-1 sm:flex-initial cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>درخواست تسویه جدید</span>
@@ -1323,7 +1329,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setIsAddCardOpen(true)}
-                className="bg-[#005a71] hover:bg-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>افزودن کارت بانکی جدید</span>
@@ -1335,7 +1341,7 @@ export default function ProfilePage() {
               {bankCards.map((card) => (
                 <div
                   key={card.id}
-                  className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg bg-gradient-to-br ${getCardGradient(card.bankName)} flex flex-col justify-between min-h-[13.5rem] sm:h-56 transition-transform hover:-translate-y-1`}
+                  className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg bg-gradient-to-br ${getCardGradient(card.bankName)} flex flex-col justify-between min-h-[13.5rem] sm:h-56 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-900/30 transition-all duration-300`}
                 >
                   {/* Top Bar: Bank Logo & Default Badge */}
                   <div className="flex items-center justify-between gap-2">
@@ -1417,7 +1423,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setIsAddAddressOpen(true)}
-                className="bg-[#005a71] hover:bg-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>ثبت آدرس جدید</span>
@@ -1428,7 +1434,7 @@ export default function ProfilePage() {
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
+                  className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-lg hover:shadow-teal-500/5 hover:-translate-y-1 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-3.5 sm:space-y-4"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
@@ -1520,7 +1526,7 @@ export default function ProfilePage() {
                 {userOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-4 hover:border-brand-primary dark:hover:border-teal-400 transition-colors"
+                    className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-lg hover:shadow-teal-500/5 hover:-translate-y-1 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-3.5 sm:space-y-4"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1557,7 +1563,7 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             onClick={() => setRefundModalOrder(order)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-[11px] font-bold transition-colors shrink-0"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-[11px] font-bold hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer"
                           >
                             <Undo2 className="w-3 h-3" />
                             <span>درخواست عودت وجه</span>
@@ -1619,7 +1625,8 @@ export default function ProfilePage() {
         {activeTab === "password" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Password Form Card */}
-            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card space-y-5 sm:space-y-6">
+            <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/30 transition-all duration-300 space-y-5 sm:space-y-6">
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center shrink-0 shadow-sm">
                   <Key className="w-6 h-6" />
@@ -1694,7 +1701,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={isSavingPassword}
-                    className="bg-brand-primary hover:bg-teal-700 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isSavingPassword ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1765,7 +1772,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleExecuteTopUp}
                 disabled={isTopUpLoading || topUpAmount <= 0}
-                className="w-full bg-brand-primary hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isTopUpLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>تایید و افزایش آنی موجودی</span>
@@ -1917,7 +1924,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={isSubmittingWithdraw || !withdrawForm.amountToman || Number(withdrawForm.amountToman) <= 0 || Number(withdrawForm.amountToman) > (user?.directDepositBalance || 0)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmittingWithdraw ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   <span>ثبت و ارسال درخواست تسویه</span>
@@ -2008,7 +2015,7 @@ export default function ProfilePage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-brand-primary hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>ثبت و ذخیره کارت بانکی</span>
@@ -2102,7 +2109,7 @@ export default function ProfilePage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-brand-primary hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>ثبت آدرس در دفترچه</span>

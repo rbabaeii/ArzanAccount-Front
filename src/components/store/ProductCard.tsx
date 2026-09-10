@@ -20,12 +20,15 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <article
-      className={`group relative bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden shadow-card hover:shadow-cardHover transition-all duration-300 flex flex-col h-full ${
+      className={`group relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border rounded-2xl overflow-hidden shadow-card hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full ${
         isOutOfStock
           ? "border-slate-200 dark:border-slate-800/80 opacity-60 grayscale-[40%] hover:grayscale-0 hover:opacity-95"
-          : "border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500"
+          : "border-brand-border dark:border-slate-800 hover:border-teal-400/40 dark:hover:border-teal-400/30"
       }`}
     >
+      {/* Corner glow orb */}
+      <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none z-10" />
+
       {/* Media Box */}
       <div className="relative aspect-square w-full bg-brand-surfaceDim dark:bg-slate-800/60 overflow-hidden">
         {product.image ? (
@@ -33,7 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.customTitle}
             loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-brand-surfaceDim dark:bg-slate-800 text-neutral-400 dark:text-slate-500 font-mono text-[10px] sm:text-xs">
@@ -42,7 +45,7 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
 
         {/* Top Badges */}
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1 sm:gap-1.5 items-start pointer-events-none">
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1 sm:gap-1.5 items-start pointer-events-none z-10">
           {isOutOfStock ? (
             <span className="text-[9px] sm:text-[10px] font-extrabold bg-slate-900/90 dark:bg-slate-800/90 text-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shadow-xs border border-white/20">
               ناموجود
@@ -55,7 +58,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 </span>
               )}
               {price.isOnSale && (
-                <span className="text-[9px] sm:text-[10px] font-extrabold bg-rose-600 text-white px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5 sm:gap-1">
+                <span className="text-[9px] sm:text-[10px] font-extrabold bg-rose-600 text-white px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5 sm:gap-1 animate-pulse">
                   <Zap className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                   حراج ویژه
                 </span>
@@ -71,7 +74,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Stock / Unit indicator */}
-        <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 flex items-center gap-1">
+        <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 flex items-center gap-1 z-10">
           <span className="text-[9px] sm:text-[10px] font-medium bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs text-brand-dark dark:text-slate-200 px-1.5 py-0.5 rounded-md border border-brand-border dark:border-slate-700 shadow-2xs">
             {isOutOfStock ? "ناموجود" : price.isPerThousand ? "تعرفه ۱۰۰۰ تایی" : "تحویل فوری"}
           </span>
@@ -82,7 +85,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <button
             onClick={handleQuickAdd}
             title="افزودن سریع به سبد"
-            className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-brand-primary hover:bg-brand-primaryDark text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105"
+            className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-90 z-20"
           >
             <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
@@ -90,7 +93,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
 
       {/* Content Info */}
-      <div className="p-2.5 sm:p-4 md:p-5 flex flex-col flex-1 justify-between gap-2 sm:gap-4">
+      <div className="p-2.5 sm:p-4 md:p-5 flex flex-col flex-1 justify-between gap-2 sm:gap-4 relative z-10">
         <div>
           {/* Rating and API source */}
           <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-brand-muted dark:text-slate-400 mb-1">
@@ -154,14 +157,14 @@ export default function ProductCard({ product }: { product: Product }) {
 
           <Link
             href={`/products/${product.id}`}
-            className={`inline-flex items-center gap-0.5 sm:gap-1 text-[11px] sm:text-xs font-bold px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors shrink-0 border ${
+            className={`group/btn inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 border ${
               isOutOfStock
                 ? "text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
-                : "text-brand-primary dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 border-teal-100 dark:border-teal-800/60"
+                : "text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 border-transparent shadow-xs hover:shadow-md hover:shadow-teal-500/20"
             }`}
           >
             <span>{isOutOfStock ? "مشاهده" : "خرید"}</span>
-            <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover/btn:-translate-x-0.5 transition-transform duration-200" />
           </Link>
         </div>
       </div>

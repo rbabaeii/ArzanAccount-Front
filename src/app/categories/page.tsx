@@ -123,14 +123,14 @@ export default function CategoriesArchivePage() {
         </div>
 
         {/* Live Search & Filter Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-brand-border dark:border-slate-800 shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-4 rounded-2xl border border-brand-border dark:border-slate-800 shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="w-full sm:max-w-md relative">
             <input
               type="text"
               placeholder="جستجو در نام دسته (مثلاً هوش مصنوعی، تلگرام، استریم، Spotify...)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 pr-10 pl-4 text-xs outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500"
+              className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 pr-10 pl-4 text-xs outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500"
             />
             <Search className="w-4 h-4 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
           </div>
@@ -140,7 +140,7 @@ export default function CategoriesArchivePage() {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="text-brand-primary hover:underline text-xs font-semibold"
+                className="text-brand-primary hover:text-teal-600 transition-colors text-xs font-semibold hover:underline"
               >
                 پاک کردن فیلتر
               </button>
@@ -155,16 +155,19 @@ export default function CategoriesArchivePage() {
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500 p-3 sm:p-5 rounded-2xl shadow-card hover:shadow-cardHover transition-all flex flex-col justify-between group hover:-translate-y-0.5"
+                className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-brand-border dark:border-slate-800 hover:border-teal-400/40 dark:hover:border-teal-400/30 p-4 sm:p-5 rounded-2xl shadow-card hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5"
               >
+                {/* Corner Glow Orb */}
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+
                 <div>
                   <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-brand-primary dark:group-hover:bg-teal-600 group-hover:text-white transition-colors flex items-center justify-center shadow-2xs">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-gradient-to-tr group-hover:from-teal-600 group-hover:to-emerald-600 group-hover:text-white transition-all duration-300 flex items-center justify-center shadow-2xs group-hover:rotate-6 group-hover:scale-110">
                       {getCategoryIcon(cat.icon)}
                     </div>
 
                     <span
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full font-mono ${
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full font-mono transition-transform duration-200 group-hover:scale-105 ${
                         cat.activeCount > 0
                           ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
                           : "bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400"
@@ -174,11 +177,11 @@ export default function CategoriesArchivePage() {
                     </span>
                   </div>
 
-                  <h3 className="font-black text-xs sm:text-sm text-brand-dark dark:text-white group-hover:text-brand-primary transition-colors line-clamp-1">
+                  <h3 className="font-black text-xs sm:text-sm text-brand-dark dark:text-white group-hover:text-brand-primary dark:group-hover:text-teal-400 transition-colors line-clamp-1">
                     {cat.title}
                   </h3>
 
-                  <span className="text-[10px] sm:text-[11px] text-neutral-400 font-mono block mt-0.5 dir-ltr text-right truncate">
+                  <span className="text-[10px] sm:text-[11px] text-neutral-400 dark:text-slate-500 font-mono block mt-0.5 dir-ltr text-right truncate">
                     /{cat.slug}
                   </span>
 
@@ -189,7 +192,7 @@ export default function CategoriesArchivePage() {
 
                 <div className="pt-2.5 sm:pt-4 mt-2.5 sm:mt-4 border-t border-brand-border/60 dark:border-slate-800 flex items-center justify-between text-[11px] sm:text-xs font-bold text-brand-primary dark:text-teal-400 group-hover:text-brand-primaryDark dark:group-hover:text-teal-300">
                   <span>مشاهده اشتراک‌ها</span>
-                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-x-1.5 transition-transform duration-200" />
                 </div>
               </Link>
             ))}

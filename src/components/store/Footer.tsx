@@ -9,42 +9,46 @@ export default function Footer() {
       <div className="border-b border-slate-800 bg-slate-950/60 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex items-center gap-3.5 bg-slate-850 p-4 rounded-xl border border-slate-800">
-              <div className="w-11 h-11 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center shrink-0">
+            <div className="group relative overflow-hidden flex items-center gap-3.5 bg-slate-850/80 hover:bg-slate-800/90 p-4 rounded-2xl border border-slate-800 hover:border-teal-400/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="w-11 h-11 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">تحویل خودکار و آنی</h4>
+                <h4 className="font-bold text-xs text-white group-hover:text-teal-300 transition-colors">تحویل خودکار و آنی</h4>
                 <p className="text-[11px] text-slate-400 mt-0.5">صدور فوری لایسنس پس از ثبت سفارش</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 bg-slate-850 p-4 rounded-xl border border-slate-800">
-              <div className="w-11 h-11 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+            <div className="group relative overflow-hidden flex items-center gap-3.5 bg-slate-850/80 hover:bg-slate-800/90 p-4 rounded-2xl border border-slate-800 hover:border-amber-400/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-amber-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">تضمین سلامت اکانت</h4>
+                <h4 className="font-bold text-xs text-white group-hover:text-amber-300 transition-colors">تضمین سلامت اکانت</h4>
                 <p className="text-[11px] text-slate-400 mt-0.5">گارانتی کامل دوره بدون قفل یا تعلیق</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 bg-slate-850 p-4 rounded-xl border border-slate-800">
-              <div className="w-11 h-11 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="group relative overflow-hidden flex items-center gap-3.5 bg-slate-850/80 hover:bg-slate-800/90 p-4 rounded-2xl border border-slate-800 hover:border-emerald-400/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">کمترین نرخ ریالی در بازار</h4>
+                <h4 className="font-bold text-xs text-white group-hover:text-emerald-300 transition-colors">کمترین نرخ ریالی در بازار</h4>
                 <p className="text-[11px] text-slate-400 mt-0.5">محاسبه بر پایه تخفیف‌های عمده ارزی</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 bg-slate-850 p-4 rounded-xl border border-slate-800">
-              <div className="w-11 h-11 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
+            <div className="group relative overflow-hidden flex items-center gap-3.5 bg-slate-850/80 hover:bg-slate-800/90 p-4 rounded-2xl border border-slate-800 hover:border-cyan-400/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-cyan-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="w-11 h-11 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
                 <Headphones className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">پشتیبانی همیشگی</h4>
+                <h4 className="font-bold text-xs text-white group-hover:text-cyan-300 transition-colors">پشتیبانی همیشگی</h4>
                 <p className="text-[11px] text-slate-400 mt-0.5">پاسخگویی در تلگرام در تمام ساعات شبانه‌روز</p>
               </div>
             </div>
@@ -58,7 +62,7 @@ export default function Footer() {
           {/* Brand & Mission */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-teal-500 text-slate-900 flex items-center justify-center font-black text-lg rounded-lg">
+              <div className="w-9 h-9 bg-teal-500 text-slate-900 flex items-center justify-center font-black text-lg rounded-xl shadow-sm">
                 ار
               </div>
               <span className="text-lg font-black text-white">ارزان اکانت (arzanAccount)</span>
@@ -73,7 +77,7 @@ export default function Footer() {
             <div>
               <Link
                 href="/admin"
-                className="text-xs text-teal-400 underline font-medium hover:text-teal-300"
+                className="text-xs text-teal-400 underline font-medium hover:text-teal-300 transition-colors"
               >
                 دسترسی سریع به پنل مدیریت سایت
               </Link>
@@ -86,11 +90,11 @@ export default function Footer() {
               دسترسی سریع
             </h5>
             <ul className="space-y-2.5 text-xs text-slate-400">
-              <li><Link href="/" className="hover:text-teal-400 transition-colors">صفحه نخست</Link></li>
-              <li><Link href="/products" className="hover:text-teal-400 transition-colors">کاتالوگ تمام محصولات</Link></li>
-              <li><Link href="/orders" className="hover:text-teal-400 transition-colors">پیگیری سفارش و لایسنس</Link></li>
-              <li><Link href="/cart" className="hover:text-teal-400 transition-colors">سبد خرید</Link></li>
-              <li><Link href="/admin" className="hover:text-teal-400 transition-colors">ورود مدیران</Link></li>
+              <li><Link href="/" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">صفحه نخست</Link></li>
+              <li><Link href="/products" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">کاتالوگ تمام محصولات</Link></li>
+              <li><Link href="/orders" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">پیگیری سفارش و لایسنس</Link></li>
+              <li><Link href="/cart" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">سبد خرید</Link></li>
+              <li><Link href="/admin" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">ورود مدیران</Link></li>
             </ul>
           </div>
 
@@ -100,11 +104,11 @@ export default function Footer() {
               دسته‌بندی‌های برگزیده
             </h5>
             <ul className="space-y-2.5 text-xs text-slate-400">
-              <li><Link href="/category/ai" className="hover:text-teal-400 transition-colors">اکانت‌های هوش مصنوعی (ChatGPT, Gemini)</Link></li>
-              <li><Link href="/category/streaming" className="hover:text-teal-400 transition-colors">فیلم و سریال (نتفلیکس و یوتیوب)</Link></li>
-              <li><Link href="/category/music" className="hover:text-teal-400 transition-colors">اشتراک موسیقی (اسپاتیفای قانونی)</Link></li>
-              <li><Link href="/category/social-media" className="hover:text-teal-400 transition-colors">تلگرام پرمیوم و خدمات شبکه‌های اجتماعی</Link></li>
-              <li><Link href="/category/tools" className="hover:text-teal-400 transition-colors">ابزارهای دولوپر و گیت‌هاب کوپایلوت</Link></li>
+              <li><Link href="/category/ai" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">اکانت‌های هوش مصنوعی (ChatGPT, Gemini)</Link></li>
+              <li><Link href="/category/streaming" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">فیلم و سریال (نتفلیکس و یوتیوب)</Link></li>
+              <li><Link href="/category/music" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">اشتراک موسیقی (اسپاتیفای قانونی)</Link></li>
+              <li><Link href="/category/social-media" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">تلگرام پرمیوم و خدمات شبکه‌های اجتماعی</Link></li>
+              <li><Link href="/category/tools" className="hover:text-teal-400 transition-colors inline-block hover:-translate-x-1 transition-transform">ابزارهای دولوپر و گیت‌هاب کوپایلوت</Link></li>
             </ul>
           </div>
 
@@ -120,7 +124,7 @@ export default function Footer() {
               href="https://t.me/arzan_support"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-teal-500/20"
             >
               <Send className="w-3.5 h-3.5" />
               <span>پشتیبانی تلگرام: @arzan_support</span>

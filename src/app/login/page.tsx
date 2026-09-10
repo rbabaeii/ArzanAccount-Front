@@ -262,10 +262,13 @@ function LoginContent() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-brand-border dark:border-slate-800 max-w-md w-full overflow-hidden animate-fadeIn">
+    <div className="group/logincard relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs rounded-3xl shadow-2xl border border-brand-border dark:border-slate-800 max-w-md w-full animate-fadeIn transition-all duration-300">
+      {/* Corner Glow Orb */}
+      <div className="absolute -top-14 -right-14 w-36 h-36 bg-teal-500/10 rounded-full blur-2xl group-hover/logincard:scale-150 transition-all duration-500 pointer-events-none" />
+
       {/* Card Header */}
-      <div className="bg-gradient-to-r from-brand-primaryDark to-brand-primary p-6 text-white text-center">
-        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3">
+      <div className="bg-gradient-to-r from-teal-950 via-brand-primary to-brand-primaryDark p-6 text-white text-center relative z-10">
+        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3 shadow-xs">
           {authMode === "password" ? (
             <Lock className="w-6 h-6 text-brand-accent" />
           ) : step === "input" ? (
@@ -292,7 +295,7 @@ function LoginContent() {
       </div>
 
       {/* Tabs: Only 2 official modes */}
-      <div className="flex border-b border-brand-border dark:border-slate-800 bg-neutral-50/70 dark:bg-slate-800/50">
+      <div className="flex border-b border-brand-border dark:border-slate-800 bg-neutral-50/70 dark:bg-slate-800/50 relative z-10">
         <button
           type="button"
           onClick={() => {
@@ -302,7 +305,7 @@ function LoginContent() {
           }}
           className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${
             authMode === "phone"
-              ? "border-brand-primary text-brand-primary dark:text-teal-400 bg-white dark:bg-slate-900"
+              ? "border-teal-500 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900"
               : "border-transparent text-neutral-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
@@ -317,7 +320,7 @@ function LoginContent() {
           }}
           className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${
             authMode === "password"
-              ? "border-brand-primary text-brand-primary dark:text-teal-400 bg-white dark:bg-slate-900"
+              ? "border-teal-500 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900"
               : "border-transparent text-neutral-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
@@ -326,16 +329,16 @@ function LoginContent() {
       </div>
 
       {/* Card Body */}
-      <div className="p-6 space-y-5 text-xs text-slate-800 dark:text-slate-100">
+      <div className="p-6 space-y-5 text-xs text-slate-800 dark:text-slate-100 relative z-10">
         {errorMessage && (
-          <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 p-3 rounded-xl flex items-center gap-2">
+          <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 p-3 rounded-xl flex items-center gap-2 animate-shake">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successMessage && (
-          <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl flex items-center gap-2">
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl flex items-center gap-2 animate-bounce">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>{successMessage}</span>
           </div>
@@ -357,7 +360,7 @@ function LoginContent() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       dir="ltr"
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                     />
                     <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   </div>
@@ -380,7 +383,7 @@ function LoginContent() {
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                       dir="ltr"
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                     />
                     <Gift className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -402,7 +405,7 @@ function LoginContent() {
                           setPhone(acc.phone);
                           handleSendPhoneOtp(acc.phone);
                         }}
-                        className={`p-2.5 rounded-xl border text-right transition-all flex flex-col justify-between gap-1 shadow-xs hover:scale-[1.01] active:scale-[0.99] ${acc.border} ${acc.bg}`}
+                        className={`p-2.5 rounded-xl border text-right transition-all duration-200 flex flex-col justify-between gap-1 shadow-xs hover:scale-[1.02] active:scale-95 cursor-pointer ${acc.border} ${acc.bg}`}
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className={`font-bold text-[11px] ${acc.text} line-clamp-1`}>
@@ -434,7 +437,7 @@ function LoginContent() {
                       setPhone(USER_ACCOUNT.phone);
                       handleSendPhoneOtp(USER_ACCOUNT.phone);
                     }}
-                    className={`w-full p-2.5 rounded-xl border text-right transition-all flex items-center justify-between gap-2 shadow-xs hover:scale-[1.01] active:scale-[0.99] ${USER_ACCOUNT.border} ${USER_ACCOUNT.bg}`}
+                    className={`w-full p-2.5 rounded-xl border text-right transition-all duration-200 flex items-center justify-between gap-2 shadow-xs hover:scale-[1.02] active:scale-95 cursor-pointer ${USER_ACCOUNT.border} ${USER_ACCOUNT.bg}`}
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/60 flex items-center justify-center text-brand-primary dark:text-teal-300 shrink-0">
@@ -466,7 +469,7 @@ function LoginContent() {
                   type="button"
                   onClick={() => handleSendPhoneOtp()}
                   disabled={isLoading}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-50 cursor-pointer"
                 >
                   {isLoading ? (
                     <span>در حال ارسال پیامک...</span>
@@ -492,7 +495,7 @@ function LoginContent() {
                     onChange={(e) => setOtp(e.target.value)}
                     dir="ltr"
                     autoFocus
-                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none text-slate-800 dark:text-slate-100"
+                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none text-slate-800 dark:text-slate-100 transition-all duration-200"
                   />
                 </div>
 
@@ -502,7 +505,7 @@ function LoginContent() {
                     <button
                       type="button"
                       onClick={() => setStep("input")}
-                      className="text-neutral-500 dark:text-slate-400 hover:text-brand-dark dark:hover:text-white flex items-center gap-1"
+                      className="text-neutral-500 dark:text-slate-400 hover:text-brand-dark dark:hover:text-white flex items-center gap-1 transition-colors"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />
                       <span>تغییر شماره ({phone})</span>
@@ -516,7 +519,7 @@ function LoginContent() {
                       <button
                         type="button"
                         onClick={() => handleSendPhoneOtp()}
-                        className="text-brand-primary dark:text-teal-400 hover:underline font-bold flex items-center gap-1"
+                        className="text-brand-primary dark:text-teal-400 hover:underline font-bold flex items-center gap-1 transition-colors"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>ارسال مجدد پیامک</span>
@@ -530,7 +533,7 @@ function LoginContent() {
                       type="button"
                       onClick={handleSendRegisteredEmailOtp}
                       disabled={isSendingEmailOtp}
-                      className="w-full py-2.5 px-3 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 shadow-xs"
+                      className="w-full py-2.5 px-3 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 hover:scale-[1.01] active:scale-98 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 shadow-xs cursor-pointer"
                     >
                       <Mail className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
                       <span>
@@ -545,7 +548,7 @@ function LoginContent() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-sm"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-50 text-sm cursor-pointer"
                 >
                   {isLoading ? (
                     <span>در حال بررسی...</span>
@@ -575,7 +578,7 @@ function LoginContent() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   dir="ltr"
-                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
+                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                 />
                 <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
@@ -592,7 +595,7 @@ function LoginContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   dir="ltr"
-                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
+                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                 />
                 <Lock className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
@@ -615,7 +618,7 @@ function LoginContent() {
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                   dir="ltr"
-                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100"
+                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                 />
                 <Gift className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -624,7 +627,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-sm"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-50 text-sm cursor-pointer"
             >
               {isLoading ? (
                 <span>در حال بررسی رمز عبور...</span>

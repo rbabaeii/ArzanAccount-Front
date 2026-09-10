@@ -447,7 +447,10 @@ export default function CheckoutPage() {
           {/* Main Form (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             {/* Step 1: Customer Contact Info */}
-            <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card space-y-5">
+            <div className="group/buyer relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-5">
+              {/* Corner Glow Orb */}
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover/buyer:scale-150 transition-all duration-500 pointer-events-none" />
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-brand-border dark:border-slate-800">
                 <h2 className="text-sm font-bold text-brand-dark dark:text-white flex items-center gap-2">
                   <User className="w-4 h-4 text-brand-primary dark:text-teal-400" />
@@ -472,7 +475,7 @@ export default function CheckoutPage() {
                     placeholder="مثلاً: علی محمدی"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 outline-none"
+                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 outline-none transition-all duration-200"
                   />
                 </div>
 
@@ -487,7 +490,7 @@ export default function CheckoutPage() {
                       placeholder="09123456789"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 pr-9 pl-3 outline-none dir-ltr text-left font-mono"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 pr-9 pl-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                     />
                     <Phone className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -506,7 +509,7 @@ export default function CheckoutPage() {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 pr-9 pl-3 outline-none dir-ltr text-left font-mono"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 pr-9 pl-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                     />
                     <Mail className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -521,7 +524,7 @@ export default function CheckoutPage() {
                     placeholder="۱۰ رقم کد ملی"
                     value={nationalCode}
                     onChange={(e) => setNationalCode(e.target.value)}
-                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono"
+                    className="w-full bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                   />
                 </div>
               </div>
@@ -691,7 +694,7 @@ export default function CheckoutPage() {
             )}
 
             {/* Step 3: Payment Gateway Selector */}
-            <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card space-y-4">
+            <div className="group/gateway relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-4">
               <h2 className="text-sm font-bold text-brand-dark dark:text-white pb-3 border-b border-brand-border dark:border-slate-800 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                 <span>انتخاب درگاه پرداخت شاپرک / رمزارز</span>
@@ -700,16 +703,16 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <label
                   onClick={() => setGateway("zarinpal")}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between hover:scale-[1.02] active:scale-95 ${
                     gateway === "zarinpal"
-                      ? "border-brand-primary dark:border-teal-500 bg-teal-50/50 dark:bg-teal-950/40 shadow-xs"
-                      : "border-brand-border dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800"
+                      ? "border-teal-500 bg-gradient-to-br from-teal-500/10 to-emerald-500/5 dark:from-teal-950/50 dark:to-emerald-950/20 shadow-xs"
+                      : "border-brand-border dark:border-slate-700 hover:border-teal-400/50 hover:bg-neutral-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-brand-dark dark:text-white">زرین‌پال</span>
-                    <span className="w-3.5 h-3.5 rounded-full border border-brand-primary flex items-center justify-center">
-                      {gateway === "zarinpal" && <span className="w-2 h-2 rounded-full bg-brand-primary" />}
+                    <span className="w-4 h-4 rounded-full border border-teal-500 flex items-center justify-center">
+                      {gateway === "zarinpal" && <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />}
                     </span>
                   </div>
                   <span className="text-[11px] text-brand-muted dark:text-slate-400">کلیه کارت‌های عضو شتاب</span>
@@ -717,16 +720,16 @@ export default function CheckoutPage() {
 
                 <label
                   onClick={() => setGateway("nextpay")}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between hover:scale-[1.02] active:scale-95 ${
                     gateway === "nextpay"
-                      ? "border-brand-primary dark:border-teal-500 bg-teal-50/50 dark:bg-teal-950/40 shadow-xs"
-                      : "border-brand-border dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800"
+                      ? "border-teal-500 bg-gradient-to-br from-teal-500/10 to-emerald-500/5 dark:from-teal-950/50 dark:to-emerald-950/20 shadow-xs"
+                      : "border-brand-border dark:border-slate-700 hover:border-teal-400/50 hover:bg-neutral-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-brand-dark dark:text-white">نکست‌پی</span>
-                    <span className="w-3.5 h-3.5 rounded-full border border-brand-primary flex items-center justify-center">
-                      {gateway === "nextpay" && <span className="w-2 h-2 rounded-full bg-brand-primary" />}
+                    <span className="w-4 h-4 rounded-full border border-teal-500 flex items-center justify-center">
+                      {gateway === "nextpay" && <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />}
                     </span>
                   </div>
                   <span className="text-[11px] text-brand-muted dark:text-slate-400">درگاه پرداخت سریع شاپرک</span>
@@ -734,16 +737,16 @@ export default function CheckoutPage() {
 
                 <label
                   onClick={() => setGateway("crypto")}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between hover:scale-[1.02] active:scale-95 ${
                     gateway === "crypto"
-                      ? "border-brand-primary dark:border-teal-500 bg-teal-50/50 dark:bg-teal-950/40 shadow-xs"
-                      : "border-brand-border dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800"
+                      ? "border-teal-500 bg-gradient-to-br from-teal-500/10 to-emerald-500/5 dark:from-teal-950/50 dark:to-emerald-950/20 shadow-xs"
+                      : "border-brand-border dark:border-slate-700 hover:border-teal-400/50 hover:bg-neutral-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-brand-dark dark:text-white">تتر (USDT)</span>
-                    <span className="w-3.5 h-3.5 rounded-full border border-brand-primary flex items-center justify-center">
-                      {gateway === "crypto" && <span className="w-2 h-2 rounded-full bg-brand-primary" />}
+                    <span className="w-4 h-4 rounded-full border border-teal-500 flex items-center justify-center">
+                      {gateway === "crypto" && <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />}
                     </span>
                   </div>
                   <span className="text-[11px] text-brand-muted dark:text-slate-400">تسویه با رمزارز TRC20</span>
@@ -756,7 +759,7 @@ export default function CheckoutPage() {
                     type="checkbox"
                     checked={agreed}
                     onChange={(e) => setAgreed(e.target.checked)}
-                    className="w-4 h-4 rounded accent-brand-primary cursor-pointer"
+                    className="w-4 h-4 rounded accent-teal-600 cursor-pointer"
                   />
                   <span className="text-brand-muted dark:text-slate-400">
                     قوانین و شرایط خرید، حفظ محرمانگی و ضمانت سلامت اکانت را مطالعه کرده و می‌پذیرم.
@@ -767,7 +770,10 @@ export default function CheckoutPage() {
           </div>
 
           {/* Invoice Sidebar (5 cols) */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-5 sticky top-28">
+          <div className="lg:col-span-5 group/invoice relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-5 sticky top-28">
+            {/* Corner Glow Orb */}
+            <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover/invoice:scale-150 transition-all duration-500 pointer-events-none" />
+
             <h3 className="font-bold text-sm text-brand-dark dark:text-white pb-3 border-b border-brand-border dark:border-slate-800">
               اقلام سفارش ({cart.length})
             </h3>
@@ -782,7 +788,7 @@ export default function CheckoutPage() {
                 const isActivation = item.product.requiresEmail || (item.product as any).requiresPassword;
 
                 return (
-                  <div key={item.product.id} className="py-2.5 flex justify-between items-center text-xs">
+                  <div key={item.product.id} className="py-2.5 flex justify-between items-center text-xs hover:bg-teal-50/20 dark:hover:bg-slate-800/30 px-2 rounded-lg transition-colors">
                     <div>
                       <span className="font-bold text-brand-dark dark:text-white block line-clamp-1">
                         {item.product.customTitle}
@@ -848,7 +854,7 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-brand-accent hover:bg-brand-accentHover text-slate-950 font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/35 hover:scale-[1.02] active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
@@ -857,7 +863,7 @@ export default function CheckoutPage() {
                 </span>
               ) : (
                 <>
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-4 h-4 fill-slate-950" />
                   <span>پرداخت و ثبت سفارش</span>
                 </>
               )}

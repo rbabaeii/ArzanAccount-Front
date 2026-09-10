@@ -94,12 +94,14 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn relative">
+      <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-brand-border dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn">
+        <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-teal-900 via-brand-primary to-teal-800 p-4 sm:p-6 text-white relative">
           <button
             onClick={onClose}
-            className="absolute top-4 left-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="absolute top-4 left-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
             aria-label="بستن"
           >
             <X className="w-5 h-5" />
@@ -154,7 +156,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
               placeholder="لطفاً دلیل استرداد وجه (عدم تطابق اکانت، مشکل فنی، عدم رضایت و...) را شرح دهید..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs outline-none focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 transition-all resize-none"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 transition-all duration-200 resize-none"
             />
           </div>
 
@@ -170,7 +172,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
                     key={c.id}
                     type="button"
                     onClick={() => handleSelectCard(c)}
-                    className="inline-flex items-center gap-1.5 bg-teal-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-teal-200 dark:border-slate-700 hover:border-brand-primary px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 bg-teal-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-teal-200 dark:border-slate-700 hover:border-brand-primary px-3 py-1.5 rounded-lg text-[11px] font-medium hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                   >
                     <CreditCard className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                     <span>{c.bankName}</span>
@@ -195,7 +197,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
               value={cardNumber}
               onChange={(e) => setCardNumber(e.target.value)}
               dir="ltr"
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm font-mono outline-none focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-left text-slate-800 dark:text-slate-100 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
             />
           </div>
 
@@ -210,7 +212,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
               value={iban}
               onChange={(e) => setIban(e.target.value)}
               dir="ltr"
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-mono outline-none focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-left text-slate-800 dark:text-slate-100 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
             />
           </div>
 
@@ -227,7 +229,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold transition-colors"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               انصراف
             </button>
@@ -235,7 +237,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="bg-brand-primary hover:bg-brand-primaryDark text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>

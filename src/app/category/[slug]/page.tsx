@@ -52,16 +52,19 @@ export default function CategoryPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Category Header */}
-        <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-card">
+        <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300">
+          {/* Corner Glow Orb */}
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+
           <div className="flex items-center gap-2 text-xs text-brand-muted dark:text-slate-400 mb-3">
-            <Link href="/" className="hover:text-brand-primary">صفحه اصلی</Link>
+            <Link href="/" className="hover:text-brand-primary transition-colors">صفحه اصلی</Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-brand-primary">کاتالوگ</Link>
+            <Link href="/products" className="hover:text-brand-primary transition-colors">کاتالوگ</Link>
             <span>/</span>
             <span className="text-brand-dark dark:text-white font-bold">{currentCategory?.title || "دسته"}</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-brand-dark dark:text-white">
                 {currentCategory ? currentCategory.title : "دسته‌بندی"}
@@ -73,8 +76,8 @@ export default function CategoryPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-800/80 px-3.5 py-2 rounded-xl text-xs font-bold text-brand-primary dark:text-teal-300 self-start sm:self-auto">
-              <Layers className="w-4 h-4 text-brand-accent" />
+            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-800/80 px-4 py-2.5 rounded-xl text-xs font-bold text-brand-primary dark:text-teal-300 self-start sm:self-auto shadow-2xs hover:scale-105 transition-transform duration-200">
+              <Layers className="w-4 h-4 text-brand-accent animate-pulse" />
               <span>{categoryProducts.length} اشتراک آماده تحویل</span>
             </div>
           </div>

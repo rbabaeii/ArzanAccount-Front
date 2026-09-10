@@ -166,7 +166,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
             setSelectedIndex(-1);
           }}
           onKeyDown={handleKeyDown}
-          className={`w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-800 rounded-xl py-2.5 pr-11 pl-9 text-xs outline-none transition-all placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 ${inputClassName}`}
+          className={`w-full bg-brand-surfaceDim dark:bg-slate-800/80 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-800 rounded-xl py-2.5 pr-11 pl-9 text-xs outline-none transition-all duration-200 placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 ${inputClassName}`}
         />
 
         {/* Search Icon or Loading Spinner */}
@@ -187,7 +187,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
               setResults(null);
               if (inputRef.current) inputRef.current.focus();
             }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 hover:scale-110 active:scale-90 transition-all duration-150 cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -196,7 +196,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
 
       {/* Real-time ElasticSearch Dropdown */}
       {isOpen && (
-        <div className="absolute top-full right-0 left-0 mt-2 bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden text-right animate-fadeIn max-h-[480px] overflow-y-auto">
+        <div className="absolute top-full right-0 left-0 mt-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-brand-border dark:border-slate-700/80 rounded-2xl shadow-2xl z-50 overflow-hidden text-right animate-fadeIn max-h-[480px] overflow-y-auto">
           {/* 1. When Query is Empty -> Show Trending / Popular Tags */}
           {!query.trim() && (
             <div className="p-4 space-y-3">
@@ -210,7 +210,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
                     key={tag}
                     type="button"
                     onClick={() => handleSelectTag(tag)}
-                    className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary dark:hover:text-teal-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-200 dark:border-slate-700/60"
+                    className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 hover:text-brand-primary dark:hover:text-teal-300 px-3 py-1.5 rounded-lg text-xs font-medium hover:scale-105 active:scale-95 transition-all duration-200 border border-slate-200 dark:border-slate-700/60 cursor-pointer"
                   >
                     <Tag className="w-3 h-3 opacity-60" />
                     <span>{tag}</span>
@@ -224,7 +224,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
           {query.trim() && results && (
             <div>
               {/* Header Benchmark Badge */}
-              <div className="bg-slate-50 dark:bg-slate-800/60 px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="bg-slate-50/80 dark:bg-slate-800/60 px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
                   <span>نتایج لحظه‌ای الستیک‌سرچ:</span>
@@ -246,7 +246,7 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
                         key={i}
                         type="button"
                         onClick={() => handleSelectTag(sug)}
-                        className="bg-white dark:bg-slate-800 text-teal-900 dark:text-teal-200 px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-teal-200 dark:border-teal-800 shadow-2xs hover:bg-teal-600 hover:text-white transition-colors shrink-0"
+                        className="bg-white dark:bg-slate-800 text-teal-900 dark:text-teal-200 px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-teal-200 dark:border-teal-800 shadow-2xs hover:bg-teal-600 hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer"
                       >
                         #{sug}
                       </button>
@@ -264,30 +264,30 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
                       <div
                         key={item.id}
                         onClick={() => handleSelectProduct(item.id, item.customTitle || item.name)}
-                        className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                        className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors group/item ${
                           isSelected
                             ? "bg-teal-50 dark:bg-slate-800"
-                            : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                            : "hover:bg-teal-50/50 dark:hover:bg-slate-800/60"
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           {/* Product Thumbnail / Icon */}
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700 group-hover/item:border-teal-400/40 transition-colors">
                             {item.image ? (
                               <img
                                 src={item.image}
                                 alt={item.customTitle}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-300"
                               />
                             ) : (
-                              <Package className="w-5 h-5 text-brand-primary dark:text-teal-400" />
+                              <Package className="w-5 h-5 text-brand-primary dark:text-teal-400 group-hover/item:scale-110 transition-transform duration-300" />
                             )}
                           </div>
 
                           {/* Titles & Tags */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white truncate block group-hover/item:text-teal-700 dark:group-hover/item:text-teal-300 transition-colors">
                                 {item.customTitle}
                               </span>
                               {item.categoryTitleFa && (
@@ -345,10 +345,10 @@ export const LiveSearchDropdown: React.FC<LiveSearchDropdownProps> = ({
                 <button
                   type="button"
                   onClick={() => handleSubmit()}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-400 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-400 hover:text-teal-600 dark:hover:text-teal-300 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <span>مشاهده همه نتایج جستجو برای &quot;{query}&quot;</span>
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

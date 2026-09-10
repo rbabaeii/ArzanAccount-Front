@@ -237,14 +237,17 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Main Visual & Info Column (7 cols) */}
           <div className="lg:col-span-7 space-y-8">
-            <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card relative">
+            <div className="group/card relative overflow-hidden bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300">
+              {/* Corner Glow Orb */}
+              <div className="absolute -top-16 -right-16 w-36 h-36 bg-teal-500/10 rounded-full blur-3xl group-hover/card:scale-150 transition-all duration-500 pointer-events-none" />
+
               {/* Media Aspect */}
-              <div className="aspect-[16/10] w-full rounded-xl overflow-hidden bg-brand-surfaceDim dark:bg-slate-800 relative">
+              <div className="aspect-[16/10] w-full rounded-xl overflow-hidden bg-brand-surfaceDim dark:bg-slate-800 relative group/media">
                 {product.image ? (
                   <img
                     src={product.image}
                     alt={product.customTitle}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700 ease-out"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-neutral-400 font-mono text-xs">
@@ -253,7 +256,7 @@ export default function ProductDetailPage() {
                 )}
 
                 {product.badge && (
-                  <span className="absolute top-4 right-4 bg-brand-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">
+                  <span className="absolute top-4 right-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">
                     {product.badge}
                   </span>
                 )}
@@ -270,8 +273,8 @@ export default function ProductDetailPage() {
                     <span className="font-mono text-[11px] text-brand-muted dark:text-slate-400">{product.name}</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-amber-500 font-bold bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/60">
-                    <Star className="w-3.5 h-3.5 fill-amber-400" />
+                  <div className="flex items-center gap-1.5 text-xs text-amber-500 font-bold bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/60 shadow-2xs">
+                    <Star className="w-3.5 h-3.5 fill-amber-400 transition-transform group-hover/card:rotate-12 duration-300" />
                     <span>{product.rating ?? 4.9} از ۵</span>
                     <span className="text-neutral-400 dark:text-slate-500 text-[10px]">({product.reviewCount ?? 15} نظر خریداران)</span>
                   </div>
@@ -292,7 +295,7 @@ export default function ProductDetailPage() {
                       <Link
                         key={idx}
                         href={`/products?search=${encodeURIComponent(tag)}`}
-                        className="inline-flex items-center gap-1 text-[11px] bg-teal-50/80 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-300 font-medium px-2.5 py-0.5 rounded-lg border border-teal-200/70 dark:border-teal-800/70 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 text-[11px] bg-teal-50/80 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-300 font-medium px-2.5 py-0.5 rounded-lg border border-teal-200/70 dark:border-teal-800/70 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
                       >
                         #{tag}
                       </Link>
@@ -321,7 +324,7 @@ export default function ProductDetailPage() {
                     {product.specs.map((s, idx) => (
                       <div
                         key={idx}
-                        className="bg-brand-surfaceDim dark:bg-slate-800/80 p-2.5 rounded-lg border border-brand-border dark:border-slate-700 flex items-center justify-between"
+                        className="bg-brand-surfaceDim dark:bg-slate-800/80 p-2.5 rounded-lg border border-brand-border dark:border-slate-700 flex items-center justify-between hover:border-teal-400/40 transition-colors"
                       >
                         <span className="text-brand-muted dark:text-slate-400">{s.label}:</span>
                         <span className="font-bold text-brand-dark dark:text-white">{s.value}</span>
@@ -333,26 +336,26 @@ export default function ProductDetailPage() {
 
               {/* Trust Badges */}
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-brand-border dark:border-slate-800">
-                <div className="bg-teal-50/60 dark:bg-slate-800/70 p-3 rounded-xl border border-teal-100 dark:border-slate-700">
+                <div className="group/pillar bg-teal-50/60 dark:bg-slate-800/70 p-3.5 rounded-xl border border-teal-100 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 hover:border-teal-300 dark:hover:border-teal-500/40 transition-all duration-300">
                   <span className="text-[10px] text-teal-700 dark:text-teal-400 block font-semibold">تحویل خودکار</span>
-                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-0.5 flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5 text-brand-accent" />
+                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-brand-accent group-hover/pillar:scale-125 transition-transform duration-300" />
                     صدور آنی و آنلاین
                   </span>
                 </div>
 
-                <div className="bg-teal-50/60 dark:bg-slate-800/70 p-3 rounded-xl border border-teal-100 dark:border-slate-700">
+                <div className="group/pillar bg-teal-50/60 dark:bg-slate-800/70 p-3.5 rounded-xl border border-teal-100 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 hover:border-teal-300 dark:hover:border-teal-500/40 transition-all duration-300">
                   <span className="text-[10px] text-teal-700 dark:text-teal-400 block font-semibold">گارانتی سلامت</span>
-                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-0.5 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 group-hover/pillar:scale-125 transition-transform duration-300" />
                     تضمین کامل دوره
                   </span>
                 </div>
 
-                <div className="bg-teal-50/60 dark:bg-slate-800/70 p-3 rounded-xl border border-teal-100 dark:border-slate-700">
+                <div className="group/pillar bg-teal-50/60 dark:bg-slate-800/70 p-3.5 rounded-xl border border-teal-100 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 hover:border-teal-300 dark:hover:border-teal-500/40 transition-all duration-300">
                   <span className="text-[10px] text-teal-700 dark:text-teal-400 block font-semibold">پشتیبانی تلگرام</span>
-                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-0.5 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-brand-primary" />
+                  <span className="text-xs font-bold text-teal-950 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-brand-primary group-hover/pillar:scale-125 transition-transform duration-300" />
                     پاسخگویی روزانه
                   </span>
                 </div>
@@ -360,9 +363,10 @@ export default function ProductDetailPage() {
             </div>
 
             {/* FAQs on PDP */}
-            <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-3">
+            <div className="group relative overflow-hidden bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 space-y-3">
+              <div className="absolute -top-10 -left-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <h3 className="font-bold text-sm text-brand-dark dark:text-white flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 group-hover:rotate-12 transition-transform duration-300" />
                 <span>راهنمای فعال‌سازی و قوانین</span>
               </h3>
 
@@ -377,7 +381,10 @@ export default function ProductDetailPage() {
 
           {/* Buy Box Column (5 cols - Sticky) */}
           <div className="lg:col-span-5 sticky top-28 space-y-6">
-            <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card space-y-6 transition-colors">
+            <div className="group/buybox relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-6">
+              {/* Corner Glow Orb */}
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover/buybox:scale-150 transition-all duration-500 pointer-events-none" />
+
               {/* Pricing Header */}
               <div className="pb-5 border-b border-brand-border dark:border-slate-800">
                 {price.isOnSale && price.formattedOriginalToman ? (
@@ -420,7 +427,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Live Stock Synchronization Badge */}
-                <div className="mt-3 p-2.5 rounded-xl border text-[11px] flex items-center justify-between gap-2 transition-all bg-teal-50/70 dark:bg-slate-800/80 border-teal-200/80 dark:border-slate-700">
+                <div className="mt-3 p-2.5 rounded-xl border text-[11px] flex items-center justify-between gap-2 transition-all bg-teal-50/70 dark:bg-slate-800/80 border-teal-200/80 dark:border-slate-700 hover:border-teal-400/50">
                   <div className="flex items-center gap-1.5">
                     <RefreshCw className={`w-3.5 h-3.5 text-brand-primary dark:text-teal-400 ${isSyncingLive ? "animate-spin" : ""}`} />
                     <span className="font-medium text-slate-700 dark:text-slate-300">
@@ -459,7 +466,7 @@ export default function ProductDetailPage() {
                       placeholder="example@gmail.com"
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                     />
                     <span className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1 block">
                       مشخصات لایسنس یا دعوتنامه به این ایمیل ارسال خواهد شد.
@@ -478,7 +485,7 @@ export default function ProductDetailPage() {
                       placeholder="https://t.me/your_channel"
                       value={customerLink}
                       onChange={(e) => setCustomerLink(e.target.value)}
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                     />
                   </div>
                 )}
@@ -497,7 +504,7 @@ export default function ProductDetailPage() {
                       max={product.maxQty || 100000}
                       value={quantity}
                       onChange={(e) => setQuantity(Number(e.target.value))}
-                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 outline-none font-mono font-bold"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 text-brand-dark dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 outline-none font-mono font-bold transition-all duration-200"
                     />
                   </div>
                 ) : (
@@ -509,23 +516,23 @@ export default function ProductDetailPage() {
                           سقف سفارش: <strong className="font-mono text-teal-600 dark:text-teal-400">{maxAllowed}</strong> عدد
                         </span>
                       </div>
-                      <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden">
+                      <div className="flex items-center border border-brand-border dark:border-slate-700 rounded-xl bg-brand-surfaceDim dark:bg-slate-800 overflow-hidden shadow-2xs">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="px-3.5 py-2 text-sm font-bold text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700 transition-colors"
+                          className="px-3.5 py-2 text-sm font-bold text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700 active:scale-90 transition-all"
                         >
                           -
                         </button>
-                        <span className="px-4 py-2 font-mono font-bold text-brand-dark dark:text-white">
+                        <span className="px-4 py-2 font-mono font-bold text-brand-dark dark:text-white select-none">
                           {quantity}
                         </span>
                         <button
                           onClick={() => setQuantity(Math.min(maxAllowed, quantity + 1))}
                           disabled={quantity >= maxAllowed}
-                          className={`px-3.5 py-2 text-sm font-bold transition-colors ${
+                          className={`px-3.5 py-2 text-sm font-bold transition-all ${
                             quantity >= maxAllowed
                               ? "text-neutral-300 dark:text-slate-600 cursor-not-allowed"
-                              : "text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700"
+                              : "text-brand-muted dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700 active:scale-90"
                           }`}
                         >
                           +
@@ -538,9 +545,9 @@ export default function ProductDetailPage() {
 
               {/* Toast Feedback */}
               {addedToast && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-xs flex items-center gap-2 animate-bounce">
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>محصول به سبد خرید اضافه شد!</span>
+                  <span className="font-bold">محصول به سبد خرید اضافه شد!</span>
                 </div>
               )}
 
@@ -549,22 +556,22 @@ export default function ProductDetailPage() {
                 <button
                   onClick={handleBuyNow}
                   disabled={!product.inStock}
-                  className={`w-full font-black text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md ${
+                  className={`w-full font-black text-sm py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md ${
                     product.inStock
-                      ? "bg-brand-accent hover:bg-brand-accentHover text-slate-950 hover:scale-101 cursor-pointer"
+                      ? "bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] active:scale-95 cursor-pointer"
                       : "bg-neutral-300 dark:bg-slate-800 text-neutral-500 dark:text-slate-500 cursor-not-allowed opacity-60"
                   }`}
                 >
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-4 h-4 fill-slate-950" />
                   <span>{product.inStock ? "خرید فوری و تسویه" : "این محصول ناموجود است"}</span>
                 </button>
 
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.inStock}
-                  className={`w-full font-bold text-xs py-3 rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                  className={`w-full font-bold text-xs py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
                     product.inStock
-                      ? "bg-brand-primary hover:bg-brand-primaryDark text-white cursor-pointer"
+                      ? "bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 cursor-pointer"
                       : "bg-neutral-200 dark:bg-slate-800 text-neutral-400 dark:text-slate-600 cursor-not-allowed opacity-50"
                   }`}
                 >
