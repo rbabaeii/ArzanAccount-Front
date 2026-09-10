@@ -150,16 +150,16 @@ export default function CategoriesArchivePage() {
 
         {/* Categories Grid */}
         {filteredCategories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
             {filteredCategories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500 p-5 rounded-2xl shadow-card hover:shadow-cardHover transition-all flex flex-col justify-between group hover:-translate-y-0.5"
+                className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500 p-3 sm:p-5 rounded-2xl shadow-card hover:shadow-cardHover transition-all flex flex-col justify-between group hover:-translate-y-0.5"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-brand-primary dark:group-hover:bg-teal-600 group-hover:text-white transition-colors flex items-center justify-center shadow-2xs">
+                  <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-brand-primary dark:group-hover:bg-teal-600 group-hover:text-white transition-colors flex items-center justify-center shadow-2xs">
                       {getCategoryIcon(cat.icon)}
                     </div>
 
@@ -174,22 +174,22 @@ export default function CategoriesArchivePage() {
                     </span>
                   </div>
 
-                  <h3 className="font-black text-sm text-brand-dark dark:text-white group-hover:text-brand-primary transition-colors">
+                  <h3 className="font-black text-xs sm:text-sm text-brand-dark dark:text-white group-hover:text-brand-primary transition-colors line-clamp-1">
                     {cat.title}
                   </h3>
 
-                  <span className="text-[11px] text-neutral-400 font-mono block mt-0.5 dir-ltr text-right">
+                  <span className="text-[10px] sm:text-[11px] text-neutral-400 font-mono block mt-0.5 dir-ltr text-right truncate">
                     /{cat.slug}
                   </span>
 
-                  <p className="text-xs text-brand-muted dark:text-slate-400 mt-2.5 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-brand-muted dark:text-slate-400 mt-1.5 sm:mt-2.5 line-clamp-2 leading-relaxed hidden sm:block">
                     {cat.description || "سرویس‌های اورجینال با تضمین سلامت اکانت و تحویل فوری آنلاین."}
                   </p>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-brand-border/60 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-primary dark:text-teal-400 group-hover:text-brand-primaryDark dark:group-hover:text-teal-300">
+                <div className="pt-2.5 sm:pt-4 mt-2.5 sm:mt-4 border-t border-brand-border/60 dark:border-slate-800 flex items-center justify-between text-[11px] sm:text-xs font-bold text-brand-primary dark:text-teal-400 group-hover:text-brand-primaryDark dark:group-hover:text-teal-300">
                   <span>مشاهده اشتراک‌ها</span>
-                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
                 </div>
               </Link>
             ))}

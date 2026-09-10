@@ -34,7 +34,14 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price_asc" | "price_desc" | "rating" | "on_sale">("popular");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
+
+  // Mobile initial page size detection (fewer items per page on mobile as requested)
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPageSize(6);
+    }
+  }, []);
 
   const flashDeals = activeProducts.filter((p) => p.isFlashDeal);
 
@@ -254,7 +261,7 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {flashDeals.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -565,8 +572,8 @@ export default function HomePage() {
 
         {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {paginatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -579,6 +586,11 @@ export default function HomePage() {
               totalItems={filteredProducts.length}
               itemsPerPage={pageSize}
               itemName="محصول"
+              pageSizeOptions={[6, 12, 24, 48]}
+              onItemsPerPageChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
               onPageChange={(p) => {
                 setCurrentPage(p);
                 const el = document.getElementById("catalog-section");

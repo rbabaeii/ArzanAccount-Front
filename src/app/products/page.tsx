@@ -29,7 +29,15 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price_asc" | "price_desc" | "rating" | "on_sale">("popular");
   const [maxPriceToman, setMaxPriceToman] = useState<number>(3000000);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Mobile initial page size detection (fewer items per page on mobile as requested)
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPageSize(6);
+    }
+  }, []);
 
   // Filtered & Sorted list
   const filteredProducts = useMemo(() => {
@@ -103,10 +111,34 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Mobile Filters Toggle Button */}
+        <div className="lg:hidden mb-4 flex items-center justify-between bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 p-3 rounded-xl shadow-xs">
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+            className="flex items-center gap-2 text-xs font-bold text-brand-dark dark:text-white"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+            <span>فیلترهای پیشرفته و دسته‌بندی</span>
+            {(selectedCat !== "all" || inStockOnly || search) && (
+              <span className="w-2 h-2 rounded-full bg-brand-primary dark:bg-teal-400 animate-pulse" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+            className="text-[11px] font-semibold text-brand-primary dark:text-teal-300"
+          >
+            {mobileFiltersOpen ? "بستن فیلترها" : "مشاهده فیلترها"}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* Sidebar Filters (3 cols) */}
-          <aside className="lg:col-span-3 bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-5 shadow-card space-y-6 sticky top-28 transition-colors">
+          <aside className={`lg:col-span-3 bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-card space-y-6 sticky top-24 sm:top-28 transition-colors ${
+            mobileFiltersOpen ? "block mb-6" : "hidden lg:block"
+          }`}>
             <div className="flex items-center justify-between pb-4 border-b border-brand-border dark:border-slate-800">
               <div className="flex items-center gap-2 font-bold text-xs text-brand-dark dark:text-white">
                 <SlidersHorizontal className="w-4 h-4 text-brand-primary dark:text-teal-400" />
@@ -305,8 +337,8 @@ export default function ProductsPage() {
 
             {/* Grid */}
             {filteredProducts.length > 0 ? (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                   {paginatedProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
@@ -319,6 +351,11 @@ export default function ProductsPage() {
                   totalItems={filteredProducts.length}
                   itemsPerPage={pageSize}
                   itemName="اشتراک"
+                  pageSizeOptions={[6, 12, 24, 48]}
+                  onItemsPerPageChange={(newSize) => {
+                    setPageSize(newSize);
+                    setCurrentPage(1);
+                  }}
                   onPageChange={(p) => {
                     setCurrentPage(p);
                     window.scrollTo({ top: 0, behavior: "smooth" });

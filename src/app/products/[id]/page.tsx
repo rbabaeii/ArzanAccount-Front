@@ -588,7 +588,7 @@ export default function ProductDetailPage() {
             <h2 className="text-lg sm:text-xl font-black text-brand-dark dark:text-white mb-6">
               سایر اشتراک‌های پیشنهادی در این دسته:
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {relatedProducts.map((rp) => (
                 <ProductCard key={rp.id} product={rp} />
               ))}

@@ -16,7 +16,14 @@ export default function CategoryPage() {
   const slug = params?.slug as string;
   const { activeProducts, categories } = useStore();
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
+
+  // Mobile initial page size detection (fewer items per page on mobile as requested)
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPageSize(6);
+    }
+  }, []);
 
   const currentCategory = categories.find((c) => c.slug === slug);
   const categoryProducts = currentCategory
@@ -75,8 +82,8 @@ export default function CategoryPage() {
 
         {/* Product Grid */}
         {categoryProducts.length > 0 ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {paginatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -88,6 +95,11 @@ export default function CategoryPage() {
               totalItems={categoryProducts.length}
               itemsPerPage={pageSize}
               itemName="محصول"
+              pageSizeOptions={[6, 12, 24, 48]}
+              onItemsPerPageChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
               onPageChange={(p) => {
                 setCurrentPage(p);
                 window.scrollTo({ top: 0, behavior: "smooth" });

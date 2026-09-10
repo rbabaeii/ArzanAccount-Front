@@ -448,15 +448,15 @@ export default function CheckoutPage() {
           <div className="lg:col-span-7 space-y-6">
             {/* Step 1: Customer Contact Info */}
             <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-card space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-brand-border dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-brand-border dark:border-slate-800">
                 <h2 className="text-sm font-bold text-brand-dark dark:text-white flex items-center gap-2">
                   <User className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                   <span>مشخصات خریدار</span>
                 </h2>
                 {isAuthenticated && (
                   <span className="text-[11px] text-teal-600 dark:text-teal-400 flex items-center gap-1 font-semibold">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>بارگذاری شده از پروفایل کاربری (قابل ویرایش)</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>بارگذاری شده از پروفایل کاربری</span>
                   </span>
                 )}
               </div>
