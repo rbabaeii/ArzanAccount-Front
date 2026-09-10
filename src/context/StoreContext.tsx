@@ -58,6 +58,12 @@ interface StoreContextType {
   calculateProductPrice: (product: Product) => CalculatedPrice;
   syncWithIrMarket: () => Promise<void>;
   refreshFromBackend: () => Promise<void>;
+  syncCurrencyNow: () => Promise<any>;
+  updateCurrencySyncConfig: (config: {
+    apiKey?: string;
+    intervalMinutes?: number;
+    enableAutoSync?: boolean;
+  }) => Promise<any>;
 
   // Cart Actions
   addToCart: (product: Product, quantity?: number, email?: string, link?: string) => void;
@@ -248,6 +254,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               backendSettings.purchaseRatioExemptionThreshold !== undefined && backendSettings.purchaseRatioExemptionThreshold !== null
                 ? Number(backendSettings.purchaseRatioExemptionThreshold)
                 : (prev.purchaseRatioExemptionThreshold ?? 10),
+            currencyApiKey: backendSettings.currencyApiKey || prev.currencyApiKey,
+            currencySyncIntervalMinutes: backendSettings.currencySyncIntervalMinutes ?? prev.currencySyncIntervalMinutes,
+            enableCurrencyAutoSync: backendSettings.enableCurrencyAutoSync ?? prev.enableCurrencyAutoSync,
+            lastCurrencySyncTime: backendSettings.lastCurrencySyncTime || prev.lastCurrencySyncTime,
+            lastCurrencyPriceToman: backendSettings.lastCurrencyPriceToman ?? prev.lastCurrencyPriceToman,
+            lastCurrencyChangePercent: backendSettings.lastCurrencyChangePercent ?? prev.lastCurrencyChangePercent,
           };
           try {
             localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
@@ -498,6 +510,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Error updating currency and stock quota settings on backend:", error);
+    }
+  };
+
+  // Immediate manual currency sync from BrsApi
+  const syncCurrencyNow = async () => {
+    try {
+      const res = await api.syncCurrencyNow("مدیر سیستم (استعلام دستی از پنل)");
+      if (res && res.settings) {
+        setSettings((prev) => ({ ...prev, ...res.settings }));
+      } else if (res && res.usdToRialRate) {
+        setSettings((prev) => ({
+          ...prev,
+          usdToRialRate: res.usdToRialRate,
+          lastCurrencyPriceToman: res.priceToman,
+          lastCurrencySyncTime: res.syncTime,
+          lastCurrencyChangePercent: res.changePercent,
+        }));
+      }
+      await refreshFromBackend();
+      return res;
+    } catch (err) {
+      console.error("Failed to sync currency now:", err);
+      throw err;
+    }
+  };
+
+  // Update BrsApi currency sync configurations (interval, apiKey, enableAutoSync)
+  const updateCurrencySyncConfig = async (config: {
+    apiKey?: string;
+    intervalMinutes?: number;
+    enableAutoSync?: boolean;
+  }) => {
+    try {
+      const res = await api.updateCurrencySyncConfig({
+        ...config,
+        user: "مدیر سیستم (پنل تنظیمات ارز)",
+      });
+      if (res && res.settings) {
+        setSettings((prev) => ({ ...prev, ...res.settings }));
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to update currency sync config:", err);
+      throw err;
     }
   };
 
@@ -902,6 +958,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         calculateProductPrice,
         syncWithIrMarket,
         refreshFromBackend,
+        syncCurrencyNow,
+        updateCurrencySyncConfig,
         addToCart,
         removeFromCart,
         updateCartQuantity,

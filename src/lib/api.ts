@@ -90,6 +90,26 @@ export const api = {
       body: JSON.stringify(params),
     }),
 
+  syncCurrencyNow: (user = "مدیر سیستم (استعلام دستی)") =>
+    request<any>("/settings/currency/sync-now", {
+      method: "POST",
+      body: JSON.stringify({ user }),
+    }),
+
+  updateCurrencySyncConfig: (config: {
+    apiKey?: string;
+    intervalMinutes?: number;
+    enableAutoSync?: boolean;
+    user?: string;
+  }) =>
+    request<any>("/settings/currency/sync-config", {
+      method: "PUT",
+      body: JSON.stringify(config),
+    }),
+
+  getCurrencySyncStatus: () =>
+    request<any>("/settings/currency/sync-status"),
+
   getAuditLogs: (limit = 50) => request<any[]>(`/settings/logs?limit=${limit}`),
 
   // Catalog & Products
