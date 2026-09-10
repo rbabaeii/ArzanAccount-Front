@@ -100,5 +100,13 @@ export interface SystemSettings {
   supportTelegram: string;
   supportPhone: string;
   enableAutomaticSync: boolean;
+
+  // BrsApi Currency Live Sync
+  currencyApiKey?: string;
+  currencySyncIntervalMinutes?: number;
+  enableCurrencyAutoSync?: boolean;
+  lastCurrencySyncTime?: string;
+  lastCurrencyPriceToman?: number;
+  lastCurrencyChangePercent?: number;
 }
 
