@@ -9,15 +9,23 @@ import { ArrowLeft, Zap, Star, ShoppingBag } from "lucide-react";
 export default function ProductCard({ product }: { product: Product }) {
   const { calculateProductPrice, addToCart } = useStore();
   const price = calculateProductPrice(product);
+  const isOutOfStock = !product.inStock || (product.stockCount !== undefined && product.stockCount <= 0);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
     addToCart(product, product.pricingUnit === "per_1000" ? (product.minQty || 1000) : 1);
   };
 
   return (
-    <article className="group relative bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500 rounded-2xl overflow-hidden shadow-card hover:shadow-cardHover transition-all duration-300 flex flex-col h-full">
+    <article
+      className={`group relative bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden shadow-card hover:shadow-cardHover transition-all duration-300 flex flex-col h-full ${
+        isOutOfStock
+          ? "border-slate-200 dark:border-slate-800/80 opacity-60 grayscale-[40%] hover:grayscale-0 hover:opacity-95"
+          : "border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500"
+      }`}
+    >
       {/* Media Box */}
       <div className="relative aspect-square w-full bg-brand-surfaceDim dark:bg-slate-800/60 overflow-hidden">
         {product.image ? (
@@ -35,40 +43,50 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Top Badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-start">
-          {product.badge && (
-            <span className="text-[10px] font-bold tracking-tight bg-brand-primary text-white px-2.5 py-1 rounded-md shadow-xs">
-              {product.badge}
+          {isOutOfStock ? (
+            <span className="text-[10px] font-extrabold bg-slate-900/90 dark:bg-slate-800/90 text-white px-2.5 py-1 rounded-md shadow-xs border border-white/20">
+              اتمام موجودی
             </span>
-          )}
-          {price.isOnSale && (
-            <span className="text-[10px] font-extrabold bg-rose-600 text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
-              <Zap className="w-2.5 h-2.5" />
-              حراج ویژه
-            </span>
-          )}
-          {product.isFlashDeal && !price.isOnSale && (
-            <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
-              <Zap className="w-2.5 h-2.5" />
-              تخفیف ویژه
-            </span>
+          ) : (
+            <>
+              {product.badge && (
+                <span className="text-[10px] font-bold tracking-tight bg-brand-primary text-white px-2.5 py-1 rounded-md shadow-xs">
+                  {product.badge}
+                </span>
+              )}
+              {price.isOnSale && (
+                <span className="text-[10px] font-extrabold bg-rose-600 text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
+                  <Zap className="w-2.5 h-2.5" />
+                  حراج ویژه
+                </span>
+              )}
+              {product.isFlashDeal && !price.isOnSale && (
+                <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
+                  <Zap className="w-2.5 h-2.5" />
+                  تخفیف ویژه
+                </span>
+              )}
+            </>
           )}
         </div>
 
         {/* Stock / Unit indicator */}
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
           <span className="text-[10px] font-medium bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs text-brand-dark dark:text-slate-200 px-2 py-0.5 rounded-md border border-brand-border dark:border-slate-700 shadow-2xs">
-            {price.isPerThousand ? "تعرفه در 1,000 عدد" : "تحویل فوری"}
+            {isOutOfStock ? "ناموجود" : price.isPerThousand ? "تعرفه در 1,000 عدد" : "تحویل فوری"}
           </span>
         </div>
 
         {/* Quick Add overlay button */}
-        <button
-          onClick={handleQuickAdd}
-          title="افزودن سریع به سبد"
-          className="absolute bottom-3 left-3 w-8 h-8 rounded-lg bg-brand-primary hover:bg-brand-primaryDark text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105"
-        >
-          <ShoppingBag className="w-4 h-4" />
-        </button>
+        {!isOutOfStock && (
+          <button
+            onClick={handleQuickAdd}
+            title="افزودن سریع به سبد"
+            className="absolute bottom-3 left-3 w-8 h-8 rounded-lg bg-brand-primary hover:bg-brand-primaryDark text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105"
+          >
+            <ShoppingBag className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Content Info */}
@@ -135,9 +153,13 @@ export default function ProductCard({ product }: { product: Product }) {
 
           <Link
             href={`/products/${product.id}`}
-            className="inline-flex items-center gap-1 text-xs font-bold text-brand-primary dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 px-3 py-2 rounded-lg transition-colors shrink-0 border border-teal-100 dark:border-teal-800/60"
+            className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-lg transition-colors shrink-0 border ${
+              isOutOfStock
+                ? "text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+                : "text-brand-primary dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 border-teal-100 dark:border-teal-800/60"
+            }`}
           >
-            <span>خرید</span>
+            <span>{isOutOfStock ? "مشاهده" : "خرید"}</span>
             <ArrowLeft className="w-3.5 h-3.5" />
           </Link>
         </div>

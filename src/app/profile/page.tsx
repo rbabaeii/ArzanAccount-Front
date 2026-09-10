@@ -39,11 +39,16 @@ import {
   LogOut,
   Sliders,
   Undo2,
+  ArrowDownLeft,
+  ArrowUpRight,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import { Order } from "@/types";
 import { CustomerRefundModal } from "@/components/store/CustomerRefundModal";
+import { api } from "@/lib/api";
 
-type ProfileTab = "personal" | "cards" | "addresses" | "orders" | "password";
+type ProfileTab = "personal" | "wallet" | "cards" | "addresses" | "orders" | "password";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -54,7 +59,8 @@ export default function ProfilePage() {
     updateProfile,
     updatePassword,
     topUpWallet,
-    convertClubPoints,
+    requestWithdrawal,
+    bindReferral,
     logout,
   } = useAuth();
   const { orders } = useStore();
@@ -75,16 +81,27 @@ export default function ProfilePage() {
     jobTitle: "",
   });
 
+  // Inviter Binding State
+  const [inviterInput, setInviterInput] = useState("");
+  const [isBindingInviter, setIsBindingInviter] = useState(false);
+
   // Top Up Wallet Modal State
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(250000);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
 
-  // Convert Club Points Modal State
-  const [isConvertOpen, setIsConvertOpen] = useState(false);
-  const [pointsToConvert, setPointsToConvert] = useState<number>(50);
-  const [generatedCoupon, setGeneratedCoupon] = useState<{ code: string; discountPercent: number } | null>(null);
-  const [isConvertLoading, setIsConvertLoading] = useState(false);
+  // Withdrawal Request Modal State
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawForm, setWithdrawForm] = useState({
+    amountToman: "",
+    cardNumber: "",
+    sheba: "",
+    accountOwnerName: "",
+    userNote: "",
+  });
+  const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [isLoadingWithdrawals, setIsLoadingWithdrawals] = useState(false);
 
   // Add Bank Card Modal State
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
@@ -236,6 +253,20 @@ export default function ProfilePage() {
     }
   };
 
+  // Bind Inviter Referral Code
+  const handleBindInviter = async () => {
+    if (!inviterInput.trim()) return;
+    setIsBindingInviter(true);
+    const res = await bindReferral(inviterInput.trim());
+    setIsBindingInviter(false);
+    if (res.success) {
+      showToast("success", res.message);
+      setInviterInput("");
+    } else {
+      showToast("error", res.message);
+    }
+  };
+
   // Handle Add Bank Card
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,19 +359,69 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle Convert Club Points
-  const handleExecuteConvertPoints = async () => {
-    setIsConvertLoading(true);
+  // Fetch user withdrawals
+  const fetchWithdrawals = async () => {
+    if (!user?.id) return;
+    setIsLoadingWithdrawals(true);
     try {
-      const res = await convertClubPoints(pointsToConvert);
-      if (res.coupon) {
-        setGeneratedCoupon(res.coupon);
-        showToast("success", `تبریک! کد تخفیف ${res.coupon.code} با ${res.coupon.discountPercent}% تخفیف صادر شد.`);
+      const list = await api.getUserWithdrawals(user.id);
+      if (Array.isArray(list)) {
+        setWithdrawals(list);
       }
-    } catch (err: any) {
-      showToast("error", err?.message || "خطا در تبدیل امتیاز.");
+    } catch (err) {
+      console.error("Failed to load withdrawals:", err);
     } finally {
-      setIsConvertLoading(false);
+      setIsLoadingWithdrawals(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchWithdrawals();
+    }
+  }, [user?.id]);
+
+  // Handle Withdrawal Submit
+  const handleSubmitWithdrawal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = Number(withdrawForm.amountToman);
+    const directMax = user?.directDepositBalance ?? 0;
+    if (isNaN(amount) || amount <= 0) {
+      showToast("error", "لطفاً مبلغ معتبری جهت تسویه حساب وارد فرمایید.");
+      return;
+    }
+    if (amount > directMax) {
+      showToast("error", `حداکثر مبلغ قابل برداشت شما ${new Intl.NumberFormat("en-US").format(directMax)} تومان است.`);
+      return;
+    }
+    if (!withdrawForm.sheba && !withdrawForm.cardNumber) {
+      showToast("error", "لطفاً شماره شبا یا شماره کارت را جهت واریز وارد فرمایید.");
+      return;
+    }
+
+    setIsSubmittingWithdraw(true);
+    try {
+      const res = await requestWithdrawal({
+        amountToman: amount,
+        cardNumber: withdrawForm.cardNumber.trim() || undefined,
+        sheba: withdrawForm.sheba.trim() || undefined,
+        accountOwnerName: withdrawForm.accountOwnerName.trim() || user?.name || undefined,
+        userNote: withdrawForm.userNote.trim() || undefined,
+      });
+      showToast("success", res.message || "درخواست تسویه با موفقیت ثبت شد.");
+      setIsWithdrawModalOpen(false);
+      setWithdrawForm({
+        amountToman: "",
+        cardNumber: "",
+        sheba: "",
+        accountOwnerName: "",
+        userNote: "",
+      });
+      fetchWithdrawals();
+    } catch (err: any) {
+      showToast("error", err?.message || "خطا در ثبت درخواست تسویه.");
+    } finally {
+      setIsSubmittingWithdraw(false);
     }
   };
 
@@ -433,7 +514,6 @@ export default function ProfilePage() {
   };
 
   const walletFormatted = new Intl.NumberFormat("en-US").format(user.walletBalanceToman || 0);
-  const clubPoints = user.clubPoints ?? 150;
   const customerId = `CID-${user.id.slice(-5).toUpperCase()}`;
 
   return (
@@ -522,7 +602,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Financial Balances & Actions (Wallet & Club Points) */}
+              {/* Financial Balances & Actions (Wallet with Direct vs Cashback Breakdown) */}
               <div className="flex flex-wrap items-center gap-3.5 w-full lg:w-auto justify-start lg:justify-end mt-2 lg:mt-0">
                 {/* Wallet Balance Widget */}
                 <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-teal-50/70 dark:bg-slate-800/90 border border-teal-100 dark:border-slate-700 shadow-xs">
@@ -530,7 +610,7 @@ export default function ProfilePage() {
                     <Wallet className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">موجودی کیف پول</span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">موجودی کل کیف پول</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-base font-black font-mono text-brand-primary dark:text-teal-300">
                         {walletFormatted}
@@ -538,36 +618,34 @@ export default function ProfilePage() {
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">تومان</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsTopUpOpen(true)}
-                    className="mr-2 bg-brand-primary hover:bg-teal-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>شارژ</span>
-                  </button>
+                  <div className="mr-2 flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsTopUpOpen(true)}
+                      className="bg-brand-primary hover:bg-teal-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>شارژ</span>
+                    </button>
+                    <button
+                      onClick={() => setIsWithdrawModalOpen(true)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                    >
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      <span>تسویه</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Club Points Widget */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-50/70 dark:bg-slate-800/90 border border-amber-200/60 dark:border-slate-700 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5" />
+                {/* Direct Withdrawable vs Cashback Quick Badges */}
+                <div className="flex flex-col gap-1 text-[10px]">
+                  <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 font-bold">
+                    <span>قابل برداشت:</span>
+                    <span className="font-mono">{new Intl.NumberFormat("en-US").format(user.directDepositBalance || 0)} ت</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">امتیاز کلاب</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-base font-black font-mono text-amber-600 dark:text-amber-400">
-                        {new Intl.NumberFormat("en-US").format(clubPoints)}
-                      </span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">پوینت</span>
-                    </div>
+                  <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-indigo-800 dark:text-indigo-300 font-bold">
+                    <span>هدیه کش‌بک:</span>
+                    <span className="font-mono">{new Intl.NumberFormat("en-US").format(user.cashbackBonusBalance || 0)} ت</span>
                   </div>
-                  <button
-                    onClick={() => setIsConvertOpen(true)}
-                    className="mr-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs transition-colors flex items-center gap-1"
-                  >
-                    <Gift className="w-3.5 h-3.5" />
-                    <span>تخفیف</span>
-                  </button>
                 </div>
 
                 {/* Quick Edit Profile Button */}
@@ -600,6 +678,24 @@ export default function ProfilePage() {
           >
             <User className="w-4 h-4" />
             <span>اطلاعات فردی و هویتی</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("wallet");
+              fetchWithdrawals();
+            }}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+              activeTab === "wallet"
+                ? "bg-[#005a71] text-white shadow-md shadow-teal-700/20"
+                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
+            }`}
+          >
+            <Wallet className="w-4 h-4" />
+            <span>کیف پول و تسویه حساب</span>
+            <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+              جدید
+            </span>
           </button>
 
           <button
@@ -663,35 +759,10 @@ export default function ProfilePage() {
         </div>
 
         {/* ========================================================================= */}
-        {/* TAB 1: PERSONAL INFORMATION & SEJAM STATUS                                */}
+        {/* TAB 1: PERSONAL INFORMATION                                              */}
         {/* ========================================================================= */}
         {activeTab === "personal" && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Verification Status Banner */}
-            <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-emerald-950 dark:text-emerald-200">
-                      وضعیت احراز هویت: تایید شده و فعال
-                    </span>
-                    <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      سطح ۳ امنیتی (شاهکار / سجام)
-                    </span>
-                  </div>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-400 mt-1 leading-relaxed">
-                    تطابق کدملی ({personalForm.nationalCode}) با شماره سیم‌کارت از طریق سامانه شاهکار تایید گردیده و دسترسی به تمامی محصولات و لایسنس‌های قانونی بدون محدودیت فعال است.
-                  </p>
-                </div>
-              </div>
-              <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                تاریخ اعتبارسنجی: 2026/05/12
-              </div>
-            </div>
-
             {/* Personal Details Form / Grid */}
             <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -806,30 +877,77 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Referral Code Box */}
-                <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <Gift className="w-5 h-5 text-brand-primary dark:text-teal-400" />
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white">کد معرف و دعوت از دوستان:</span>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        با دعوت دوستانتان، ۱۰٪ از مبلغ اولین خرید آن‌ها به کیف پول شما هدیه می‌شود.
-                      </p>
+                {/* Referral Code & Inviter Box */}
+                <div className="space-y-3">
+                  {/* Your Referral Code */}
+                  <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <Gift className="w-5 h-5 text-brand-primary dark:text-teal-400" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white">کد معرف اختصاصی شما (طرح دعوت از دوستان):</span>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          این کد را با دوستانتان به اشتراک بگذارید؛ با هر خرید موفق آن‌ها، پاداش کش‌بک مستقیماً به کیف پول هدیه شما افزوده می‌شود.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <span className="bg-white dark:bg-slate-900 border border-teal-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-mono font-black text-brand-primary dark:text-teal-300 text-sm">
+                        {user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`, "کد معرف اختصاصی")}
+                        className="bg-brand-primary hover:bg-teal-700 text-white p-2 rounded-xl transition-colors"
+                        title="کپی کد معرف"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <span className="bg-white dark:bg-slate-900 border border-teal-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-mono font-black text-brand-primary dark:text-teal-300 text-sm">
-                      ARZAN-{user.id.slice(-4).toUpperCase()}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(`ARZAN-${user.id.slice(-4).toUpperCase()}`, "کد معرف")}
-                      className="bg-brand-primary hover:bg-teal-700 text-white p-2 rounded-xl transition-colors"
-                      title="کپی کد معرف"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
+
+                  {/* Inviter Info or Bind Form */}
+                  {user.referredByCode ? (
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                        <Users className="w-4 h-4 text-emerald-500" />
+                        <span>معرف شما:</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                          {user.referredByCode}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full font-bold">
+                        ثبت‌شده در شبکه دوستان
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300">
+                        <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                        <div>
+                          <span className="font-bold">ثبت کد معرف دوست یا معرف:</span>
+                          <span className="text-[11px] block opacity-85">اگر توسط فردی دعوت شده‌اید، کد معرف ایشان را ثبت کنید (هر کاربر حداکثر زیرمجموعه یک نفر می‌شود).</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <input
+                          type="text"
+                          placeholder="مثلاً: ARZAN-1234"
+                          value={inviterInput}
+                          onChange={(e) => setInviterInput(e.target.value.toUpperCase())}
+                          dir="ltr"
+                          className="w-full sm:w-36 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl px-2.5 py-1.5 font-mono text-xs outline-none uppercase"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleBindInviter}
+                          disabled={isBindingInviter || !inviterInput.trim()}
+                          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl transition-colors shrink-0"
+                        >
+                          {isBindingInviter ? "در حال ثبت..." : "ثبت معرف"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {isEditingPersonal && (
@@ -857,7 +975,256 @@ export default function ProfilePage() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: BANK CARDS & SHEBA (Stitch Screen 1 & Screen 2)                    */}
+        {/* TAB 2: WALLET, CASHBACK & SETTLEMENTS                                     */}
+        {/* ========================================================================= */}
+        {activeTab === "wallet" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Top Cards: 3-Way Wallet Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Card 1: Total Purchasing Balance */}
+              <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+                    <Wallet className="w-6 h-6" />
+                  </div>
+                  <span className="bg-teal-100 dark:bg-teal-950/80 text-brand-primary dark:text-teal-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                    موجودی کل خرید
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">موجودی کل قابل استفاده</span>
+                  <div className="flex items-baseline gap-1.5 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white">
+                      {walletFormatted}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">تومان</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  قابل استفاده جهت ثبت آنی سفارش کلیه محصولات و اکانت‌های پریمیوم سایت بدون نیاز به درگاه بانکی.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsTopUpOpen(true)}
+                    className="w-full bg-brand-primary hover:bg-teal-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>افزایش موجودی (شارژ حساب)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Direct Cash Deposit (Withdrawable) */}
+              <div className="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/60 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <ArrowDownLeft className="w-6 h-6" />
+                  </div>
+                  <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                    قابل برداشت نقدی
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">واریز مستقیم نقدی (قابل تسویه)</span>
+                  <div className="flex items-baseline gap-1.5 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      {new Intl.NumberFormat("en-US").format(user.directDepositBalance || 0)}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">تومان</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  مبالغی که مستقیماً توسط شما شارژ شده و در هر زمان امکان ثبت درخواست تسویه و واریز به شبا یا کارت بانکی را دارید.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsWithdrawModalOpen(true)}
+                    disabled={(user.directDepositBalance || 0) <= 0}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                    <span>ثبت درخواست تسویه و برداشت</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 3: Cashback & Referral Bonus */}
+              <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-3xl p-6 shadow-card space-y-4 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <Gift className="w-6 h-6" />
+                  </div>
+                  <span className="bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                    هدیه کش‌بک خرید
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">بونوس کش‌بک و معرفی دوستان</span>
+                  <div className="flex items-baseline gap-1.5 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-indigo-600 dark:text-indigo-400">
+                      {new Intl.NumberFormat("en-US").format(user.cashbackBonusBalance || 0)}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">تومان</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  هدیه نقدی کش‌بک حاصل از سفارشات و دعوت دوستان. این مبلغ صرفاً برای خرید محصولات سایت فعال بوده و غیرقابل برداشت است.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/products"
+                    className="w-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>خرید با موجودی هدیه</span>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Rules & Transparency Notice */}
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <div className="space-y-1">
+                <span className="font-bold">قوانین تفکیک کیف پول و تسویه حساب نقدی:</span>
+                <p className="leading-relaxed opacity-90">
+                  جهت شفافیت کامل مالی و ارائه بالاترین میزان هدایا، موجودی کیف پول به دو بخش تفکیک شده است:
+                  <b> ۱. واریز مستقیم نقدی: </b> مبالغی که از کارت خود شارژ کرده‌اید و هر زمان بخواهید قابل تسویه به شماره شبای شماست.
+                  <b> ۲. هدیه کش‌بک و معرف: </b> پاداش‌های درصدی سفارشات که به عنوان اعتبار خرید به شما هدیه داده می‌شود و منحصراً برای خرید اشتراک‌ها و اکانت‌ها در سایت قابل استفاده است.
+                </p>
+              </div>
+            </div>
+
+            {/* Withdrawal Requests History */}
+            <div className="bg-white dark:bg-slate-900 border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">درخواست‌های تسویه حساب و برداشت وجه</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    لیست کامل درخواست‌های واریز وجه به شماره شبا و پیگیری وضعیت آن‌ها توسط واحد مالی
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={fetchWithdrawals}
+                    disabled={isLoadingWithdrawals}
+                    className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    title="به‌روزرسانی لیست"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isLoadingWithdrawals ? "animate-spin" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsWithdrawModalOpen(true)}
+                    disabled={(user.directDepositBalance || 0) <= 0}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>درخواست تسویه جدید</span>
+                  </button>
+                </div>
+              </div>
+
+              {isLoadingWithdrawals ? (
+                <div className="py-12 text-center text-slate-400 flex items-center justify-center gap-2 text-xs">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>در حال دریافت اطلاعات درخواست‌ها...</span>
+                </div>
+              ) : withdrawals.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 dark:text-slate-500 space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-medium">تاکنون درخواست تسویه‌ای ثبت نکرده‌اید.</p>
+                  <p className="text-[11px]">واریزی‌های مستقیم نقدی شما در هر زمان قابل ثبت جهت انتقال به حساب بانکی می‌باشند.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold">
+                        <th className="pb-3 pr-2">شناسه</th>
+                        <th className="pb-3">مبلغ تسویه</th>
+                        <th className="pb-3">مقصد واریز (شبا / کارت)</th>
+                        <th className="pb-3">تاریخ ثبت</th>
+                        <th className="pb-3">وضعیت</th>
+                        <th className="pb-3 pl-2">توضیحات و کد پیگیری</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                      {withdrawals.map((req) => (
+                        <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                          <td className="py-3.5 pr-2 font-mono text-[11px] text-slate-500">
+                            #{req.id.slice(-6).toUpperCase()}
+                          </td>
+                          <td className="py-3.5 font-bold font-mono text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat("en-US").format(req.amountToman)} تومان
+                          </td>
+                          <td className="py-3.5 text-slate-700 dark:text-slate-300">
+                            {req.sheba ? (
+                              <div className="font-mono dir-ltr text-left text-[11px]">{req.sheba}</div>
+                            ) : req.cardNumber ? (
+                              <div className="font-mono dir-ltr text-left text-[11px]">{req.cardNumber}</div>
+                            ) : (
+                              "—"
+                            )}
+                            {req.accountOwnerName && (
+                              <span className="text-[10px] text-slate-400 block">{req.accountOwnerName}</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 text-slate-500 text-[11px]">
+                            {new Date(req.createdAt).toLocaleDateString("fa-IR")}
+                          </td>
+                          <td className="py-3.5">
+                            {req.status === "PENDING" && (
+                              <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                <Clock className="w-3 h-3" />
+                                <span>در انتظار بررسی</span>
+                              </span>
+                            )}
+                            {req.status === "APPROVED" && (
+                              <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>واریز شد</span>
+                              </span>
+                            )}
+                            {req.status === "REJECTED" && (
+                              <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                <X className="w-3 h-3" />
+                                <span>رد شد</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 pl-2 text-[11px] text-slate-600 dark:text-slate-400">
+                            {req.bankTrackingCode && (
+                              <div className="text-emerald-700 dark:text-emerald-400 font-bold">
+                                کد رهگیری: <span className="font-mono">{req.bankTrackingCode}</span>
+                              </div>
+                            )}
+                            {req.adminNote && (
+                              <div className="text-slate-500 mt-0.5">
+                                پیام مدیریت: {req.adminNote}
+                              </div>
+                            )}
+                            {!req.bankTrackingCode && !req.adminNote && (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: BANK CARDS & SHEBA (Stitch Screen 1 & Screen 2)                    */}
         {/* ========================================================================= */}
         {activeTab === "cards" && (
           <div className="space-y-6 animate-fadeIn">
@@ -1324,101 +1691,154 @@ export default function ProfilePage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL: CONVERT CLUB POINTS (تبدیل امتیاز کلاب به کوپن تخفیف)               */}
+      {/* MODAL: WITHDRAWAL REQUEST (درخواست تسویه و برداشت وجه)                     */}
       {/* ========================================================================= */}
-      {isConvertOpen && (
+      {isWithdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <Sparkles className="w-5 h-5" />
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">تبدیل امتیاز کلاب به کد تخفیف</h3>
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                <ArrowUpRight className="w-5 h-5" />
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">درخواست تسویه و انتقال وجه</h3>
               </div>
-              <button onClick={() => setIsConvertOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsWithdrawModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-slate-800/80 border border-amber-200/60 dark:border-slate-700 flex justify-between items-center">
-                <span className="text-slate-600 dark:text-slate-300">موجودی فعلی امتیاز شما:</span>
-                <strong className="text-base font-black font-mono text-amber-600 dark:text-amber-400">
-                  {clubPoints} پوینت
-                </strong>
+            <form onSubmit={handleSubmitWithdrawal} className="space-y-4 text-xs">
+              <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 dark:text-slate-300">سقف قابل تسویه شما (واریز مستقیم):</span>
+                  <strong className="text-sm font-black font-mono text-emerald-700 dark:text-emerald-300">
+                    {new Intl.NumberFormat("en-US").format(user?.directDepositBalance || 0)} تومان
+                  </strong>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  هدایای کش‌بک سایت قابل برداشت نبوده و جهت خرید محصولات رزرو شده‌اند.
+                </p>
               </div>
 
-              {!generatedCoupon ? (
-                <>
-                  <div className="space-y-2">
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300">
-                      انتخاب بسته تبدیل:
-                    </label>
-                    <div className="space-y-2">
-                      {[
-                        { points: 50, discount: "10% تخفیف" },
-                        { points: 100, discount: "20% تخفیف" },
-                        { points: 150, discount: "30% تخفیف ویژه" },
-                      ].map((pkg) => (
-                        <button
-                          key={pkg.points}
-                          type="button"
-                          disabled={clubPoints < pkg.points}
-                          onClick={() => setPointsToConvert(pkg.points)}
-                          className={`w-full p-3 rounded-xl border flex items-center justify-between transition-colors disabled:opacity-40 ${
-                            pointsToConvert === pkg.points
-                              ? "bg-amber-500/15 border-amber-500 text-amber-900 dark:text-amber-200 font-bold"
-                              : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                          }`}
-                        >
-                          <span>{pkg.points} پوینت</span>
-                          <span className="font-bold text-amber-600 dark:text-amber-400">{pkg.discount}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleExecuteConvertPoints}
-                    disabled={isConvertLoading || clubPoints < pointsToConvert}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3 rounded-xl font-black shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {isConvertLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Gift className="w-4 h-4" />}
-                    <span>تولید و دریافت کد تخفیف</span>
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-4 text-center py-2">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">کد تخفیف اختصاصی شما صادر شد!</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      می‌توانید در سبد خرید یا تسویه حساب از این کد بهره‌مند شوید.
-                    </p>
-                  </div>
-                  <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-between font-mono font-black text-sm text-brand-primary dark:text-teal-300">
-                    <span>{generatedCoupon.code}</span>
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  مبلغ درخواستی جهت تسویه (تومان):
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={withdrawForm.amountToman}
+                    onChange={(e) => setWithdrawForm({ ...withdrawForm, amountToman: e.target.value })}
+                    placeholder="مثلاً 500000"
+                    max={user?.directDepositBalance || 0}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr font-bold outline-none"
+                    required
+                  />
+                  {(user?.directDepositBalance || 0) > 0 && (
                     <button
-                      onClick={() => copyToClipboard(generatedCoupon.code, "کد تخفیف")}
-                      className="bg-brand-primary text-white p-1.5 rounded-xl hover:bg-teal-700"
+                      type="button"
+                      onClick={() => setWithdrawForm({ ...withdrawForm, amountToman: String(user?.directDepositBalance || 0) })}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-lg hover:bg-emerald-200 transition-colors"
                     >
-                      <Copy className="w-4 h-4" />
+                      کل مبلغ
                     </button>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setGeneratedCoupon(null);
-                      setIsConvertOpen(false);
+                  )}
+                </div>
+              </div>
+
+              {/* Saved Bank Cards quick select */}
+              {bankCards.length > 0 && (
+                <div>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    انتخاب سریع از کارت‌های ذخیره شده:
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      const sel = bankCards.find((c) => c.id === e.target.value);
+                      if (sel) {
+                        setWithdrawForm({
+                          ...withdrawForm,
+                          cardNumber: sel.cardNumber,
+                          sheba: sel.sheba,
+                          accountOwnerName: sel.ownerName,
+                        });
+                      }
                     }}
-                    className="w-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2.5 rounded-xl font-bold"
+                    defaultValue=""
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none text-[11px]"
                   >
-                    بستن پنجره
-                  </button>
+                    <option value="" disabled>-- انتخاب کارت یا حساب --</option>
+                    {bankCards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.bankName} - {card.cardNumber} ({card.ownerName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
-            </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  شماره شبا (IBAN) جهت واریز پایا / ساتنا:
+                </label>
+                <input
+                  type="text"
+                  value={withdrawForm.sheba}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, sheba: e.target.value })}
+                  placeholder="IR120560000000001234567001"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  شماره ۱۶ رقمی کارت بانکی (اختیاری):
+                </label>
+                <input
+                  type="text"
+                  value={withdrawForm.cardNumber}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, cardNumber: e.target.value })}
+                  placeholder="6037 9918 1234 5678"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  نام و نام‌خانوادگی صاحب حساب:
+                </label>
+                <input
+                  type="text"
+                  value={withdrawForm.accountOwnerName}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, accountOwnerName: e.target.value })}
+                  placeholder={user?.name || "نام صاحب کارت"}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  توضیحات کاربر (اختیاری):
+                </label>
+                <textarea
+                  rows={2}
+                  value={withdrawForm.userNote}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, userNote: e.target.value })}
+                  placeholder="توضیحات تکمیلی در صورت نیاز..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmittingWithdraw || !withdrawForm.amountToman || Number(withdrawForm.amountToman) <= 0 || Number(withdrawForm.amountToman) > (user?.directDepositBalance || 0)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmittingWithdraw ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  <span>ثبت و ارسال درخواست تسویه</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

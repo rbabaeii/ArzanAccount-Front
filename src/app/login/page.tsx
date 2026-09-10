@@ -17,6 +17,7 @@ import {
   Lock,
   Mail,
   User,
+  Gift,
 } from "lucide-react";
 
 const ADMIN_ACCOUNTS = [
@@ -90,18 +91,26 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
+  const referralParam = searchParams.get("ref") || searchParams.get("referral") || "";
 
   // Auth mode: ONLY "phone" (OTP) or "password"
   const [authMode, setAuthMode] = useState<"phone" | "password">("phone");
   const [step, setStep] = useState<"input" | "otp">("input");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState(referralParam);
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(120);
+
+  useEffect(() => {
+    if (referralParam && !referralCode) {
+      setReferralCode(referralParam);
+    }
+  }, [referralParam]);
 
   // If already authenticated, redirect
   useEffect(() => {
@@ -189,7 +198,7 @@ function LoginContent() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    const res = await verifyOtp(phone.trim(), otp.trim());
+    const res = await verifyOtp(phone.trim(), otp.trim(), referralCode.trim() || undefined);
     setIsLoading(false);
 
     if (res.success && res.user) {
@@ -228,7 +237,7 @@ function LoginContent() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    const res = await loginWithPassword(cleanPhone, password);
+    const res = await loginWithPassword(cleanPhone, password, referralCode.trim() || undefined);
     setIsLoading(false);
 
     if (res.success && res.user) {
@@ -351,6 +360,29 @@ function LoginContent() {
                       className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
                     />
                     <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-brand-dark dark:text-white mb-1.5 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-amber-500" />
+                      <span>کد معرف (اختیاری):</span>
+                    </span>
+                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">
+                      جهت عضویت در شبکه دوستان و دریافت پاداش
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="مثلاً: ARZAN-1234"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      dir="ltr"
+                      className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100"
+                    />
+                    <Gift className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
@@ -563,6 +595,29 @@ function LoginContent() {
                   className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-3 pr-4 pl-10 text-sm font-mono outline-none text-left text-slate-800 dark:text-slate-100"
                 />
                 <Lock className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-brand-dark dark:text-white mb-1.5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Gift className="w-3.5 h-3.5 text-amber-500" />
+                  <span>کد معرف (اختیاری):</span>
+                </span>
+                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">
+                  جهت عضویت در شبکه دوستان
+                </span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="مثلاً: ARZAN-1234"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  dir="ltr"
+                  className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-2.5 pr-4 pl-10 text-xs font-mono uppercase outline-none text-left text-slate-800 dark:text-slate-100"
+                />
+                <Gift className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
             </div>
 

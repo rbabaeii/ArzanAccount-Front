@@ -260,6 +260,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             lastCurrencySyncTime: backendSettings.lastCurrencySyncTime || prev.lastCurrencySyncTime,
             lastCurrencyPriceToman: backendSettings.lastCurrencyPriceToman ?? prev.lastCurrencyPriceToman,
             lastCurrencyChangePercent: backendSettings.lastCurrencyChangePercent ?? prev.lastCurrencyChangePercent,
+            orderCashbackPercent:
+              backendSettings.orderCashbackPercent !== undefined && backendSettings.orderCashbackPercent !== null
+                ? Number(backendSettings.orderCashbackPercent)
+                : (prev.orderCashbackPercent ?? 10),
           };
           try {
             localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
@@ -496,13 +500,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updates.usdToRialRate !== undefined ||
         updates.defaultMarginPercent !== undefined ||
         updates.maxPurchaseRatioDenominator !== undefined ||
-        updates.purchaseRatioExemptionThreshold !== undefined
+        updates.purchaseRatioExemptionThreshold !== undefined ||
+        updates.orderCashbackPercent !== undefined
       ) {
         await api.updateCurrency({
           rate: updates.usdToRialRate,
           margin: updates.defaultMarginPercent,
           maxPurchaseRatioDenominator: updates.maxPurchaseRatioDenominator,
           purchaseRatioExemptionThreshold: updates.purchaseRatioExemptionThreshold,
+          orderCashbackPercent: updates.orderCashbackPercent,
           user: "مدیر سیستم (پنل ادمین)",
         });
         // Refresh logs & products with new calculations

@@ -34,6 +34,9 @@ export default function AdminGeneralSettingsPage() {
       ? settings.purchaseRatioExemptionThreshold
       : 10
   );
+  const [cashbackPercent, setCashbackPercent] = useState<number>(
+    settings.orderCashbackPercent !== undefined ? settings.orderCashbackPercent : 10
+  );
   const [toast, setToast] = useState(false);
 
   // Sync inputs whenever settings load or update
@@ -50,6 +53,9 @@ export default function AdminGeneralSettingsPage() {
     if (settings.purchaseRatioExemptionThreshold !== undefined) {
       setRatioThreshold(settings.purchaseRatioExemptionThreshold);
     }
+    if (settings.orderCashbackPercent !== undefined) {
+      setCashbackPercent(settings.orderCashbackPercent);
+    }
   }, [settings]);
 
   const handleSave = (e: React.FormEvent) => {
@@ -63,6 +69,7 @@ export default function AdminGeneralSettingsPage() {
       enableAutomaticSync: autoSync,
       maxPurchaseRatioDenominator: maxRatioDenominator,
       purchaseRatioExemptionThreshold: ratioThreshold,
+      orderCashbackPercent: cashbackPercent,
     });
     setToast(true);
     setTimeout(() => setToast(false), 3000);
@@ -136,6 +143,25 @@ export default function AdminGeneralSettingsPage() {
                   className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5 flex justify-between">
+                  <span>درصد هدیه کش‌بک سفارشات (Cashback %):</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">%{cashbackPercent}</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={cashbackPercent}
+                  onChange={(e) => setCashbackPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                  required
+                />
+                <span className="text-[10px] text-neutral-400 mt-1 block">
+                  با هر ثبت سفارش موفق، این درصد از مبلغ فاکتور به عنوان بونوس خرید به کیف پول کاربر بازگردانده می‌شود.
+                </span>
               </div>
             </div>
 

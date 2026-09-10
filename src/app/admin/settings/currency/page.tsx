@@ -26,7 +26,17 @@ export default function CurrencySettingsPage() {
     updateSettings,
     syncCurrencyNow,
     updateCurrencySyncConfig,
+    refreshFromBackend,
   } = useStore();
+
+  // Auto-refresh currency settings from backend every 10 seconds so live sync time & status auto-updates in real-time
+  useEffect(() => {
+    refreshFromBackend();
+    const interval = setInterval(() => {
+      refreshFromBackend();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [refreshFromBackend]);
 
   // Manual rate & margin state
   const [usdToRial, setUsdToRial] = useState<number>(settings.usdToRialRate);
@@ -269,15 +279,21 @@ export default function CurrencySettingsPage() {
           </div>
 
           <div className="p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700">
-            <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
-              زمان آخرین استعلام موفق
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
+                زمان آخرین استعلام موفق
+              </span>
+              <span className="flex items-center gap-1 text-[9px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>همگام زنده</span>
+              </span>
+            </div>
             <div className="text-sm font-bold text-neutral-800 dark:text-slate-200 mt-2 flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-neutral-400 shrink-0" />
               <span className="line-clamp-1">{settings.lastCurrencySyncTime || "هم‌اکنون"}</span>
             </div>
             <span className="text-[10px] text-neutral-400 block mt-1.5">
-              در حال به‌روزرسانی اتوماتیک
+              به‌روزرسانی خودکار هر ۱۰ ثانیه در این صفحه
             </span>
           </div>
         </div>

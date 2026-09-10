@@ -46,7 +46,14 @@ interface AccountSlot {
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, appliedCoupon, calculateProductPrice, createOrder } = useStore();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   // User details prefilled from profile
   const [name, setName] = useState(user?.name || "");
@@ -340,6 +347,33 @@ export default function CheckoutPage() {
     setIsSubmitting(false);
     router.push(`/orders?id=${newOrder.orderNumber}`);
   };
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="flex flex-col min-h-screen bg-brand-surfaceDim dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
+        <Header />
+        <div className="flex-1 max-w-md mx-auto px-4 py-20 text-center flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center mb-4 shadow-sm animate-pulse">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-brand-dark dark:text-white mb-2">
+            ورود به حساب جهت تکمیل سفارش
+          </h2>
+          <p className="text-xs text-brand-muted dark:text-slate-400 mb-6 leading-relaxed">
+            جهت صدور فاکتور رسمی و تحویل آنی لایسنس، لطفاً ابتدا وارد حساب کاربری خود شوید. سبد خرید شما در حافظه ذخیره و حفظ شده است.
+          </p>
+          <Link
+            href="/login?redirect=/checkout"
+            className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white py-3.5 px-6 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+          >
+            <span>ورود سریع با شماره همراه</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (

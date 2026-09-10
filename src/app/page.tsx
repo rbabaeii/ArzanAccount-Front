@@ -19,13 +19,16 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   Tag,
+  Gift,
+  Wallet,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import Pagination from "@/components/ui/Pagination";
 import { formatNumber } from "@/lib/format";
 
 export default function HomePage() {
-  const { activeProducts, categories, calculateProductPrice } = useStore();
+  const { activeProducts, categories, calculateProductPrice, settings } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [productSearch, setProductSearch] = useState("");
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price_asc" | "price_desc" | "rating" | "on_sale">("popular");
@@ -49,6 +52,14 @@ export default function HomePage() {
       return matchCat && matchSearch && matchStock && matchSale;
     })
     .sort((a, b) => {
+      // 1. In-stock priority: products with available stock MUST appear first
+      const stockA = (a.inStock && (a.stockCount === undefined || a.stockCount > 0)) ? 1 : 0;
+      const stockB = (b.inStock && (b.stockCount === undefined || b.stockCount > 0)) ? 1 : 0;
+      if (stockA !== stockB) {
+        return stockB - stockA; // in-stock (1) first, out-of-stock (0) last
+      }
+
+      // 2. Secondary user-selected sorting
       const priceA = calculateProductPrice(a).toman;
       const priceB = calculateProductPrice(b).toman;
       if (sortBy === "price_asc") return priceA - priceB;
@@ -163,6 +174,54 @@ export default function HomePage() {
             <div className="space-y-1">
               <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">24/7</span>
               <p className="text-[11px] text-brand-muted dark:text-slate-400">پشتیبانی تلگرام و آنلاین</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* REFERRAL & CASHBACK HERO BANNER (طرح دعوت از دوستان و پاداش کش‌بک)         */}
+      {/* ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#003847] via-[#004e63] to-[#005a71] border border-teal-500/30 p-6 sm:p-8 shadow-xl text-white">
+          {/* Ambient Glows */}
+          <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-teal-400/20 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-right gap-5">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shadow-lg shrink-0">
+                <Gift className="w-8 h-8 sm:w-10 sm:h-10 animate-bounce" />
+              </div>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-300/40 text-amber-300 px-3 py-1 rounded-full text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>طرح دعوت از دوستان و پاداش کش‌بک نقدی</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
+                  دوستانت رو دعوت کن، تا <span className="text-amber-300 font-mono">%{settings.orderCashbackPercent || 10}</span> از هر خریدشون کش‌بک بگیر!
+                </h2>
+                <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed max-w-2xl">
+                  کد معرف اختصاصی خودت رو با دوستان به اشتراک بذار. به ازای هر خرید موفقی که دوستانت انجام دهند، %{settings.orderCashbackPercent || 10} از مبلغ فاکتور به عنوان اعتبار پاداش کش‌بک مستقیماً به کیف پول شما واریز خواهد شد تا در خریدهای بعدی از آن استفاده کنید.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-3 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/profile"
+                className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                <span>دریافت کد معرف اختصاصی من</span>
+              </Link>
+              <Link
+                href="/profile"
+                className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-5 py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <Wallet className="w-4 h-4 text-teal-300" />
+                <span>مشاهده کیف پول و پاداش‌ها</span>
+              </Link>
             </div>
           </div>
         </div>

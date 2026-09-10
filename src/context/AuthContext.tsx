@@ -42,6 +42,10 @@ export interface AuthUser {
   role: UserRole;
   status: "ACTIVE" | "BLOCKED" | "PENDING";
   walletBalanceToman: number;
+  directDepositBalance?: number;
+  cashbackBonusBalance?: number;
+  referralCode?: string;
+  referredByCode?: string;
   clubPoints?: number;
   bankCardsJson?: string;
   addressesJson?: string;
@@ -64,12 +68,20 @@ export interface AuthContextType {
   sendOtp: (phone: string) => Promise<{ success: boolean; message: string }>;
   sendEmailOtp: (phone: string) => Promise<{ success: boolean; message: string; maskedEmail: string }>;
   sendDirectEmailOtp: (email: string) => Promise<{ success: boolean; message: string }>;
-  verifyEmailOtp: (email: string, code: string) => Promise<{ success: boolean; message?: string; user?: AuthUser }>;
-  verifyOtp: (phone: string, code: string) => Promise<{ success: boolean; message?: string; user?: AuthUser }>;
-  loginWithPassword: (phone: string, password: string) => Promise<{ success: boolean; user?: AuthUser; message?: string }>;
+  verifyEmailOtp: (email: string, code: string, referralCode?: string) => Promise<{ success: boolean; message?: string; user?: AuthUser }>;
+  verifyOtp: (phone: string, code: string, referralCode?: string) => Promise<{ success: boolean; message?: string; user?: AuthUser }>;
+  loginWithPassword: (phone: string, password: string, referralCode?: string) => Promise<{ success: boolean; user?: AuthUser; message?: string }>;
+  bindReferral: (referralCode: string) => Promise<{ success: boolean; message: string; user?: AuthUser }>;
   updatePassword: (newPassword: string, currentPassword?: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (data: Partial<AuthUser>) => Promise<{ success: boolean; user?: AuthUser; message?: string }>;
   topUpWallet: (amountToman: number) => Promise<{ success: boolean; newBalance?: number }>;
+  requestWithdrawal: (data: {
+    amountToman: number;
+    cardNumber?: string;
+    sheba?: string;
+    accountOwnerName?: string;
+    userNote?: string;
+  }) => Promise<{ success: boolean; message: string }>;
   convertClubPoints: (points: number) => Promise<{ success: boolean; coupon?: any }>;
   logout: () => void;
   hasPermission: (section: "catalog" | "finance" | "orders" | "users" | "settings") => boolean;
@@ -148,9 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyOtp = async (phone: string, code: string) => {
+  const verifyOtp = async (phone: string, code: string, referralCode?: string) => {
     try {
-      const res = await api.verifyOtp(phone, code);
+      const res = await api.verifyOtp(phone, code, referralCode);
       if (res?.accessToken && res?.user) {
         setToken(res.accessToken);
         setUser(res.user);
@@ -175,6 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: "ACTIVE",
           walletBalanceToman: adminFallback ? 1000000 : 0,
           isTwoFactorEnabled: Boolean(adminFallback),
+          referralCode: `ARZAN-${phone.slice(-4)}`,
         };
         const mockToken = `mock-token-${Date.now()}`;
         setToken(mockToken);
@@ -198,9 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return api.sendDirectEmailOtp(email);
   };
 
-  const verifyEmailOtp = async (email: string, code: string) => {
+  const verifyEmailOtp = async (email: string, code: string, referralCode?: string) => {
     try {
-      const res = await api.verifyEmailOtp(email, code);
+      const res = await api.verifyEmailOtp(email, code, referralCode);
       if (res && res.accessToken && res.user) {
         setToken(res.accessToken);
         setUser(res.user);
@@ -217,9 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithPassword = async (phone: string, password: string) => {
+  const loginWithPassword = async (phone: string, password: string, referralCode?: string) => {
     try {
-      const res = await api.loginWithPassword(phone, password);
+      const res = await api.loginWithPassword(phone, password, referralCode);
       setToken(res.accessToken);
       setUser(res.user);
       if (typeof window !== "undefined") {
@@ -239,6 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: "ACTIVE",
           walletBalanceToman: 1000000,
           isTwoFactorEnabled: true,
+          referralCode: `ARZAN-${phone.slice(-4)}`,
         };
         const mockToken = `mock-token-${Date.now()}`;
         setToken(mockToken);
@@ -251,6 +265,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true, user: fallbackUser };
       }
       return { success: false, message: err.message || "رمز عبور وارد شده نامعتبر است." };
+    }
+  };
+
+  const bindReferral = async (referralCode: string) => {
+    if (!user) return { success: false, message: "ابتدا وارد حساب کاربری خود شوید." };
+    try {
+      const res = await api.bindReferral(user.id, referralCode);
+      const updatedUser: AuthUser = {
+        ...user,
+        referredByCode: res?.referredByCode || referralCode,
+      };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+      return { success: true, message: "کد معرف با موفقیت برای حساب کاربری شما ثبت گردید.", user: updatedUser };
+    } catch (err: any) {
+      return { success: false, message: err.message || "خطا در ثبت کد معرف." };
     }
   };
 
@@ -337,12 +369,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const requestWithdrawal = async (data: {
+    amountToman: number;
+    cardNumber?: string;
+    sheba?: string;
+    accountOwnerName?: string;
+    userNote?: string;
+  }) => {
+    if (!user) throw new Error("کاربر وارد نشده است.");
+    const res = await api.requestWithdrawal(user.id, data);
+    try {
+      const refreshed = await api.getUserProfile(user.id);
+      if (refreshed) {
+        setUser(refreshed);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("arzan_cached_user", JSON.stringify(refreshed));
+        }
+      }
+    } catch {
+      const updatedUser: AuthUser = {
+        ...user,
+        directDepositBalance: Math.max(0, (user.directDepositBalance || 0) - data.amountToman),
+        walletBalanceToman: Math.max(0, (user.walletBalanceToman || 0) - data.amountToman),
+      };
+      setUser(updatedUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+      }
+    }
+    return { success: true, message: res.message || "درخواست تسویه با موفقیت ثبت شد." };
+  };
+
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     if (typeof window !== "undefined") {
-      localStorage.removeItem("arzan_auth_token");
-      localStorage.removeItem("arzan_cached_user");
+      const theme = localStorage.getItem("arzan_theme");
+      // Wipe all localStorage items (including cart arzan_cart_v2, auth tokens, cached user)
+      localStorage.clear();
+      if (theme) {
+        localStorage.setItem("arzan_theme", theme);
+      }
+      try {
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn(e);
+      }
+      // Force full reload to wipe all memory caches and redirect to home
+      window.location.href = "/";
     }
   }, []);
 
@@ -397,9 +471,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         verifyEmailOtp,
         verifyOtp,
         loginWithPassword,
+        bindReferral,
         updatePassword,
         updateProfile,
         topUpWallet,
+        requestWithdrawal,
         convertClubPoints,
         logout,
         hasPermission,

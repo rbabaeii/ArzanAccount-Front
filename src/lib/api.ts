@@ -83,6 +83,7 @@ export const api = {
     margin?: number;
     maxPurchaseRatioDenominator?: number;
     purchaseRatioExemptionThreshold?: number;
+    orderCashbackPercent?: number;
     user?: string;
   }) =>
     request<any>("/settings/currency", {
@@ -313,10 +314,10 @@ export const api = {
       body: JSON.stringify({ phone }),
     }),
 
-  verifyOtp: (phone: string, code: string) =>
+  verifyOtp: (phone: string, code: string, referralCode?: string) =>
     request<{ accessToken: string; user: any }>("/auth/verify-otp", {
       method: "POST",
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, code, referralCode }),
     }),
 
   sendDirectEmailOtp: (email: string) =>
@@ -325,10 +326,16 @@ export const api = {
       body: JSON.stringify({ email }),
     }),
 
-  verifyEmailOtp: (email: string, code: string) =>
+  verifyEmailOtp: (email: string, code: string, referralCode?: string) =>
     request<{ accessToken: string; user: any }>("/auth/verify-email-otp", {
       method: "POST",
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ email, code, referralCode }),
+    }),
+
+  bindReferral: (userId: string, referralCode: string) =>
+    request<any>(`/users/${userId}/bind-referral`, {
+      method: "POST",
+      body: JSON.stringify({ referralCode }),
     }),
 
   getMe: () => request<any>("/auth/me"),
@@ -425,6 +432,8 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  getUserProfile: (id: string) => request<any>(`/users/${id}`),
+
   updateUserProfile: (id: string, data: any) =>
     request<any>(`/users/${id}/profile`, {
       method: "PUT",
@@ -443,6 +452,48 @@ export const api = {
       body: JSON.stringify({ points }),
     }),
 
+  // Withdrawals & Settlement
+  requestWithdrawal: (
+    userId: string,
+    data: {
+      amountToman: number;
+      cardNumber?: string;
+      sheba?: string;
+      accountOwnerName?: string;
+      userNote?: string;
+    }
+  ) =>
+    request<any>(`/users/${userId}/withdrawals`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  getUserWithdrawals: (userId: string) =>
+    request<any[]>(`/users/${userId}/withdrawals`),
+
+  getAdminWithdrawals: (params?: { status?: string; limit?: number; offset?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.status && params.status !== "all") q.set("status", params.status);
+    if (params?.limit) q.set("limit", String(params.limit));
+    if (params?.offset) q.set("offset", String(params.offset));
+    const qs = q.toString();
+    return request<{ requests: any[]; totalCount: number }>(`/users/admin/withdrawals-list${qs ? `?${qs}` : ""}`);
+  },
+
+  processWithdrawal: (
+    id: string,
+    data: {
+      action: "APPROVE" | "REJECT";
+      adminNote?: string;
+      bankTrackingCode?: string;
+      adminName?: string;
+    }
+  ) =>
+    request<any>(`/users/admin/withdrawals/${id}/process`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   // Auth & Passwords
   sendEmailOtp: (phone: string) =>
     request<{ success: boolean; message: string; maskedEmail: string }>("/auth/send-email-otp", {
@@ -450,10 +501,10 @@ export const api = {
       body: JSON.stringify({ phone }),
     }),
 
-  loginWithPassword: (phone: string, password: string) =>
+  loginWithPassword: (phone: string, password: string, referralCode?: string) =>
     request<{ accessToken: string; user: any }>("/auth/login-password", {
       method: "POST",
-      body: JSON.stringify({ phone, password }),
+      body: JSON.stringify({ phone, password, referralCode }),
     }),
 
   updatePassword: (newPassword: string, currentPassword?: string) =>

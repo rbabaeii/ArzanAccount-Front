@@ -132,6 +132,7 @@ export interface SystemSettings {
   enableAutomaticSync: boolean;
   maxPurchaseRatioDenominator?: number; // e.g. 3 for 1/3 max quota
   purchaseRatioExemptionThreshold?: number; // e.g. 10 (when stock <= 10, fraction limit relaxes to full stock)
+  orderCashbackPercent?: number; // e.g. 10%
 
   // BrsApi Currency Live Sync
   currencyApiKey?: string;
