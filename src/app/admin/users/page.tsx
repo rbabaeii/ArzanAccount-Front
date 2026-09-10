@@ -368,8 +368,9 @@ export default function AdminUsersPage() {
       {/* Header & Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text dark:text-white">
-            مدیریت نقش‌ها، مدیران و ماتریس دسترسی‌ها (RBAC)
+          <h1 className="text-2xl font-black text-admin-text dark:text-white flex items-center gap-2">
+            <Users className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+            <span>مدیریت نقش‌ها، مدیران و ماتریس دسترسی‌ها (RBAC)</span>
           </h1>
           <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
             تعریف و انتساب نقش‌های سیستمی، نظارت بر پرسنل و خریداران، وضعیت احراز هویت دو مرحله‌ای (2FA) و ماتریس دسترسی به ماژول‌های سامانه
@@ -378,7 +379,7 @@ export default function AdminUsersPage() {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-admin-primary hover:bg-admin-primaryDark text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition-all self-start md:self-auto"
+          className="flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all duration-200 self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>تعریف کاربر / مدیر جدید</span>
@@ -394,61 +395,65 @@ export default function AdminUsersPage() {
 
       {/* KPI Cards (Stitch Style) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-teal-50 text-brand-primary flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs shrink-0">
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[11px] text-admin-textMuted font-semibold">کل حساب‌های کاربری</span>
+            <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-semibold">کل حساب‌های کاربری</span>
             <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.totalUsers}
             </div>
-            <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">
+            <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold block mt-0.5">
               {stats.activeUsers} حساب فعال
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-amber-500/5 hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs shrink-0">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[11px] text-admin-textMuted font-semibold">کادر مدیریت و پرسنل</span>
+            <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-semibold">کادر مدیریت و پرسنل</span>
             <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.totalAdmins}
             </div>
-            <span className="text-[10px] text-amber-700 font-semibold block mt-0.5">
+            <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold block mt-0.5">
               دارای مجوزهای مدیریتی
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-400/40 dark:hover:border-blue-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs shrink-0">
             <KeyRound className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[11px] text-admin-textMuted font-semibold">احراز هویت دو مرحله‌ای</span>
+            <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-semibold">احراز هویت دو مرحله‌ای</span>
             <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               {stats.twoFactorCount}
             </div>
-            <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block mt-0.5">
               نشست امن 2FA فعال
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-purple-500/5 hover:border-purple-400/40 dark:hover:border-purple-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs shrink-0">
             <Lock className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[11px] text-admin-textMuted font-semibold">سطوح نقش‌های سیستم</span>
+            <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-semibold">سطوح نقش‌های سیستم</span>
             <div className="text-2xl font-black text-admin-text dark:text-white font-mono mt-0.5">
               ۵ نقش
             </div>
-            <span className="text-[10px] text-purple-600 font-semibold block mt-0.5">
+            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold block mt-0.5">
               ماتریس کامل مجوزها
             </span>
           </div>
@@ -456,7 +461,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-card flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Search */}
         <div className="flex-1 relative">
           <input
@@ -467,7 +472,7 @@ export default function AdminUsersPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-lg py-2.5 pr-9 pl-4 text-xs outline-none"
+            className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 pr-9 pl-4 text-xs outline-none transition-all duration-200"
           />
           <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
         </div>
@@ -479,7 +484,7 @@ export default function AdminUsersPage() {
             setSelectedRole(e.target.value);
             setCurrentPage(1);
           }}
-          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200"
+          className="bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 text-xs rounded-xl py-2 px-3 outline-none text-neutral-700 dark:text-slate-200 transition-all duration-200"
         >
           <option value="all">همه نقش‌ها</option>
           <option value="SUPER_ADMIN">مدیر ارشد (Super Admin)</option>
@@ -496,7 +501,7 @@ export default function AdminUsersPage() {
             setSelectedStatus(e.target.value);
             setCurrentPage(1);
           }}
-          className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 px-3 outline-none text-neutral-700 dark:text-slate-200"
+          className="bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 text-xs rounded-xl py-2 px-3 outline-none text-neutral-700 dark:text-slate-200 transition-all duration-200"
         >
           <option value="all">همه وضعیت‌ها</option>
           <option value="ACTIVE">حساب فعال</option>
@@ -505,11 +510,11 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Users & Staff Table */}
-      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-admin-borderLight flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl overflow-hidden shadow-card">
+        <div className="p-4 border-b border-admin-borderLight dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4 text-admin-primary" />
-            <h3 className="font-bold text-xs text-admin-text">
+            <UserCheck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <h3 className="font-bold text-xs text-admin-text dark:text-white">
               فهرست پرسنل و کاربران ({users.length})
             </h3>
           </div>
@@ -536,7 +541,7 @@ export default function AdminUsersPage() {
                 const badge = getRoleBadge(u.role);
 
                 return (
-                  <tr key={u.id} className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={u.id} className="hover:bg-teal-50/40 dark:hover:bg-slate-800/60 transition-colors duration-150 group">
                     {/* User info */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
@@ -546,10 +551,10 @@ export default function AdminUsersPage() {
                             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120"
                           }
                           alt=""
-                          className="w-9 h-9 rounded-full object-cover border border-neutral-200 shrink-0"
+                          className="w-9 h-9 rounded-full object-cover border border-neutral-200 dark:border-slate-700 shrink-0 group-hover:scale-105 transition-transform duration-200 shadow-2xs"
                         />
                         <div>
-                          <div className="font-bold text-neutral-900 dark:text-white">{u.name}</div>
+                          <div className="font-bold text-neutral-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{u.name}</div>
                           <div className="text-[11px] text-neutral-400 font-mono flex items-center gap-2 mt-0.5">
                             {u.email && <span>{u.email}</span>}
                             {u.phone && <span>• {u.phone}</span>}
@@ -561,7 +566,7 @@ export default function AdminUsersPage() {
                     {/* Role Badge */}
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold border ${badge.classes}`}
+                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold border shadow-2xs ${badge.classes}`}
                       >
                         {badge.label}
                       </span>
@@ -570,8 +575,8 @@ export default function AdminUsersPage() {
                     {/* 2FA */}
                     <td className="py-3.5 px-4">
                       {u.isTwoFactorEnabled ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                          <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded shadow-2xs">
+                          <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                           فعال (امن)
                         </span>
                       ) : (
@@ -591,16 +596,16 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => handleToggleStatus(u)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all duration-150 hover:scale-105 active:scale-95 shadow-2xs ${
                           u.status === "ACTIVE"
-                            ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                            : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800"
+                            : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 border border-red-200 dark:border-red-800"
                         }`}
                         title="کلیک برای تغییر وضعیت"
                       >
                         <span
                           className={`w-2 h-2 rounded-full ${
-                            u.status === "ACTIVE" ? "bg-emerald-600" : "bg-red-600"
+                            u.status === "ACTIVE" ? "bg-emerald-500 animate-pulse" : "bg-red-500"
                           }`}
                         />
                         <span>{u.status === "ACTIVE" ? "فعال" : "مسدود"}</span>
@@ -612,7 +617,7 @@ export default function AdminUsersPage() {
                       <select
                         value={u.role}
                         onChange={(e) => handleChangeRole(u.id, e.target.value)}
-                        className="bg-neutral-50 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 text-neutral-800 dark:text-slate-100 rounded-md py-1 px-2 text-[11px] outline-none"
+                        className="bg-neutral-50 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 text-neutral-800 dark:text-slate-100 rounded-md py-1 px-2 text-[11px] outline-none transition-all duration-150"
                       >
                         <option value="SUPER_ADMIN">مدیر ارشد</option>
                         <option value="CATALOG_MANAGER">مدیر کاتالوگ</option>
@@ -628,7 +633,7 @@ export default function AdminUsersPage() {
                         {u.email && (
                           <button
                             onClick={() => handleOpenEmailModal(u)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 transition-colors shadow-2xs shrink-0"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 transition-all duration-150 hover:scale-105 active:scale-95 shadow-2xs shrink-0"
                             title="ارسال ایمیل مستقیم با متن دلخواه به این کاربر"
                           >
                             <Mail className="w-3.5 h-3.5" />
@@ -638,7 +643,7 @@ export default function AdminUsersPage() {
                         {currentUser?.role === "SUPER_ADMIN" && u.role !== "USER" && (
                           <Link
                             href={`/admin/admin-activities?adminId=${u.id}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-800 transition-colors shadow-xs shrink-0"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-800 transition-all duration-150 hover:scale-105 active:scale-95 shadow-2xs shrink-0"
                             title="مشاهده لاگ و تاریخچه فعالیت‌های این مدیر"
                           >
                             <Activity className="w-3.5 h-3.5" />
@@ -647,7 +652,7 @@ export default function AdminUsersPage() {
                         )}
                         <button
                           onClick={() => handleDeleteUser(u)}
-                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-all duration-150 hover:scale-110 active:scale-95"
                           title="حذف کاربر"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -686,11 +691,11 @@ export default function AdminUsersPage() {
       />
 
       {/* RBAC Matrix Table (Stitch Architecture) */}
-      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-xl p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-brand-primary" />
-            <h3 className="font-bold text-sm text-admin-text">
+            <Lock className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <h3 className="font-bold text-sm text-admin-text dark:text-white">
               ماتریس دقیق سطوح دسترسی و مجوزهای سازمانی (RBAC Matrix)
             </h3>
           </div>
@@ -699,7 +704,7 @@ export default function AdminUsersPage() {
           </span>
         </div>
 
-        <p className="text-xs text-neutral-500 leading-relaxed">
+        <p className="text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">
           جدول زیر مشخص می‌کند هر یک از ۵ نقش سیستمی، به کدام‌یک از بخش‌ها و اکشن‌های کلیدی پلتفرم ارزان اکانت دسترسی دارند:
         </p>
 
@@ -715,9 +720,9 @@ export default function AdminUsersPage() {
                 <th className="py-3 px-4 text-center">خریدار عادی</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-admin-borderLight">
+            <tbody className="divide-y divide-admin-borderLight dark:divide-slate-800">
               {rbacMatrix.map((item, idx) => (
-                <tr key={idx} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={idx} className="hover:bg-teal-50/30 dark:hover:bg-slate-800/50 transition-colors duration-150">
                   <td className="py-3 px-4 font-medium text-neutral-800 dark:text-slate-100">
                     {item.module}
                   </td>

@@ -414,64 +414,63 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Page Header */}
+      {/* Header & Quick Stats */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text dark:text-white">مدیریت و ویرایش کامل محصولات</h1>
+          <h1 className="text-2xl font-black text-admin-text dark:text-white">
+            مدیریت کاتالوگ و محصولات
+          </h1>
           <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
-            مشاهده کل کاتالوگ irMarket، ویرایش مشخصات و تصاویر، و تعیین قیمت‌ها و سود اختصاصی
+            کنترل وضعیت نمایش، انبار و موجودی، حاشیه سود و تنظیمات قیمت‌گذاری دستی محصولات
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="text-xs text-admin-textMuted dark:text-slate-400 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-2xs">
-            <span>
-              کل محصولات: <strong className="text-black dark:text-white font-mono">{products.length}</strong>
+          <div className="flex flex-wrap items-center gap-2 text-xs bg-white/80 dark:bg-slate-900/80 backdrop-blur-xs p-1.5 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+            <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+              کل: {products.length}
             </span>
-            <span>|</span>
-            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200/50 dark:border-emerald-800/40">
               فعال: {products.filter((p) => p.isActive).length}
             </span>
-            <span>|</span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
+            <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 border border-rose-200/50 dark:border-rose-800/40">
+              <AlertTriangle className="w-3 h-3" />
               ناموجود: {products.filter((p) => p.stockCount === 0 || !p.inStock).length}
             </span>
-            <span>|</span>
-            <span className="text-indigo-700 dark:text-indigo-300 font-bold flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+            <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold flex items-center gap-1 border border-indigo-200/50 dark:border-indigo-800/40">
               <Lock className="w-3 h-3 text-indigo-500" />
-              نیازمند اکانت/رمز: {products.filter((p) => p.requiresEmail || p.requiresPassword).length}
+              نیاز به اکانت: {products.filter((p) => p.requiresEmail || p.requiresPassword).length}
             </span>
           </div>
 
           <Link
             href="/admin/tags"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-teal-950/40 text-brand-primary dark:text-teal-300 text-xs font-bold hover:bg-teal-100 transition-colors"
+            className="group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-teal-950/40 text-brand-primary dark:text-teal-300 text-xs font-bold hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-all duration-200 hover:shadow-xs active:scale-95"
           >
-            <Tag className="w-3.5 h-3.5" />
+            <Tag className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform duration-200" />
             <span>مدیریت برچسب‌ها</span>
           </Link>
 
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-primary hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-900/10 transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-primary to-teal-700 hover:from-brand-primaryDark hover:to-teal-800 text-white text-xs font-bold shadow-md hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-200 active:scale-95"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
             <span>افزودن محصول جدید</span>
           </button>
         </div>
       </div>
 
       {toastMessage && (
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 dark:border-emerald-800 animate-fadeIn">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 dark:border-emerald-800 shadow-lg animate-fadeIn">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-card hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Search */}
         <div className="flex-1 relative">
           <input
@@ -482,20 +481,20 @@ export default function AdminProductsPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-lg py-2 pr-9 pl-4 outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:border-brand-primary dark:focus:border-teal-400"
+            className="w-full bg-admin-bg dark:bg-slate-800/80 border border-admin-borderLight dark:border-slate-700 text-xs rounded-xl py-2.5 pr-9 pl-4 outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:border-brand-primary dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 transition-all duration-200"
           />
           <Search className="w-4 h-4 text-neutral-400 dark:text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
         </div>
 
         {/* Status Filters */}
-        <div className="flex items-center gap-1 bg-admin-bg dark:bg-slate-800 p-1 rounded-lg border border-admin-borderLight dark:border-slate-700 text-xs">
+        <div className="flex items-center gap-1 bg-admin-bg dark:bg-slate-800/80 p-1 rounded-xl border border-admin-borderLight dark:border-slate-700 text-xs">
           <button
             type="button"
             onClick={() => {
               setStatusFilter("all");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 active:scale-95 ${
               statusFilter === "all"
                 ? "bg-white dark:bg-slate-700 text-brand-dark dark:text-white shadow-xs"
                 : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
@@ -509,7 +508,7 @@ export default function AdminProductsPage() {
               setStatusFilter("active");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 active:scale-95 ${
               statusFilter === "active"
                 ? "bg-emerald-600 text-white shadow-xs"
                 : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
@@ -523,7 +522,7 @@ export default function AdminProductsPage() {
               setStatusFilter("inactive");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-md font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 active:scale-95 ${
               statusFilter === "inactive"
                 ? "bg-amber-600 text-white shadow-xs"
                 : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
@@ -835,15 +834,15 @@ export default function AdminProductsPage() {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => toggleProductActive(product.id)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 hover:shadow-xs ${
                           product.isActive
-                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100"
-                            : "bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-200"
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+                            : "bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-700"
                         }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            product.isActive ? "bg-emerald-500" : "bg-neutral-400 dark:bg-slate-500"
+                          className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            product.isActive ? "bg-emerald-500 animate-pulse" : "bg-neutral-400 dark:bg-slate-500"
                           }`}
                         />
                         <span>{product.isActive ? "فعال در ویترین" : "غیرفعال"}</span>
@@ -855,7 +854,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleOpenEdit(product)}
-                          className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-300 border border-brand-border dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs"
+                          className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-300 border border-brand-border dark:border-slate-700 hover:border-teal-300 dark:hover:border-teal-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                           <span>ویرایش</span>
@@ -864,7 +863,7 @@ export default function AdminProductsPage() {
                           <Link
                             href={`/products/${product.id}`}
                             target="_blank"
-                            className="p-1.5 text-neutral-400 hover:text-brand-dark dark:hover:text-white transition-colors"
+                            className="p-1.5 text-neutral-400 hover:text-brand-primary dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                             title="مشاهده صفحه محصول در سایت"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />

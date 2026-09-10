@@ -83,23 +83,38 @@ export default function AdminGeneralSettingsPage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black text-admin-text dark:text-white">
-          تنظیمات جامع سیستم و درگاه‌های وب‌سرویس
-        </h1>
-        <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
-          پیکربندی نرخ دلار، توکن ارتباطی irMarket، حاشیه سود و مشخصات عمومی فروشگاه
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 shadow-2xs">
+              <Settings className="w-5 h-5" />
+            </span>
+            <h1 className="text-2xl font-black text-admin-text dark:text-white">
+              تنظیمات جامع سیستم و درگاه‌های وب‌سرویس
+            </h1>
+          </div>
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
+            پیکربندی نرخ دلار، توکن ارتباطی irMarket، حاشیه سود و مشخصات عمومی فروشگاه
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800 px-4 py-2 rounded-xl text-xs shadow-card">
+          <span className="text-neutral-400">وضعیت سامانه:</span>
+          <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>پیکربندی هماهنگ و آنلاین</span>
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Settings Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card space-y-6">
+        <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-card hover:shadow-lg transition-all duration-300 space-y-6">
           <form onSubmit={handleSave} className="space-y-6 text-xs">
             {/* Section 1: Currency & Margin */}
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-admin-text dark:text-white pb-3 border-b border-admin-borderLight dark:border-slate-800 dark:border-slate-800 flex items-center gap-2">
-                <Coins className="w-4 h-4 text-brand-primary" />
+              <h3 className="font-bold text-sm text-admin-text dark:text-white pb-3 border-b border-admin-borderLight dark:border-slate-800 flex items-center gap-2">
+                <Coins className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                 <span>تنظیمات مالی و تبدیل ارز</span>
               </h3>
 
@@ -114,25 +129,25 @@ export default function AdminGeneralSettingsPage() {
                     min="10000"
                     value={usdRate}
                     onChange={(e) => setUsdRate(Number(e.target.value))}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none transition-all duration-200"
                     required
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">
                     ریال
                   </span>
                 </div>
-                <div className="mt-2 text-xs bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-teal-900 dark:text-teal-300 p-2.5 rounded-xl flex items-center gap-2">
-                  <ArrowLeftRight className="w-4 h-4 text-teal-600 shrink-0" />
+                <div className="mt-2 text-xs bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-teal-900 dark:text-teal-300 p-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 hover:border-teal-300 dark:hover:border-teal-700">
+                  <ArrowLeftRight className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
                   <span>
-                    معادل ریالی در ویترین: <strong>{formattedTomanRate} تومان</strong>
+                    معادل ریالی در ویترین: <strong className="font-mono text-teal-700 dark:text-teal-300">{formattedTomanRate} تومان</strong>
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-admin-text mb-1.5 flex justify-between">
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5 flex justify-between">
                   <span>حاشیه سود عمومی (Markup %):</span>
-                  <span className="font-mono font-bold text-brand-primary">%{margin}</span>
+                  <span className="font-mono font-bold text-brand-primary dark:text-teal-400">%{margin}</span>
                 </label>
                 <input
                   type="number"
@@ -140,7 +155,7 @@ export default function AdminGeneralSettingsPage() {
                   max="100"
                   value={margin}
                   onChange={(e) => setMargin(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none transition-all duration-200"
                   required
                 />
               </div>
@@ -156,7 +171,7 @@ export default function AdminGeneralSettingsPage() {
                   max="100"
                   value={cashbackPercent}
                   onChange={(e) => setCashbackPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none transition-all duration-200"
                   required
                 />
                 <span className="text-[10px] text-neutral-400 mt-1 block">
@@ -168,7 +183,7 @@ export default function AdminGeneralSettingsPage() {
             {/* Section 2: API Keys */}
             <div className="space-y-4 pt-4 border-t border-admin-borderLight dark:border-slate-800">
               <h3 className="font-bold text-sm text-admin-text dark:text-white pb-3 border-b border-admin-borderLight dark:border-slate-800 flex items-center gap-2">
-                <Key className="w-4 h-4 text-brand-primary" />
+                <Key className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                 <span>اتصال وب‌سرویس irMarket</span>
               </h3>
 
@@ -180,7 +195,7 @@ export default function AdminGeneralSettingsPage() {
                   type="text"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-xs font-mono outline-none dir-ltr text-left"
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-xs font-mono outline-none dir-ltr text-left transition-all duration-200"
                   required
                 />
                 <span className="text-[10px] text-neutral-400 mt-1 block">
@@ -189,14 +204,14 @@ export default function AdminGeneralSettingsPage() {
               </div>
 
               <div>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer group py-1">
                   <input
                     type="checkbox"
                     checked={autoSync}
                     onChange={(e) => setAutoSync(e.target.checked)}
-                    className="w-4 h-4 rounded accent-brand-primary cursor-pointer"
+                    className="w-4 h-4 rounded accent-teal-600 cursor-pointer transition-transform group-hover:scale-110"
                   />
-                  <span className="font-semibold text-admin-text dark:text-slate-200">
+                  <span className="font-semibold text-admin-text dark:text-slate-200 transition-colors group-hover:text-teal-600 dark:group-hover:text-teal-400">
                     فعال‌سازی همگام‌سازی خودکار در پس‌زمینه (هر ۶ ساعت)
                   </span>
                 </label>
@@ -222,7 +237,7 @@ export default function AdminGeneralSettingsPage() {
                     max="20"
                     value={maxRatioDenominator}
                     onChange={(e) => setMaxRatioDenominator(Math.max(1, Number(e.target.value)))}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none transition-all duration-200"
                     required
                   />
                   <span className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 block leading-relaxed">
@@ -241,7 +256,7 @@ export default function AdminGeneralSettingsPage() {
                     max="1000"
                     value={ratioThreshold}
                     onChange={(e) => setRatioThreshold(Math.max(0, Number(e.target.value)))}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-3 text-sm font-mono font-bold outline-none transition-all duration-200"
                     required
                   />
                   <span className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 block leading-relaxed">
@@ -250,7 +265,7 @@ export default function AdminGeneralSettingsPage() {
                 </div>
               </div>
 
-              <div className="p-3.5 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl text-xs text-teal-900 dark:text-teal-200 space-y-1.5">
+              <div className="p-3.5 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl text-xs text-teal-900 dark:text-teal-200 space-y-1.5 transition-all duration-200 hover:border-teal-300 dark:hover:border-teal-700">
                 <div className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                   <span>پیش‌نمایش فرمول بر اساس مقادیر فعلی:</span>
@@ -266,7 +281,7 @@ export default function AdminGeneralSettingsPage() {
             {/* Section 4: Branding */}
             <div className="space-y-4 pt-4 border-t border-admin-borderLight dark:border-slate-800">
               <h3 className="font-bold text-sm text-admin-text dark:text-white pb-3 border-b border-admin-borderLight dark:border-slate-800 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-brand-primary" />
+                <Globe className="w-4 h-4 text-brand-primary dark:text-teal-400" />
                 <span>اطلاعات عمومی فروشگاه و پشتیبانی</span>
               </h3>
 
@@ -279,7 +294,7 @@ export default function AdminGeneralSettingsPage() {
                     type="text"
                     value={siteName}
                     onChange={(e) => setSiteName(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2 px-3 outline-none transition-all duration-200"
                   />
                 </div>
 
@@ -291,7 +306,7 @@ export default function AdminGeneralSettingsPage() {
                     type="text"
                     value={supportTelegram}
                     onChange={(e) => setSupportTelegram(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none dir-ltr text-left font-mono"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2 px-3 outline-none dir-ltr text-left font-mono transition-all duration-200"
                   />
                 </div>
               </div>
@@ -299,14 +314,14 @@ export default function AdminGeneralSettingsPage() {
 
             <button
               type="submit"
-              className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 hover:scale-[1.01] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <Save className="w-4 h-4" />
               <span>ذخیره کلیه تنظیمات سیستم</span>
             </button>
 
             {toast && (
-              <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
+              <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs flex items-center gap-2 animate-bounce shadow-md">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>تنظیمات جدید با موفقیت ذخیره شد و قیمت‌های فروشگاه بروزرسانی شدند!</span>
               </div>
@@ -315,19 +330,22 @@ export default function AdminGeneralSettingsPage() {
         </div>
 
         {/* Live Calculation Preview (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4 sticky top-28">
-          <div className="flex items-center gap-2 pb-3 border-b border-admin-borderLight dark:border-slate-800">
-            <Calculator className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+        <div className="lg:col-span-5 group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-4 sticky top-28">
+          <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="flex items-center gap-2 pb-3 border-b border-admin-borderLight dark:border-slate-800 relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+              <Calculator className="w-4 h-4" />
+            </div>
             <h3 className="font-bold text-sm text-admin-text dark:text-white">
               پیش‌نمایش زنده اثر نرخ جدید
             </h3>
           </div>
 
-          <p className="text-xs text-admin-textMuted dark:text-slate-400 leading-relaxed">
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 leading-relaxed relative z-10">
             با تغییر نرخ یا درصد سود، مبالغ زیر بلافاصله تغییر می‌کنند:
           </p>
 
-          <div className="space-y-3 pt-2">
+          <div className="space-y-3 pt-2 relative z-10">
             {sampleUsd.map((usd) => {
               const baseToman = (usd * usdRate) / 10;
               const finalToman = Math.round(baseToman * (1 + margin / 100));
@@ -335,10 +353,10 @@ export default function AdminGeneralSettingsPage() {
               return (
                 <div
                   key={usd}
-                  className="bg-admin-bg dark:bg-slate-800 p-3.5 rounded-xl border border-admin-borderLight dark:border-slate-700 flex items-center justify-between"
+                  className="bg-admin-bg/80 dark:bg-slate-800/80 hover:bg-teal-50/50 dark:hover:bg-slate-800/90 p-3.5 rounded-xl border border-admin-borderLight dark:border-slate-700/80 hover:border-teal-400/40 dark:hover:border-teal-500/40 flex items-center justify-between hover:-translate-y-0.5 transition-all duration-200 shadow-2xs group/item"
                 >
                   <div>
-                    <span className="font-mono font-bold text-xs text-admin-text dark:text-white">
+                    <span className="font-mono font-bold text-xs text-admin-text dark:text-white group-hover/item:text-teal-600 dark:group-hover/item:text-teal-400 transition-colors">
                       سرویس ${usd.toFixed(2)} دلاری
                     </span>
                     <span className="text-[10px] text-neutral-400 block mt-0.5">
@@ -347,7 +365,7 @@ export default function AdminGeneralSettingsPage() {
                   </div>
 
                   <div className="text-left">
-                    <span className="font-black text-sm text-brand-primary">
+                    <span className="font-black text-sm text-brand-primary dark:text-teal-400 font-mono">
                       {formatPrice(finalToman)}
                     </span>
                     <span className="text-[11px] text-brand-muted dark:text-slate-400 mr-1 font-semibold">تومان</span>

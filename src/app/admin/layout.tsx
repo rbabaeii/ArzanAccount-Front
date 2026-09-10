@@ -400,19 +400,19 @@ export default function AdminLayout({
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsSidebarOpen(false)}
-                      className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
+                      className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95 ${
                         isActive
-                          ? "bg-brand-primaryContainer text-white shadow-sm border border-teal-400/30 font-semibold"
+                          ? "bg-gradient-to-r from-teal-500/30 to-emerald-500/20 text-white shadow-sm border border-teal-400/40 font-bold backdrop-blur-xs"
                           : "text-teal-100 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="shrink-0 text-teal-300">{item.icon}</span>
+                        <span className="shrink-0 text-teal-300 group-hover:scale-110 transition-transform duration-200">{item.icon}</span>
                         <span className="truncate text-xs">{item.title}</span>
                       </div>
                       {item.badge && (
                         <span
-                          className={`shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full font-sans leading-none shadow-xs ${
+                          className={`shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full font-sans leading-none shadow-xs transition-transform duration-200 group-hover:scale-105 ${
                             item.badgeColor || "bg-white/20 text-white"
                           }`}
                         >
@@ -507,7 +507,7 @@ export default function AdminLayout({
             <button
               onClick={handleSync}
               disabled={isLoadingSync}
-              className="flex items-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs disabled:opacity-70"
+              className="flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-teal-500/20 disabled:opacity-70"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSync ? "animate-spin" : ""}`} />
               <span>{isLoadingSync ? "در حال استعلام از irMarket..." : "همگام‌سازی با API مرجع"}</span>
@@ -516,7 +516,7 @@ export default function AdminLayout({
             {/* Back to store */}
             <NextLink
               href="/"
-              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-slate-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-slate-700 px-3 py-2 rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-slate-800"
+              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-slate-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-slate-700 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-neutral-50 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-2xs"
             >
               <ShoppingBag className="w-4 h-4 text-neutral-500 dark:text-slate-400" />
               <span>مشاهده سایت</span>

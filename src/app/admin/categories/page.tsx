@@ -135,7 +135,10 @@ export default function AdminCategoriesPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-admin-text dark:text-white">مدیریت دسته‌بندی‌ها</h1>
+        <h1 className="text-2xl font-black text-admin-text dark:text-white flex items-center gap-2">
+          <FolderTree className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+          مدیریت دسته‌بندی‌ها
+        </h1>
         <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
           تعریف و ویرایش مشخصات دسته‌بندی‌های فروشگاه و تخصیص محصولات irMarket به آن‌ها
         </p>
@@ -143,9 +146,11 @@ export default function AdminCategoriesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Create Category Form (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card transition-colors">
+        <div className="lg:col-span-5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-xl hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300">
           <h3 className="font-bold text-sm text-admin-text dark:text-white mb-4 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-admin-primary dark:text-teal-400" />
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+              <Plus className="w-4 h-4" />
+            </div>
             <span>افزودن دسته‌بندی جدید</span>
           </h3>
 
@@ -159,7 +164,7 @@ export default function AdminCategoriesPage() {
                 placeholder="مثلاً: اکانت‌های آموزشی و زبان"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all"
                 required
               />
             </div>
@@ -173,7 +178,7 @@ export default function AdminCategoriesPage() {
                 placeholder="مثلاً: learning"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none dir-ltr text-left text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 text-xs outline-none dir-ltr text-left text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all font-mono"
                 required
               />
             </div>
@@ -185,7 +190,7 @@ export default function AdminCategoriesPage() {
               <select
                 value={icon}
                 onChange={(e) => setIcon(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all"
               >
                 <option value="Bot">هوش مصنوعی (Bot)</option>
                 <option value="Film">فیلم و استریم (Film)</option>
@@ -204,20 +209,20 @@ export default function AdminCategoriesPage() {
                 placeholder="توضیح کوتاه درباره محصولات این شاخه..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none resize-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 text-xs outline-none resize-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all leading-relaxed"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-brand-primary dark:bg-teal-600 hover:bg-brand-primaryDark dark:hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>ثبت دسته‌بندی</span>
+              <span>ثبت دسته‌بندی جدید</span>
             </button>
 
             {toastMessage && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 animate-fadeIn">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 animate-fadeIn shadow-2xs">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{toastMessage}</span>
               </div>
@@ -226,10 +231,10 @@ export default function AdminCategoriesPage() {
         </div>
 
         {/* Existing Categories List (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4 transition-colors">
+        <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-admin-borderLight dark:border-slate-800">
             <h3 className="font-bold text-sm text-admin-text dark:text-white flex items-center gap-2">
-              <FolderTree className="w-4 h-4 text-admin-secondary dark:text-teal-400" />
+              <FolderTree className="w-4 h-4 text-teal-600 dark:text-teal-400" />
               <span>دسته‌بندی‌های فعال ({formatNumber(categories.length)})</span>
             </h3>
 
@@ -271,15 +276,15 @@ export default function AdminCategoriesPage() {
                   return (
                     <div
                       key={cat.id}
-                      className="py-3.5 flex items-center justify-between gap-4 group"
+                      className="py-3 px-3 rounded-xl flex items-center justify-between gap-4 group hover:bg-teal-50/50 dark:hover:bg-slate-800/60 transition-all duration-200"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-admin-primary dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/40">
+                        <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
                           {getCategoryIcon(cat.icon)}
                         </div>
                         <div>
                           <h4 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-2">
-                            <span>{cat.title}</span>
+                            <span className="group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{cat.title}</span>
                             <span className="text-[10px] text-neutral-400 dark:text-slate-500 font-mono bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.2 rounded border border-neutral-200 dark:border-slate-700">
                               /{cat.slug}
                             </span>
@@ -292,7 +297,7 @@ export default function AdminCategoriesPage() {
 
                       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <div className="text-left text-[11px]">
-                          <span className="font-bold text-admin-primary dark:text-teal-400 block font-mono">
+                          <span className="font-bold text-teal-600 dark:text-teal-400 block font-mono">
                             {formatNumber(activeCount)} فعال
                           </span>
                           <span className="text-neutral-400 dark:text-slate-500 text-[10px] font-mono">
@@ -303,7 +308,7 @@ export default function AdminCategoriesPage() {
                         {/* Edit Button */}
                         <button
                           onClick={() => handleOpenEdit(cat)}
-                          className="p-1.5 text-neutral-400 hover:text-brand-primary dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                          className="p-2 text-neutral-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all duration-150 hover:scale-110 active:scale-95"
                           title="ویرایش دسته‌بندی"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -312,7 +317,7 @@ export default function AdminCategoriesPage() {
                         {/* Delete Button */}
                         <button
                           onClick={() => deleteCategory(cat.id)}
-                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
+                          className="p-2 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-all duration-150 hover:scale-110 active:scale-95"
                           title="حذف دسته‌بندی"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -346,11 +351,11 @@ export default function AdminCategoriesPage() {
 
       {/* Edit Category Modal */}
       {editingCategory && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-admin-border dark:border-slate-800 max-w-md w-full p-6 space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-admin-border dark:border-slate-800 max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-100">
             <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                   <Edit3 className="w-4 h-4" />
                 </div>
                 <div>
@@ -360,7 +365,7 @@ export default function AdminCategoriesPage() {
               </div>
               <button
                 onClick={() => setEditingCategory(null)}
-                className="p-1 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white transition-all duration-150 hover:scale-110 active:scale-95"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -375,7 +380,7 @@ export default function AdminCategoriesPage() {
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all font-bold"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all font-bold"
                   required
                 />
               </div>
@@ -388,7 +393,7 @@ export default function AdminCategoriesPage() {
                   type="text"
                   value={editSlug}
                   onChange={(e) => setEditSlug(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none dir-ltr text-left font-mono text-slate-800 dark:text-slate-100 transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 text-xs outline-none dir-ltr text-left font-mono text-slate-800 dark:text-slate-100 transition-all"
                   required
                 />
               </div>
@@ -400,7 +405,7 @@ export default function AdminCategoriesPage() {
                 <select
                   value={editIcon}
                   onChange={(e) => setEditIcon(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 text-xs outline-none text-slate-800 dark:text-slate-100 transition-all"
                 >
                   <option value="Bot">هوش مصنوعی (Bot)</option>
                   <option value="Film">فیلم و استریم (Film)</option>
@@ -418,7 +423,7 @@ export default function AdminCategoriesPage() {
                   rows={3}
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 text-xs outline-none resize-none text-slate-800 dark:text-slate-100 transition-all leading-relaxed"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 text-xs outline-none resize-none text-slate-800 dark:text-slate-100 transition-all leading-relaxed"
                 />
               </div>
 
@@ -426,7 +431,7 @@ export default function AdminCategoriesPage() {
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="flex-1 bg-brand-primary dark:bg-teal-600 hover:bg-brand-primaryDark dark:hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   <span>{isUpdating ? "در حال ذخیره..." : "ذخیره تغییرات"}</span>
@@ -434,7 +439,7 @@ export default function AdminCategoriesPage() {
                 <button
                   type="button"
                   onClick={() => setEditingCategory(null)}
-                  className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all duration-150"
                 >
                   انصراف
                 </button>

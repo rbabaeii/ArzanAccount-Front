@@ -226,9 +226,9 @@ export default function AdminRefundsPage() {
           <button
             onClick={fetchRefunds}
             disabled={isLoading}
-            className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
+            className="group flex items-center gap-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-neutral-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold px-3.5 py-2 rounded-xl transition-all duration-200 hover:border-teal-400 dark:hover:border-teal-600 active:scale-95 shadow-2xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 group-hover:rotate-180 ${isLoading ? "animate-spin text-brand-primary dark:text-teal-400" : ""}`} />
             <span>به‌روزرسانی لیست</span>
           </button>
         </div>
@@ -236,41 +236,44 @@ export default function AdminRefundsPage() {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-neutral-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">کل درخواست‌های عودت</span>
-            <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalRefundsCount}</span>
+          <div className="mt-3 flex items-baseline gap-1 relative z-10">
+            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">{totalRefundsCount}</span>
             <span className="text-xs text-slate-400">مورد</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-neutral-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-amber-500/5 hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-amber-600 dark:text-amber-400">در انتظار بررسی و تسویه</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">{pendingRefundsCount}</span>
+          <div className="mt-3 flex items-baseline gap-1 relative z-10">
+            <span className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">{pendingRefundsCount}</span>
             <span className="text-xs text-slate-400">سفارش</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-neutral-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">مجموع مبالغ تسویه شده</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+          <div className="mt-3 flex items-baseline gap-1 relative z-10">
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
               {formatPrice(totalRefundedSum)}
             </span>
             <span className="text-xs text-slate-400">تومان</span>
@@ -478,7 +481,7 @@ export default function AdminRefundsPage() {
                         ) : (
                           <button
                             onClick={() => handleOpenProcessModal(item)}
-                            className="bg-brand-primary hover:bg-teal-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-colors"
+                            className="bg-gradient-to-r from-brand-primary to-teal-700 hover:from-brand-primaryDark hover:to-teal-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs hover:shadow-md hover:shadow-teal-500/20 transition-all duration-200 hover:scale-105 active:scale-95"
                           >
                             ثبت واریز و تسویه
                           </button>

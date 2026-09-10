@@ -41,8 +41,9 @@ export default function AdminLogsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-admin-text dark:text-white">
-            لاگ فعالیت‌ها و ردپای سیستم (Audit Logs)
+          <h1 className="text-2xl font-black text-admin-text dark:text-white flex items-center gap-2">
+            <ScrollText className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+            <span>لاگ فعالیت‌ها و ردپای سیستم (Audit Logs)</span>
           </h1>
           <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
             ثبت کلیه عملیات‌های همگام‌سازی، تغییرات نرخ دلار، ثبت سفارشات و فعال‌سازی محصولات
@@ -50,14 +51,14 @@ export default function AdminLogsPage() {
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-admin-borderLight dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-1.5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-card text-xs">
           <button
             onClick={() => {
               setFilterType("all");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "all" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+              filterType === "all" ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             همه رویدادها
@@ -67,8 +68,8 @@ export default function AdminLogsPage() {
               setFilterType("sync");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "sync" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+              filterType === "sync" ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             همگام‌سازی
@@ -78,8 +79,8 @@ export default function AdminLogsPage() {
               setFilterType("rate_change");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "rate_change" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+              filterType === "rate_change" ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             تغییر نرخ ارز
@@ -89,8 +90,8 @@ export default function AdminLogsPage() {
               setFilterType("order");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-              filterType === "order" ? "bg-brand-primary text-white shadow-xs font-bold" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+              filterType === "order" ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs" : "text-neutral-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
             }`}
           >
             سفارشات
@@ -99,28 +100,34 @@ export default function AdminLogsPage() {
       </div>
 
       {/* Logs Timeline */}
-      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-4">
         <div className="divide-y divide-admin-borderLight dark:divide-slate-800">
           {paginatedLogs.map((log) => (
-            <div key={log.id} className="py-4 flex items-start gap-4 text-xs">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/60">
+            <div key={log.id} className="py-3 px-3 rounded-xl hover:bg-teal-50/40 dark:hover:bg-slate-800/60 transition-all duration-200 flex items-start gap-4 text-xs group">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/60 shadow-2xs group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 {getTypeIcon(log.type)}
               </div>
 
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <h4 className="font-bold text-admin-text dark:text-white text-sm">{log.action}</h4>
+                  <h4 className="font-bold text-admin-text dark:text-white text-sm group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{log.action}</h4>
                   <span className="text-[11px] text-neutral-400 font-mono">{log.timestamp}</span>
                 </div>
                 <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1 leading-relaxed">
                   {log.details}
                 </p>
-                <span className="text-[10px] text-neutral-400 block mt-1.5">
-                  توسط: <strong className="text-neutral-600 dark:text-slate-300">{log.user}</strong>
+                <span className="text-[10px] text-neutral-400 block mt-1.5 font-mono">
+                  توسط: <strong className="text-teal-700 dark:text-teal-400 font-sans">{log.user}</strong>
                 </span>
               </div>
             </div>
           ))}
+
+          {paginatedLogs.length === 0 && (
+            <div className="py-12 text-center text-xs text-neutral-400">
+              هیچ رویدادی با این فیلتر ثبت نشده است.
+            </div>
+          )}
         </div>
       </div>
 

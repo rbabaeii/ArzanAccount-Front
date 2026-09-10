@@ -325,15 +325,15 @@ function AdminActivitiesContent() {
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 text-xs font-bold text-admin-text dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-slate-800 transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800 text-xs font-bold text-admin-text dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-slate-800 hover:border-teal-400/40 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
+            <Download className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
             <span>خروجی لاگ‌ها (JSON)</span>
           </button>
 
           <Link
             href="/admin/users"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold shadow-md hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             <User className="w-3.5 h-3.5" />
             <span>مدیریت کاربران و کادر</span>
@@ -343,21 +343,22 @@ function AdminActivitiesContent() {
 
       {/* Selected Admin Profile Card */}
       {currentAdmin && (
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center font-bold text-lg border border-teal-200 dark:border-teal-800">
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-lg border border-teal-200 dark:border-teal-800 shadow-2xs group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
               {currentAdmin.name.slice(0, 1)}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-black text-base text-slate-900 dark:text-white">
+                <h3 className="font-black text-base text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                   {currentAdmin.name}
                 </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                   {currentAdmin.role}
                 </span>
               </div>
-              <div className="text-xs text-neutral-400 dark:text-slate-400 mt-1 flex items-center gap-3 flex-wrap">
+              <div className="text-xs text-neutral-400 dark:text-slate-400 mt-1 flex items-center gap-3 flex-wrap font-mono">
                 {currentAdmin.phone && <span>شماره تماس: {currentAdmin.phone}</span>}
                 {currentAdmin.email && <span>ایمیل: {currentAdmin.email}</span>}
                 <span>شناسه کاربری: {currentAdmin.id}</span>
@@ -366,7 +367,7 @@ function AdminActivitiesContent() {
           </div>
 
           <div className="text-xs text-neutral-500 dark:text-slate-400 flex items-center gap-2 border-t md:border-t-0 md:border-r border-admin-borderLight dark:border-slate-800 pt-3 md:pt-0 md:pr-6">
-            <Clock className="w-4 h-4 text-neutral-400" />
+            <Clock className="w-4 h-4 text-teal-500 animate-pulse" />
             <span>در حال بررسی فعالیت‌های این ادمین از ابتدای همکاری تا کنون</span>
           </div>
         </div>
@@ -374,8 +375,9 @@ function AdminActivitiesContent() {
 
       {/* 4 Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-3.5">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
             <Activity className="w-5 h-5" />
           </div>
           <div>
@@ -386,8 +388,9 @@ function AdminActivitiesContent() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-3.5">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
             <ShoppingCart className="w-5 h-5" />
           </div>
           <div>
@@ -398,8 +401,9 @@ function AdminActivitiesContent() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-400/40 dark:hover:border-indigo-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-3.5">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-indigo-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
             <Package className="w-5 h-5" />
           </div>
           <div>
@@ -410,8 +414,9 @@ function AdminActivitiesContent() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-admin-borderLight dark:border-slate-800 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-amber-500/5 hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-3.5">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xs">
             <Coins className="w-5 h-5" />
           </div>
           <div>
@@ -424,7 +429,7 @@ function AdminActivitiesContent() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-xs space-y-4">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-card space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           {/* Admin Selector */}
           <div className="md:col-span-4">
@@ -437,7 +442,7 @@ function AdminActivitiesContent() {
                 setSelectedAdminId(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-brand-primary"
+              className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white outline-none transition-all duration-200"
             >
               <option value="all">همه مدیران و پرسنل ({admins.length} نفر)</option>
               {admins.map((adm) => (
@@ -459,7 +464,7 @@ function AdminActivitiesContent() {
                 setSelectedType(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white outline-none focus:border-brand-primary"
+              className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white outline-none transition-all duration-200"
             >
               <option value="all">همه دسته‌ها</option>
               <option value="order">تایید و تحویل سفارشات</option>
@@ -486,7 +491,7 @@ function AdminActivitiesContent() {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 rounded-xl pr-9 pl-4 py-2 text-xs text-slate-800 dark:text-white outline-none focus:border-brand-primary placeholder:text-neutral-400"
+                className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl pr-9 pl-4 py-2 text-xs text-slate-800 dark:text-white outline-none placeholder:text-neutral-400 transition-all duration-200"
               />
               <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -503,9 +508,9 @@ function AdminActivitiesContent() {
 
             <button
               onClick={() => { setTimeRange("all"); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                 timeRange === "all"
-                  ? "bg-brand-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs"
                   : "bg-admin-bg dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
               }`}
             >
@@ -513,9 +518,9 @@ function AdminActivitiesContent() {
             </button>
             <button
               onClick={() => { setTimeRange("today"); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                 timeRange === "today"
-                  ? "bg-brand-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs"
                   : "bg-admin-bg dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
               }`}
             >
@@ -523,9 +528,9 @@ function AdminActivitiesContent() {
             </button>
             <button
               onClick={() => { setTimeRange("yesterday"); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                 timeRange === "yesterday"
-                  ? "bg-brand-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs"
                   : "bg-admin-bg dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
               }`}
             >
@@ -533,9 +538,9 @@ function AdminActivitiesContent() {
             </button>
             <button
               onClick={() => { setTimeRange("7days"); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                 timeRange === "7days"
-                  ? "bg-brand-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs"
                   : "bg-admin-bg dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
               }`}
             >
@@ -543,9 +548,9 @@ function AdminActivitiesContent() {
             </button>
             <button
               onClick={() => { setTimeRange("30days"); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                 timeRange === "30days"
-                  ? "bg-brand-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs"
                   : "bg-admin-bg dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
               }`}
             >
@@ -556,10 +561,10 @@ function AdminActivitiesContent() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-              className="flex items-center gap-1.5 bg-admin-bg dark:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+              className="flex items-center gap-1.5 bg-admin-bg dark:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-600 dark:text-slate-300 hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 transition-all duration-200"
               title="تغییر ترتیب زمانی"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
               <span>{sortOrder === "desc" ? "جدیدترین ابتدا" : "قدیمی‌ترین ابتدا"}</span>
             </button>
           </div>
@@ -567,7 +572,7 @@ function AdminActivitiesContent() {
       </div>
 
       {/* Main Activity Table */}
-      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl overflow-hidden shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse text-xs">
             <thead>
@@ -585,7 +590,7 @@ function AdminActivitiesContent() {
               {paginatedActivities.map((log, index) => (
                 <tr
                   key={log.id || index}
-                  className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors"
+                  className="hover:bg-teal-50/40 dark:hover:bg-slate-800/60 transition-colors duration-150"
                 >
                   <td className="py-3.5 px-4 text-center text-neutral-400 font-mono text-[11px]">
                     {(currentPage - 1) * itemsPerPage + index + 1}
@@ -594,7 +599,7 @@ function AdminActivitiesContent() {
                     {log.createdAt ? toPersianDateTime(log.createdAt) : log.timestamp}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span className="font-bold text-slate-900 dark:text-white block">
+                    <span className="font-bold text-slate-900 dark:text-white block hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
                       {log.adminName || log.user}
                     </span>
                     {log.adminPhone && (
@@ -613,8 +618,8 @@ function AdminActivitiesContent() {
                     {log.details}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
-                      <CheckCircle2 className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>ثبت در سیستم</span>
                     </span>
                   </td>

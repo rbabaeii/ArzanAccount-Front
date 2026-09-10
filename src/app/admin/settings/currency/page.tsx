@@ -185,11 +185,11 @@ export default function CurrencySettingsPage() {
       {/* ========================================================================= */}
       {/* SECTION 1: LIVE BRSAPI INTEGRATION & AUTOMATION DASHBOARD CARD             */}
       {/* ========================================================================= */}
-      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 sm:p-7 shadow-card hover:shadow-xl hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-6">
         {/* Card Header & Status Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-admin-borderLight dark:border-slate-800 gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-200 dark:border-teal-800/60 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-200 dark:border-teal-800/60 shadow-2xs shrink-0">
               <Activity className="w-5 h-5" />
             </div>
             <div>
@@ -204,7 +204,7 @@ export default function CurrencySettingsPage() {
 
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-2xs ${
                 autoSyncEnabled
                   ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                   : "bg-neutral-100 dark:bg-slate-800 text-neutral-500 border-neutral-300 dark:border-slate-700"
@@ -226,7 +226,7 @@ export default function CurrencySettingsPage() {
 
         {/* Live Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700">
+          <div className="group relative overflow-hidden p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700 hover:border-teal-400/40 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
               آخرین نرخ اعلامی دلار (تومان)
             </span>
@@ -239,11 +239,11 @@ export default function CurrencySettingsPage() {
             </span>
           </div>
 
-          <div className="p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700">
+          <div className="group relative overflow-hidden p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700 hover:border-teal-400/40 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
               نرخ پایه اعمالی سیستم (ریال)
             </span>
-            <div className="text-xl font-black font-mono text-admin-primary dark:text-teal-300 mt-1.5 flex items-baseline gap-1">
+            <div className="text-xl font-black font-mono text-teal-600 dark:text-teal-300 mt-1.5 flex items-baseline gap-1">
               <span>{formatPrice(settings.usdToRialRate)}</span>
               <span className="text-xs font-normal text-neutral-400 font-sans">ریال</span>
             </div>
@@ -252,7 +252,7 @@ export default function CurrencySettingsPage() {
             </span>
           </div>
 
-          <div className="p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700">
+          <div className="group relative overflow-hidden p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700 hover:border-teal-400/40 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
               نوسان ۲۴ ساعته دلار
             </span>
@@ -278,18 +278,18 @@ export default function CurrencySettingsPage() {
             </span>
           </div>
 
-          <div className="p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700">
+          <div className="group relative overflow-hidden p-4 bg-admin-bg dark:bg-slate-800/70 rounded-xl border border-admin-borderLight dark:border-slate-700 hover:border-teal-400/40 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold text-neutral-500 dark:text-slate-400 block">
                 زمان آخرین استعلام موفق
               </span>
-              <span className="flex items-center gap-1 text-[9px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded-md">
+              <span className="flex items-center gap-1 text-[9px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded-md shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>همگام زنده</span>
               </span>
             </div>
             <div className="text-sm font-bold text-neutral-800 dark:text-slate-200 mt-2 flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-neutral-400 shrink-0" />
+              <Clock className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
               <span className="line-clamp-1">{settings.lastCurrencySyncTime || "هم‌اکنون"}</span>
             </div>
             <span className="text-[10px] text-neutral-400 block mt-1.5">
@@ -312,7 +312,7 @@ export default function CurrencySettingsPage() {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="BNrVb9bLT9dLPpgY4UDvX8bqJTvEaqKw"
-                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-xs font-mono outline-none dir-ltr text-left"
+                className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 text-xs font-mono outline-none dir-ltr text-left transition-all duration-200"
                 required
               />
             </div>
@@ -320,7 +320,7 @@ export default function CurrencySettingsPage() {
             {/* Interval Input */}
             <div className="md:col-span-3">
               <label className="block font-bold text-neutral-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-teal-600" />
+                <Clock className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                 <span>دوره استعلام خودکار (دقیقه):</span>
               </label>
               <div className="relative">
@@ -330,7 +330,7 @@ export default function CurrencySettingsPage() {
                   max="1440"
                   value={intervalMinutes}
                   onChange={(e) => setIntervalMinutes(Math.max(1, Number(e.target.value)))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-3 text-xs font-mono font-bold outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 text-xs font-mono font-bold outline-none transition-all duration-200"
                   required
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[11px]">
@@ -343,7 +343,7 @@ export default function CurrencySettingsPage() {
             <div className="md:col-span-3 flex items-center gap-2">
               <button
                 type="submit"
-                className="w-full bg-neutral-800 hover:bg-neutral-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 text-xs"
+                className="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-2.5 px-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all duration-200 shadow-md flex items-center justify-center gap-2 text-xs"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>ذخیره تنظیمات وب‌سرویس</span>
@@ -366,7 +366,7 @@ export default function CurrencySettingsPage() {
             </label>
 
             {configToast && (
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 animate-fadeIn">
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 animate-fadeIn shadow-2xs">
                 <CheckCircle2 className="w-4 h-4" />
                 تنظیمات کلید و زمان‌بندی وب‌سرویس با موفقیت ذخیره شد.
               </span>
@@ -380,9 +380,11 @@ export default function CurrencySettingsPage() {
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Manual Rate & Margin Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-5">
+        <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-5">
           <h3 className="font-bold text-sm text-admin-text dark:text-white pb-3 border-b border-admin-borderLight dark:border-slate-800 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-500" />
+            <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
+              <Zap className="w-4 h-4" />
+            </div>
             <span>تنظیمات دستی نرخ پایه ریالی و حاشیه سود سراسری</span>
           </h3>
 
@@ -399,15 +401,15 @@ export default function CurrencySettingsPage() {
                   min="10000"
                   value={usdToRial}
                   onChange={(e) => setUsdToRial(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-3 px-4 text-sm font-mono font-bold outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-3 px-4 text-sm font-mono font-bold outline-none transition-all duration-200"
                   required
                 />
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">
                   ریال
                 </span>
               </div>
-              <div className="mt-2 flex items-center gap-2 text-xs text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 p-2.5 rounded-xl border border-teal-200 dark:border-teal-800/60">
-                <ArrowLeftRight className="w-4 h-4 shrink-0 text-teal-600" />
+              <div className="mt-2 flex items-center gap-2 text-xs text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 p-2.5 rounded-xl border border-teal-200 dark:border-teal-800/60 shadow-2xs">
+                <ArrowLeftRight className="w-4 h-4 shrink-0 text-teal-600 dark:text-teal-400" />
                 <span>
                   معادل تومانی در سایت: <strong>{formattedTomanRate} تومان</strong> برای هر ۱ دلار
                 </span>
@@ -418,7 +420,7 @@ export default function CurrencySettingsPage() {
             <div>
               <label className="block font-bold text-neutral-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                 <span>حاشیه سود عمومی فروشگاه (Markup %):</span>
-                <span className="text-admin-primary dark:text-teal-400 font-mono font-bold">%{margin}</span>
+                <span className="text-teal-600 dark:text-teal-400 font-mono font-bold">%{margin}</span>
               </label>
               <div className="relative">
                 <input
@@ -427,7 +429,7 @@ export default function CurrencySettingsPage() {
                   max="100"
                   value={margin}
                   onChange={(e) => setMargin(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-admin-primary dark:focus:border-teal-400 rounded-xl py-3 px-4 text-sm font-mono font-bold outline-none"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-3 px-4 text-sm font-mono font-bold outline-none transition-all duration-200"
                   required
                 />
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">
@@ -441,14 +443,14 @@ export default function CurrencySettingsPage() {
 
             <button
               type="submit"
-              className="w-full bg-admin-primary hover:bg-admin-primaryDark text-white font-bold py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <Save className="w-4 h-4" />
               <span>ذخیره دستی و اعمال آنی روی قیمت محصولات</span>
             </button>
 
             {toast && (
-              <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 dark:border-emerald-800/60 animate-fadeIn">
+              <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 border border-emerald-200 dark:border-emerald-800/60 animate-fadeIn shadow-2xs">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>نرخ پایه و درصد سود با موفقیت ذخیره شدند و کاتالوگ فروشگاه به روز شد!</span>
               </div>
@@ -457,9 +459,9 @@ export default function CurrencySettingsPage() {
         </div>
 
         {/* Live Interactive Preview Box (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4 sticky top-24">
+        <div className="lg:col-span-5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-4 sticky top-24">
           <div className="flex items-center gap-2 pb-3 border-b border-admin-borderLight dark:border-slate-800">
-            <Calculator className="w-4 h-4 text-admin-primary dark:text-teal-400" />
+            <Calculator className="w-4 h-4 text-teal-600 dark:text-teal-400" />
             <h3 className="font-bold text-sm text-admin-text dark:text-white">
               ماشین‌حساب پیش‌نمایش قیمت‌های زنده
             </h3>
@@ -478,19 +480,19 @@ export default function CurrencySettingsPage() {
               return (
                 <div
                   key={val}
-                  className="bg-admin-bg dark:bg-slate-800/80 p-3.5 rounded-xl border border-admin-borderLight dark:border-slate-700 flex items-center justify-between"
+                  className="bg-admin-bg dark:bg-slate-800/80 hover:bg-teal-50/50 dark:hover:bg-slate-800 p-3.5 rounded-xl border border-admin-borderLight dark:border-slate-700 flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xs group"
                 >
                   <div>
-                    <span className="font-mono font-bold text-xs text-neutral-700 dark:text-slate-200">
+                    <span className="font-mono font-bold text-xs text-neutral-700 dark:text-slate-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                       محصول ${val.toFixed(2)} دلاری
                     </span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">
+                    <span className="text-[10px] text-neutral-400 block mt-0.5 font-mono">
                       خرید خام: {formatPrice(Math.round(baseToman))} تومان
                     </span>
                   </div>
 
                   <div className="text-left">
-                    <span className="font-black text-sm text-admin-primary dark:text-teal-400">
+                    <span className="font-black text-sm text-teal-600 dark:text-teal-400 font-mono">
                       {formatted}
                     </span>
                     <span className="text-[11px] text-neutral-500 dark:text-slate-400 mr-1">تومان</span>

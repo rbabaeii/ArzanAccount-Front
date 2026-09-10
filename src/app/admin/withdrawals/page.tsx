@@ -171,49 +171,54 @@ export default function AdminWithdrawalsPage() {
 
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-5 shadow-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-amber-500/5 hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <Clock className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">در انتظار بررسی</span>
-            <div className="text-xl font-black font-mono text-amber-600 dark:text-amber-400 mt-0.5">
-              {pendingCount} مورد
+            <div className="text-xl font-black font-mono text-amber-600 dark:text-amber-400 mt-0.5 tracking-tight flex items-center gap-1.5">
+              <span>{pendingCount} مورد</span>
+              {pendingCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-5 shadow-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <CheckCircle2 className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">واریز شده</span>
-            <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 tracking-tight">
               {approvedCount} مورد
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-5 shadow-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <ArrowUpRight className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">مجموع مبالغ تسویه شده</span>
-            <div className="text-lg font-black font-mono text-brand-primary dark:text-teal-300 mt-0.5">
+            <div className="text-lg font-black font-mono text-brand-primary dark:text-teal-300 mt-0.5 tracking-tight">
               {formatPrice(approvedTotalToman)} تومان
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-5 shadow-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-rose-500/5 hover:border-rose-400/40 dark:hover:border-rose-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <XCircle className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">رد شده</span>
-            <div className="text-xl font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5">
+            <div className="text-xl font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5 tracking-tight">
               {rejectedCount} مورد
             </div>
           </div>
@@ -245,10 +250,10 @@ export default function AdminWithdrawalsPage() {
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 flex items-center gap-1.5 shrink-0 ${
                 statusFilter === tab.id
                   ? "bg-brand-primary text-white shadow-xs"
-                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
+                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 hover:text-black dark:hover:text-white"
               }`}
             >
               <span>{tab.label}</span>
