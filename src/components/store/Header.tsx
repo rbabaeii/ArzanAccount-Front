@@ -68,29 +68,30 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-brand-border dark:border-slate-800 transition-colors">
       {/* Top Banner */}
-      <div className="bg-brand-primaryDark dark:bg-slate-950 text-white text-xs py-2 px-4 border-b border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-2 text-teal-100 text-[11px] sm:text-xs">
-            <Zap className="w-3.5 h-3.5 text-brand-accent shrink-0 animate-pulse" />
-            <span>تحویل آنلاین و آنی کلیه اشتراک‌های قانونی دیجیتال</span>
+      <div className="bg-brand-primaryDark dark:bg-slate-950 text-white text-xs py-1.5 sm:py-2 px-3 sm:px-4 border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-1.5 text-teal-100 text-[10px] sm:text-xs truncate">
+            <Zap className="w-3 h-3 text-brand-accent shrink-0 animate-pulse" />
+            <span className="truncate">تحویل آنلاین و قانونی کلیه اشتراک‌های دیجیتال</span>
           </div>
 
-          <div className="flex items-center gap-4 text-teal-200 text-[11px]">
+          <div className="flex items-center gap-3 text-teal-200 text-[10px] sm:text-[11px] shrink-0">
             <Link
               href="/orders"
               className="hover:text-white transition-colors flex items-center gap-1 text-teal-100"
             >
               <PackageCheck className="w-3.5 h-3.5 text-brand-accent" />
-              <span>پیگیری سفارش و لایسنس</span>
+              <span className="hidden xs:inline sm:inline">پیگیری سفارش</span>
+              <span className="inline xs:hidden sm:hidden">پیگیری</span>
             </Link>
 
             {isAdmin && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1 bg-amber-400 text-teal-950 px-2.5 py-0.5 rounded transition-colors font-bold shadow-xs"
+                className="flex items-center gap-1 bg-amber-400 text-teal-950 px-2 py-0.5 rounded transition-colors font-bold shadow-xs text-[10px] sm:text-xs"
               >
                 <LayoutDashboard className="w-3 h-3" />
-                <span>کنترل سنتر ادمین</span>
+                <span>پنل ادمین</span>
               </Link>
             )}
           </div>
@@ -98,29 +99,26 @@ export default function Header() {
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4 sm:gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-8">
         {/* Logo & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg"
+            className="md:hidden p-1.5 sm:p-2 text-brand-dark dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg"
             aria-label="باز کردن منو"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
           </button>
 
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 bg-brand-primary text-white flex items-center justify-center font-black text-xl rounded-xl shadow-sm group-hover:bg-brand-primaryDark transition-colors">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 bg-brand-primary text-white flex items-center justify-center font-black text-base sm:text-xl rounded-xl shadow-sm group-hover:bg-brand-primaryDark transition-colors shrink-0">
               ار
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight text-brand-dark dark:text-white flex items-center gap-1.5">
+              <span className="text-base sm:text-xl font-black tracking-tight text-brand-dark dark:text-white whitespace-nowrap">
                 ارزان اکانت
-                <span className="text-[10px] bg-brand-accentLight dark:bg-amber-950/60 text-brand-accent dark:text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-400/30">
-                  تحویل آنی
-                </span>
               </span>
-              <span className="text-[11px] text-brand-muted dark:text-slate-400 font-medium">مرجع خرید مطمئن اشتراک‌های دیجیتال</span>
+              <span className="text-[10px] sm:text-[11px] text-brand-muted dark:text-slate-400 font-medium hidden sm:block">مرجع خرید مطمئن اشتراک‌های دیجیتال</span>
             </div>
           </Link>
         </div>
@@ -253,75 +251,76 @@ export default function Header() {
       </div>
 
       {/* Categories Bar */}
-      <nav className="bg-white dark:bg-slate-900/90 border-t border-brand-border dark:border-slate-800 px-4 transition-colors">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-2 text-xs font-semibold text-brand-muted dark:text-slate-400">
-          <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-0.5">
-            {/* Categories Dropdown */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 font-bold hover:bg-teal-100 dark:hover:bg-teal-900/60 transition-all border border-teal-200/60 dark:border-teal-800/60 shadow-2xs"
-              >
-                <Layers className="w-4 h-4 text-teal-700 dark:text-teal-400" />
-                <span>دسته‌بندی‌ها</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
-              </button>
+      <nav className="bg-white dark:bg-slate-900/90 border-t border-brand-border dark:border-slate-800 px-3 sm:px-4 transition-colors relative z-30">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 py-2 text-xs font-semibold text-brand-muted dark:text-slate-400">
+          {/* Categories Dropdown (Fixed, not scrolled) */}
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 font-bold hover:bg-teal-100 dark:hover:bg-teal-900/60 transition-all border border-teal-200/60 dark:border-teal-800/60 shadow-2xs text-xs"
+            >
+              <Layers className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
+              <span>دسته‌بندی‌ها</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
 
-              {/* Dropdown Flyout */}
-              {categoryDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setCategoryDropdownOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-h-96 overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-slate-800 p-2 z-40 animate-fadeIn divide-y divide-neutral-100 dark:divide-slate-800">
-                    <div className="p-2.5 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
-                      <span>همه دسته‌بندی‌ها ({categories.length})</span>
-                      <Link
-                        href="/categories"
-                        onClick={() => setCategoryDropdownOpen(false)}
-                        className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
-                      >
-                        <span>صفحه دسته‌ها</span>
-                        <ChevronLeft className="w-3 h-3" />
-                      </Link>
-                    </div>
-
-                    <div className="py-1.5 space-y-0.5">
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/category/${cat.slug}`}
-                          onClick={() => setCategoryDropdownOpen(false)}
-                          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-teal-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
-                        >
-                          <span className="font-medium">{cat.title}</span>
-                          <ChevronLeft className="w-3.5 h-3.5 text-neutral-300 dark:text-slate-600" />
-                        </Link>
-                      ))}
-                    </div>
+            {/* Dropdown Flyout */}
+            {categoryDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-black/20"
+                  onClick={() => setCategoryDropdownOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 w-[calc(100vw-1.5rem)] sm:w-80 max-w-sm max-h-[70vh] sm:max-h-96 overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-slate-800 p-2 z-50 animate-fadeIn divide-y divide-neutral-100 dark:divide-slate-800">
+                  <div className="p-2.5 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white sticky top-0 bg-white dark:bg-slate-900 z-10 border-b border-neutral-100 dark:border-slate-800">
+                    <span>همه دسته‌بندی‌ها ({categories.length})</span>
+                    <Link
+                      href="/categories"
+                      onClick={() => setCategoryDropdownOpen(false)}
+                      className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                    >
+                      <span>صفحه دسته‌ها</span>
+                      <ChevronLeft className="w-3 h-3" />
+                    </Link>
                   </div>
-                </>
-              )}
-            </div>
 
+                  <div className="py-1.5 space-y-0.5">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.slug}`}
+                        onClick={() => setCategoryDropdownOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-teal-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
+                      >
+                        <span className="font-medium">{cat.title}</span>
+                        <ChevronLeft className="w-3.5 h-3.5 text-neutral-300 dark:text-slate-600 shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Links Scroller (Separated from dropdown so it doesn't clip dropdown) */}
+          <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar scrollbar-none py-0.5">
             <Link
               href="/products"
-              className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 shrink-0 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800"
+              className="hover:text-brand-primary dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-bold text-brand-primary dark:text-teal-400 shrink-0 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-800 whitespace-nowrap"
             >
               <span>کاتالوگ محصولات</span>
             </Link>
 
             <span className="text-neutral-300 dark:text-slate-700 hidden sm:inline">|</span>
 
-            {/* Top 4 Featured Categories Direct Pills */}
-            <div className="flex items-center gap-2">
-              {categories.slice(0, 4).map((cat) => (
+            {/* Top Categories Direct Pills */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {categories.slice(0, 5).map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/category/${cat.slug}`}
-                  className="hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50/80 dark:hover:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap text-neutral-600 dark:text-slate-300 text-xs font-medium"
+                  className="hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50/80 dark:hover:bg-slate-800 px-2 sm:px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap text-neutral-600 dark:text-slate-300 text-xs font-medium shrink-0"
                 >
                   {cat.title}
                 </Link>
@@ -331,7 +330,7 @@ export default function Header() {
 
           <Link
             href="/categories"
-            className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:underline shrink-0 bg-teal-50/50 dark:bg-teal-950/40 px-2.5 py-1 rounded-lg"
+            className="hidden md:flex items-center gap-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:underline shrink-0 bg-teal-50/50 dark:bg-teal-950/40 px-2.5 py-1 rounded-lg"
           >
             <span>آرشیو دسته‌ها</span>
             <ChevronLeft className="w-3 h-3" />
