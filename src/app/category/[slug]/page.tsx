@@ -16,7 +16,14 @@ export default function CategoryPage() {
   const slug = params?.slug as string;
   const { activeProducts, categories } = useStore();
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
+
+  // Mobile initial page size detection (fewer items per page on mobile as requested)
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPageSize(6);
+    }
+  }, []);
 
   const currentCategory = categories.find((c) => c.slug === slug);
   const categoryProducts = currentCategory
@@ -45,16 +52,19 @@ export default function CategoryPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Category Header */}
-        <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-card">
+        <div className="group relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300">
+          {/* Corner Glow Orb */}
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+
           <div className="flex items-center gap-2 text-xs text-brand-muted dark:text-slate-400 mb-3">
-            <Link href="/" className="hover:text-brand-primary">صفحه اصلی</Link>
+            <Link href="/" className="hover:text-brand-primary transition-colors">صفحه اصلی</Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-brand-primary">کاتالوگ</Link>
+            <Link href="/products" className="hover:text-brand-primary transition-colors">کاتالوگ</Link>
             <span>/</span>
             <span className="text-brand-dark dark:text-white font-bold">{currentCategory?.title || "دسته"}</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-brand-dark dark:text-white">
                 {currentCategory ? currentCategory.title : "دسته‌بندی"}
@@ -66,8 +76,8 @@ export default function CategoryPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-800/80 px-3.5 py-2 rounded-xl text-xs font-bold text-brand-primary dark:text-teal-300 self-start sm:self-auto">
-              <Layers className="w-4 h-4 text-brand-accent" />
+            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-800/80 px-4 py-2.5 rounded-xl text-xs font-bold text-brand-primary dark:text-teal-300 self-start sm:self-auto shadow-2xs hover:scale-105 transition-transform duration-200">
+              <Layers className="w-4 h-4 text-brand-accent animate-pulse" />
               <span>{categoryProducts.length} اشتراک آماده تحویل</span>
             </div>
           </div>
@@ -75,8 +85,8 @@ export default function CategoryPage() {
 
         {/* Product Grid */}
         {categoryProducts.length > 0 ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {paginatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -88,6 +98,11 @@ export default function CategoryPage() {
               totalItems={categoryProducts.length}
               itemsPerPage={pageSize}
               itemName="محصول"
+              pageSizeOptions={[6, 12, 24, 48]}
+              onItemsPerPageChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
               onPageChange={(p) => {
                 setCurrentPage(p);
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -102,21 +117,15 @@ export default function CategoryPage() {
               هنوز محصولی در این دسته‌بندی فعال نشده است
             </h3>
             <p className="text-xs text-brand-muted dark:text-slate-400 mt-2">
-              با مراجعه به پنل مدیریت، محصولات این شاخه را انتخاب و فعال کنید.
+              محصولات این دسته‌بندی به‌زودی اضافه خواهند شد. می‌توانید سایر محصولات فروشگاه را مشاهده نمایید.
             </p>
             <div className="mt-6 flex justify-center gap-4">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-teal-300 bg-teal-50 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 px-5 py-2.5 rounded-xl hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-primary hover:bg-brand-primaryDark px-6 py-2.5 rounded-xl shadow-xs transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
                 <span>مشاهده تمام محصولات</span>
-              </Link>
-              <Link
-                href="/admin/products"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-primary hover:bg-brand-primaryDark px-4 py-2.5 rounded-xl transition-colors"
-              >
-                <span>مدیریت در پنل ادمین</span>
               </Link>
             </div>
           </div>

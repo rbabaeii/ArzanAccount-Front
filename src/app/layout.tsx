@@ -1,13 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import LoginModal from "@/components/auth/LoginModal";
+import DynamicBrandHead from "@/components/common/DynamicBrandHead";
 
 export const metadata: Metadata = {
   title: "ارزان اکانت | خرید ارزان و آنی انواع اکانت و اشتراک دیجیتال",
   description: "مرجع تخصصی خرید ارزان اکانت‌های هوش مصنوعی، استریمینگ، شبکه‌های اجتماعی و خدمات دیجیتال با تحویل فوری",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -39,6 +46,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <StoreProvider>
+              <DynamicBrandHead />
               {children}
               <LoginModal />
             </StoreProvider>

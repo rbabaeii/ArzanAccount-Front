@@ -33,7 +33,19 @@ import {
 export default function AdminEmailSettingsPage() {
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"config" | "preview" | "logs">("config");
+  const [activeTab, setActiveTab] = useState<"config" | "compose" | "preview" | "logs">("config");
+
+  // Compose Custom Direct Email
+  const [composeRecipientEmail, setComposeRecipientEmail] = useState("");
+  const [composeRecipientName, setComposeRecipientName] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBadge, setComposeBadge] = useState("پیام اختصاصی مدیریت");
+  const [composeMessage, setComposeMessage] = useState("");
+  const [composeButtonText, setComposeButtonText] = useState("");
+  const [composeButtonUrl, setComposeButtonUrl] = useState("");
+  const [composeAdminSender, setComposeAdminSender] = useState("مدیریت و پشتیبانی ارزان اکانت");
+  const [isSendingCustom, setIsSendingCustom] = useState(false);
+  const [customSendResult, setCustomSendResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // SMTP Settings
   const [host, setHost] = useState("smtp.gmail.com");
@@ -201,6 +213,60 @@ export default function AdminEmailSettingsPage() {
     }
   };
 
+  // Send Custom Direct Email
+  const handleSendCustomEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!composeRecipientEmail.trim() || !composeRecipientEmail.includes("@")) {
+      showNotification("error", "لطفاً آدرس ایمیل معتبر برای گیرنده وارد نمایید.");
+      return;
+    }
+    if (!composeSubject.trim()) {
+      showNotification("error", "موضوع ایمیل نمی‌تواند خالی باشد.");
+      return;
+    }
+    if (!composeMessage.trim()) {
+      showNotification("error", "متن پیام ایمیل نمی‌تواند خالی باشد.");
+      return;
+    }
+
+    setIsSendingCustom(true);
+    setCustomSendResult(null);
+
+    try {
+      const res = await api.sendCustomEmail({
+        recipientEmail: composeRecipientEmail.trim(),
+        recipientName: composeRecipientName.trim() || undefined,
+        subject: composeSubject.trim(),
+        badge: composeBadge.trim() || undefined,
+        message: composeMessage.trim(),
+        buttonText: composeButtonText.trim() || undefined,
+        buttonUrl: composeButtonUrl.trim() || undefined,
+        adminSender: composeAdminSender.trim() || undefined,
+      });
+
+      if (res && res.success) {
+        setCustomSendResult({ success: true, message: "ایمیل سفارشی با موفقیت به آدرس گیرنده ارسال گردید." });
+        showNotification("success", "ایمیل سفارشی با موفقیت به گیرنده ارسال شد.");
+        loadLogs();
+        loadData();
+      } else {
+        const errorMsg = res?.message || res?.error || "ارسال ایمیل ناموفق بود.";
+        setCustomSendResult({ success: false, message: errorMsg });
+        showNotification("error", errorMsg);
+        loadLogs();
+        loadData();
+      }
+    } catch (error: any) {
+      const errorMsg = error?.message || "خطای ارتباط با سرور در ارسال ایمیل.";
+      setCustomSendResult({ success: false, message: errorMsg });
+      showNotification("error", errorMsg);
+      loadLogs();
+      loadData();
+    } finally {
+      setIsSendingCustom(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Toast */}
@@ -236,7 +302,7 @@ export default function AdminEmailSettingsPage() {
         </div>
 
         {/* Status Badge */}
-        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 px-4 py-2 rounded-xl text-xs shadow-2xs">
+        <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800 px-4 py-2 rounded-xl text-xs shadow-card">
           <span className="text-neutral-400">وضعیت اتصال:</span>
           <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -247,19 +313,21 @@ export default function AdminEmailSettingsPage() {
 
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
           <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-medium block">
             کل ایمیل‌های پردازش‌شده
           </span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black font-mono text-brand-primary dark:text-teal-400">
+            <span className="text-2xl font-black font-mono text-teal-600 dark:text-teal-400">
               {formatNumber(stats.total)}
             </span>
             <span className="text-xs text-neutral-400">فقره</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
           <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-medium block">
             تحویل موفقیت‌آمیز
           </span>
@@ -271,7 +339,8 @@ export default function AdminEmailSettingsPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-purple-500/5 hover:border-purple-400/40 dark:hover:border-purple-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
           <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-medium block">
             ایمیل‌های ارسالی امروز
           </span>
@@ -283,7 +352,8 @@ export default function AdminEmailSettingsPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card hover:shadow-xl hover:shadow-rose-500/5 hover:border-rose-400/40 dark:hover:border-rose-400/30 hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-rose-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
           <span className="text-[11px] text-admin-textMuted dark:text-slate-400 font-medium block">
             خطا در ارسال
           </span>
@@ -297,12 +367,12 @@ export default function AdminEmailSettingsPage() {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab("config")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 ${
             activeTab === "config"
-              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
+              ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
               : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
           }`}
         >
@@ -311,31 +381,46 @@ export default function AdminEmailSettingsPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab("compose")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 ${
+            activeTab === "compose"
+              ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+          }`}
+        >
+          <Mail className="w-4 h-4" />
+          <span>ارسال ایمیل اختصاصی به کاربران</span>
+          <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-bold shadow-2xs">
+            مستقیم
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab("preview")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 ${
             activeTab === "preview"
-              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
+              ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
               : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
           }`}
         >
           <Sparkles className="w-4 h-4" />
           <span>پیش‌نمایش قالب‌های Stitch</span>
-          <span className="bg-teal-100 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 text-[10px] px-2 py-0.5 rounded-full font-mono">
+          <span className="bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[10px] px-2 py-0.5 rounded-full font-mono shadow-2xs">
             ۳ واریانت
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab("logs")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 ${
             activeTab === "logs"
-              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
+              ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
               : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
           }`}
         >
           <Activity className="w-4 h-4" />
           <span>لاگ و تاریخچه ارسالی‌ها</span>
-          <span className="bg-neutral-200 dark:bg-slate-800 text-neutral-700 dark:text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-mono">
+          <span className="bg-neutral-200 dark:bg-slate-800 text-neutral-700 dark:text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-mono shadow-2xs">
             {stats.total}
           </span>
         </button>
@@ -347,16 +432,16 @@ export default function AdminEmailSettingsPage() {
       {activeTab === "config" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left 7 cols: Config Form */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-6">
+          <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-admin-borderLight dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-brand-primary" />
+                <Server className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <h3 className="font-bold text-sm text-admin-text dark:text-white">مشخصات اتصال سرور SMTP</h3>
               </div>
               <button
                 type="button"
                 onClick={applyGmailPreset}
-                className="text-[11px] font-bold text-brand-primary hover:bg-teal-50 dark:hover:bg-teal-950/40 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800/60 transition-colors"
+                className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800/60 transition-all duration-150 hover:scale-105 active:scale-95 shadow-2xs"
               >
                 بارگذاری پیش‌فرض جیمیل (Gmail)
               </button>
@@ -372,7 +457,7 @@ export default function AdminEmailSettingsPage() {
                     type="text"
                     value={host}
                     onChange={(e) => setHost(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                     placeholder="smtp.gmail.com"
                     required
                   />
@@ -387,7 +472,7 @@ export default function AdminEmailSettingsPage() {
                       type="number"
                       value={port}
                       onChange={(e) => setPort(Number(e.target.value))}
-                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                       placeholder="465"
                       required
                     />
@@ -397,10 +482,10 @@ export default function AdminEmailSettingsPage() {
                         setPort(465);
                         setSecure(true);
                       }}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-all duration-150 hover:scale-105 active:scale-95 ${
                         port === 465
-                          ? "bg-teal-600 text-white border-teal-600 font-bold"
-                          : "bg-admin-bg dark:bg-slate-800 text-neutral-500 border-neutral-300 dark:border-slate-700"
+                          ? "bg-teal-600 text-white border-teal-600 font-bold shadow-2xs"
+                          : "bg-admin-bg dark:bg-slate-800 text-neutral-500 border-neutral-300 dark:border-slate-700 hover:border-teal-400"
                       }`}
                     >
                       465 SSL
@@ -411,10 +496,10 @@ export default function AdminEmailSettingsPage() {
                         setPort(587);
                         setSecure(false);
                       }}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-all duration-150 hover:scale-105 active:scale-95 ${
                         port === 587
-                          ? "bg-teal-600 text-white border-teal-600 font-bold"
-                          : "bg-admin-bg dark:bg-slate-800 text-neutral-500 border-neutral-300 dark:border-slate-700"
+                          ? "bg-teal-600 text-white border-teal-600 font-bold shadow-2xs"
+                          : "bg-admin-bg dark:bg-slate-800 text-neutral-500 border-neutral-300 dark:border-slate-700 hover:border-teal-400"
                       }`}
                     >
                       587 TLS
@@ -432,7 +517,7 @@ export default function AdminEmailSettingsPage() {
                     type="text"
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                     placeholder="example@gmail.com"
                     required
                   />
@@ -447,14 +532,14 @@ export default function AdminEmailSettingsPage() {
                       type={showPassword ? "text" : "password"}
                       value={smtpPass}
                       onChange={(e) => setSmtpPass(e.target.value)}
-                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 pr-3 pl-10 outline-none font-mono text-left dir-ltr"
+                      className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 pr-3 pl-10 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                       placeholder="xeuhxtofquloumhs"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -471,7 +556,7 @@ export default function AdminEmailSettingsPage() {
                     type="text"
                     value={fromName}
                     onChange={(e) => setFromName(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                     placeholder="فروشگاه من"
                     required
                   />
@@ -485,7 +570,7 @@ export default function AdminEmailSettingsPage() {
                     type="email"
                     value={fromEmail}
                     onChange={(e) => setFromEmail(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                     placeholder="rezadalyagpt@gmail.com"
                     required
                   />
@@ -501,18 +586,18 @@ export default function AdminEmailSettingsPage() {
                     type="email"
                     value={replyTo}
                     onChange={(e) => setReplyTo(e.target.value)}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr"
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                     placeholder="rezadalyagpt@gmail.com"
                   />
                 </div>
 
                 <div className="flex flex-col justify-end">
-                  <label className="flex items-center gap-2 cursor-pointer py-2">
+                  <label className="flex items-center gap-2 cursor-pointer py-2 group">
                     <input
                       type="checkbox"
                       checked={isEnabled}
                       onChange={(e) => setIsEnabled(e.target.checked)}
-                      className="w-4 h-4 text-brand-primary rounded accent-teal-600 cursor-pointer"
+                      className="w-4 h-4 text-brand-primary rounded accent-teal-600 cursor-pointer transition-transform group-hover:scale-110"
                     />
                     <span className="font-semibold text-admin-text dark:text-slate-200 text-xs">
                       سرویس ارسال ایمیل در سراسر سایت فعال باشد
@@ -539,7 +624,7 @@ export default function AdminEmailSettingsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="w-full bg-brand-primary hover:bg-teal-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white py-3 rounded-xl font-bold text-xs shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 hover:scale-[1.01] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   <span>{isSaving ? "در حال ذخیره‌سازی..." : "ذخیره و ثبت تنظیمات SMTP"}</span>
@@ -550,9 +635,10 @@ export default function AdminEmailSettingsPage() {
 
           {/* Right 5 cols: Live Diagnostics & Test Email Tool */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-gradient-to-br from-teal-900 to-slate-900 text-white p-6 rounded-2xl border border-teal-800 shadow-xl space-y-5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-teal-800 text-teal-200 flex items-center justify-center font-bold">
+            <div className="group relative overflow-hidden bg-gradient-to-br from-teal-900 to-slate-900 text-white p-6 rounded-2xl border border-teal-800 shadow-xl hover:shadow-2xl hover:shadow-teal-900/30 hover:-translate-y-1 transition-all duration-300 space-y-5">
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/20 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="flex items-center gap-2.5 relative z-10">
+                <div className="w-9 h-9 rounded-xl bg-teal-800 text-teal-200 flex items-center justify-center font-bold group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                   <Send className="w-4 h-4" />
                 </div>
                 <div>
@@ -561,7 +647,7 @@ export default function AdminEmailSettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3.5 text-xs">
+              <div className="space-y-3.5 text-xs relative z-10">
                 <div>
                   <label className="block text-teal-100 font-semibold mb-1">
                     ایمیل مقصد برای دریافت تست:
@@ -570,7 +656,7 @@ export default function AdminEmailSettingsPage() {
                     type="email"
                     value={testRecipient}
                     onChange={(e) => setTestRecipient(e.target.value)}
-                    className="w-full bg-black/30 border border-white/20 text-white rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr placeholder:text-neutral-400"
+                    className="w-full bg-black/30 border border-white/20 text-white rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr placeholder:text-neutral-400 focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400 transition-all duration-200"
                     placeholder="your-email@gmail.com"
                   />
                 </div>
@@ -582,7 +668,7 @@ export default function AdminEmailSettingsPage() {
                   <select
                     value={testTemplate}
                     onChange={(e) => setTestTemplate(e.target.value)}
-                    className="w-full bg-black/30 border border-white/20 text-white rounded-xl py-2 px-3 outline-none text-xs"
+                    className="w-full bg-black/30 border border-white/20 text-white rounded-xl py-2 px-3 outline-none text-xs focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400 transition-all duration-200"
                   >
                     <option value="order_receipt" className="bg-slate-900">رسید و تحویل لایسنس (واریانت ۲ استیچ)</option>
                     <option value="order_invoice" className="bg-slate-900">تأییدیه فاکتور خرید (واریانت ۱ استیچ)</option>
@@ -595,7 +681,7 @@ export default function AdminEmailSettingsPage() {
                   type="button"
                   onClick={handleSendTest}
                   disabled={isSendingTest}
-                  className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 py-2.5 rounded-xl font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+                  className="w-full bg-teal-500 hover:bg-teal-400 active:scale-95 text-slate-950 py-2.5 rounded-xl font-black text-xs shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
                 >
                   {isSendingTest ? (
                     <>
@@ -648,12 +734,316 @@ export default function AdminEmailSettingsPage() {
       )}
 
       {/* ========================================================================= */}
+      {/* TAB: COMPOSE & SEND CUSTOM EMAIL TO USERS */}
+      {/* ========================================================================= */}
+      {activeTab === "compose" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Form Side - 7 Cols */}
+          <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-admin-borderLight dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-brand-primary" />
+                <div>
+                  <h3 className="font-bold text-sm text-admin-text dark:text-white">ارسال ایمیل مستقیم با متن دلخواه به کاربران</h3>
+                  <p className="text-[11px] text-admin-textMuted dark:text-slate-400 mt-0.5">
+                    ارسال پیام رسمی، اطلاعیه، رفع اشکال یا پیشنهاد ویژه به هر کاربر با قالب واکنش‌گرای ارزان اکانت
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Template Presets */}
+            <div>
+              <label className="block font-semibold text-xs text-admin-text dark:text-slate-200 mb-2">
+                الگوهای آماده برای متن پیام (پیش‌تنظیم):
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("اطلاع‌رسانی مهم پیرامون حساب کاربری شما در ارزان اکانت");
+                    setComposeBadge("اطلاعیه مهم حساب");
+                    setComposeMessage("کاربر گرامی،\n\nاین پیام جهت اطلاع‌رسانی در خصوص وضعیت خدمات و حساب کاربری شما ارسال گردیده است. لطفاً جهت بررسی جزئیات به بخش پنل کاربری خود مراجعه فرمایید.\n\nدر صورت وجود هرگونه ابهام یا سوال، تیم پشتیبانی ارزان اکانت به صورت ۲۴ ساعته در خدمت شماست.");
+                    setComposeButtonText("مشاهده پنل کاربری");
+                    setComposeButtonUrl("https://arzanaccount.com/profile");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 hover:border-teal-400 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+                >
+                  📢 اطلاعیه حساب کاربری
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("راهنمای فعال‌سازی و تحویل اطلاعات اشتراک");
+                    setComposeBadge("اطلاعات تکمیلی اشتراک");
+                    setComposeMessage("کاربر گرامی،\n\nپیرو سفارش شما در ارزان اکانت، اطلاعات تکمیلی و راهنمای راه‌اندازی اشتراک برای شما آماده گردیده است. خواهشمندیم قبل از استفاده، دستورالعمل مندرج در پنل کاربری را به دقت مطالعه فرمایید.\n\nتیم پشتیبانی ما تا تحویل کامل و فعال‌سازی موفقیت‌آمیز در کنار شما خواهد بود.");
+                    setComposeButtonText("بررسی سفارش و لایسنس");
+                    setComposeButtonUrl("https://arzanaccount.com/profile?tab=orders");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 hover:border-teal-400 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+                >
+                  🔑 راهنمای لایسنس و اشتراک
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("هدیه ویژه و کد تخفیف اختصاصی برای شما - ارزان اکانت");
+                    setComposeBadge("کد تخفیف اختصاصی");
+                    setComposeMessage("کاربر عزیز و همراه همیشگی ارزان اکانت،\n\nبه پاس قدردانی از اعتماد شما، کد تخفیف ویژه خرید بعدی به حساب شما اختصاص داده شد:\n\nکد تخفیف: SPECIAL-2026\nدرصد تخفیف: ۲۰٪ تخفیف بدون سقف بر روی تمام لایسنس‌ها\nمهلت استفاده: تا ۷ روز آینده");
+                    setComposeButtonText("خرید با تخفیف ویژه");
+                    setComposeButtonUrl("https://arzanaccount.com");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 hover:border-teal-400 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+                >
+                  🎁 کد تخفیف و هدیه
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeSubject("پاسخ پشتیبانی به پیام شما در ارزان اکانت");
+                    setComposeBadge("پشتیبانی مشتریان");
+                    setComposeMessage("کاربر گرامی،\n\nدرخواست پشتیبانی و تیکت ارسالی شما توسط کارشناسان فنی ارزان اکانت بررسی گردید و مشکل مورد نظر به طور کامل برطرف شد.\n\nدر صورتی که نیاز به پیگیری مجدد یا هرگونه راهنمایی بیشتر دارید، لطفاً با پشتیبانی تلگرام در ارتباط باشید.");
+                    setComposeButtonText("ارتباط با پشتیبانی");
+                    setComposeButtonUrl("https://t.me/ArzanAccount_Support");
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-primary border border-slate-200 dark:border-slate-700 hover:border-teal-400 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+                >
+                  💬 پاسخ پشتیبانی
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSendCustomEmail} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    آدرس ایمیل گیرنده (کاربر): <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={composeRecipientEmail}
+                    onChange={(e) => setComposeRecipientEmail(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="customer@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    نام یا لقب گیرنده (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={composeRecipientName}
+                    onChange={(e) => setComposeRecipientName(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="مثال: علی احمدی (یا خالی برای «کاربر گرامی»)"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    موضوع ایمیل (Subject): <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="مثلاً: پیام اختصاصی از طرف مدیریت ارزان اکانت"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    بج سربرگ ایمیل:
+                  </label>
+                  <input
+                    type="text"
+                    value={composeBadge}
+                    onChange={(e) => setComposeBadge(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="مثال: پیام اختصاصی مدیریت"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                  متن پیام ایمیل (دلخواه و چندخطی): <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={6}
+                  value={composeMessage}
+                  onChange={(e) => setComposeMessage(e.target.value)}
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2.5 px-3 outline-none leading-relaxed resize-y font-sans focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                  placeholder="متن دلخواه خود را اینجا بنویسید... (پاراگراف‌ها و خطوط جدید دقیقاً در ایمیل نمایش داده می‌شوند)"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    عنوان دکمه اقدام (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={composeButtonText}
+                    onChange={(e) => setComposeButtonText(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="مثال: ورود به پنل کاربری"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                    لینک دکمه اقدام (اختیاری):
+                  </label>
+                  <input
+                    type="url"
+                    value={composeButtonUrl}
+                    onChange={(e) => setComposeButtonUrl(e.target.value)}
+                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none font-mono text-left dir-ltr focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="https://arzanaccount.com/..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-admin-text dark:text-slate-200 mb-1.5">
+                  عنوان امضا / ارسال‌کننده:
+                </label>
+                <input
+                  type="text"
+                  value={composeAdminSender}
+                  onChange={(e) => setComposeAdminSender(e.target.value)}
+                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 px-3 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                  placeholder="مثال: مدیریت و پشتیبانی ارزان اکانت"
+                />
+              </div>
+
+              {/* Status Alert */}
+              {customSendResult && (
+                <div
+                  className={`p-3 rounded-xl border text-xs flex items-center gap-2 transition-all duration-200 ${
+                    customSendResult.success
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200"
+                      : "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-200"
+                  }`}
+                >
+                  {customSendResult.success ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  )}
+                  <span>{customSendResult.message}</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeRecipientEmail("");
+                    setComposeRecipientName("");
+                    setComposeSubject("");
+                    setComposeMessage("");
+                    setComposeButtonText("");
+                    setComposeButtonUrl("");
+                    setCustomSendResult(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-admin-borderLight dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  پاک‌کردن فرم
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingCustom}
+                  className="flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-teal-500/20 disabled:opacity-50"
+                >
+                  <Send className={`w-4 h-4 ${isSendingCustom ? "animate-pulse" : ""}`} />
+                  <span>{isSendingCustom ? "در حال ارسال ایمیل..." : "ارسال ایمیل به کاربر"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Live Preview Side - 5 Cols */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight dark:border-slate-800 mb-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <span className="font-bold text-xs text-admin-text dark:text-white">پیش‌نمایش زنده ایمیل خروجی</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">HTML Email Mock</span>
+              </div>
+
+              {/* Email Card Container */}
+              <div className="bg-slate-100/80 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                <div className="bg-white text-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-200 text-right text-xs">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-teal-900 to-teal-700 text-white p-4 text-center">
+                    <div className="inline-block bg-white/20 text-teal-100 text-[10px] px-2 py-0.5 rounded-full font-bold mb-1">
+                      {composeBadge || "پیام اختصاصی مدیریت"}
+                    </div>
+                    <div className="text-sm font-black tracking-tight">⚡ ارزان اکانت (Arzan Account)</div>
+                    <div className="text-[10px] text-teal-200 mt-0.5">سامانه هوشمند اشتراک‌ها و لایسنس‌های قانونی</div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-4 space-y-3">
+                    <div className="text-xs font-bold text-teal-950">
+                      سلام {composeRecipientName || "کاربر گرامی"}،
+                    </div>
+
+                    {composeSubject && (
+                      <div className="text-xs font-bold text-slate-800 pb-1 border-b border-slate-100">
+                        موضوع: {composeSubject}
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-[11px] text-slate-700 leading-relaxed whitespace-pre-line min-h-[80px]">
+                      {composeMessage || "متن پیام در اینجا به صورت زنده نمایش داده خواهد شد..."}
+                    </div>
+
+                    {composeButtonText && (
+                      <div className="text-center pt-1">
+                        <span className="inline-block bg-teal-800 text-white text-[11px] font-bold px-4 py-1.5 rounded-lg shadow-xs">
+                          {composeButtonText} ←
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="pt-3 border-t border-slate-100 text-[10px] text-slate-500">
+                      با احترام،<br />
+                      <strong className="text-slate-800">{composeAdminSender || "مدیریت ارزان اکانت"}</strong>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="bg-slate-50 border-t border-slate-100 p-2.5 text-center text-[9.5px] text-slate-400">
+                    پشتیبانی ۲۴ ساعته در تلگرام: @arzan_support
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* TAB 2: LIVE TEMPLATE PREVIEWS (STITCH VARIANTS) */}
       {/* ========================================================================= */}
       {activeTab === "preview" && (
         <div className="space-y-6">
           {/* Variant Selector */}
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-4 rounded-2xl border border-admin-borderLight dark:border-slate-800/80 shadow-card flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-brand-primary" />
               <span className="font-bold text-xs text-admin-text dark:text-white">
@@ -664,30 +1054,30 @@ export default function AdminEmailSettingsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewVariant(2)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                   previewVariant === 2
-                    ? "bg-brand-primary text-white shadow-xs"
-                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
+                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
                 واریانت ۲: رسید مدرن و تحویل لایسنس (اصلی)
               </button>
               <button
                 onClick={() => setPreviewVariant(1)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                   previewVariant === 1
-                    ? "bg-brand-primary text-white shadow-xs"
-                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
+                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
                 واریانت ۱: کارت مینیمال فاکتور
               </button>
               <button
                 onClick={() => setPreviewVariant(3)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
                   previewVariant === 3
-                    ? "bg-brand-primary text-white shadow-xs"
-                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
+                    : "bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
                 واریانت ۳: هدر برند و اطلاعیه
@@ -818,7 +1208,7 @@ export default function AdminEmailSettingsPage() {
       {/* TAB 3: SENT EMAILS AUDIT LOGS */}
       {/* ========================================================================= */}
       {activeTab === "logs" && (
-        <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl overflow-hidden shadow-card">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300">
           {/* Filters Bar */}
           <div className="p-4 border-b border-admin-borderLight dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="flex-1 relative">
@@ -827,7 +1217,7 @@ export default function AdminEmailSettingsPage() {
                 placeholder="جستجو در ایمیل گیرنده، موضوع یا قالب..."
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
-                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 pr-9 pl-3 text-xs outline-none"
+                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl py-2 pr-9 pl-3 text-xs outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
               />
               <Search className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -836,7 +1226,7 @@ export default function AdminEmailSettingsPage() {
               <select
                 value={logStatus}
                 onChange={(e) => setLogStatus(e.target.value)}
-                className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-xl py-2 px-3 outline-none text-slate-800 dark:text-slate-100"
+                className="bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 text-xs rounded-xl py-2 px-3 outline-none text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
               >
                 <option value="all">همه وضعیت‌ها</option>
                 <option value="SENT">ارسال موفق (SENT)</option>
@@ -845,8 +1235,8 @@ export default function AdminEmailSettingsPage() {
 
               <button
                 onClick={loadLogs}
-                className="p-2 rounded-xl border border-admin-borderLight dark:border-slate-700 text-neutral-500 hover:text-brand-primary"
-                title="تازوه‌سازی لاگ‌ها"
+                className="p-2 rounded-xl border border-admin-borderLight dark:border-slate-700 text-neutral-500 hover:text-brand-primary dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+                title="تازه‌سازی لاگ‌ها"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoadingLogs ? "animate-spin" : ""}`} />
               </button>
@@ -868,8 +1258,8 @@ export default function AdminEmailSettingsPage() {
               </thead>
               <tbody className="divide-y divide-admin-borderLight dark:divide-slate-800">
                 {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-teal-50/20 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="py-3 px-4 font-mono font-semibold text-slate-800 dark:text-slate-200 dir-ltr text-left">
+                  <tr key={log.id} className="hover:bg-teal-50/40 dark:hover:bg-slate-800/60 transition-colors duration-150 group">
+                    <td className="py-3 px-4 font-mono font-semibold text-slate-800 dark:text-slate-200 dir-ltr text-left group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                       {log.to}
                     </td>
                     <td className="py-3 px-4 font-medium text-slate-900 dark:text-white max-w-xs truncate">
@@ -882,12 +1272,12 @@ export default function AdminEmailSettingsPage() {
                     </td>
                     <td className="py-3 px-4 text-center">
                       {log.status === "SENT" ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">
-                          <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           ارسال موفق
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-2 py-0.5 rounded-full shadow-2xs">
                           <AlertCircle className="w-3 h-3 text-red-600" />
                           خطا
                         </span>

@@ -1,0 +1,608 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { formatPrice } from "@/lib/format";
+import {
+  Wallet,
+  ArrowUpRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
+  Search,
+  Filter,
+  CreditCard,
+  User,
+  Phone,
+  ShieldCheck,
+  ShieldAlert,
+  Calendar,
+  FileText,
+  X,
+  Check,
+} from "lucide-react";
+
+export default function AdminWithdrawalsPage() {
+  const { user: currentAdmin } = useAuth();
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Modals for processing
+  const [selectedReq, setSelectedReq] = useState<any | null>(null);
+  const [modalAction, setModalAction] = useState<"APPROVE" | "REJECT" | null>(null);
+  const [bankTrackingCode, setBankTrackingCode] = useState("");
+  const [adminNote, setAdminNote] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const fetchWithdrawals = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.getAdminWithdrawals({
+        status: statusFilter !== "all" ? statusFilter : undefined,
+      });
+      if (res && Array.isArray(res.requests)) {
+        setWithdrawals(res.requests);
+      }
+    } catch (err: any) {
+      console.error("Failed to load admin withdrawals:", err);
+      showToast("error", err?.message || "خطا در دریافت لیست درخواست‌های تسویه.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchWithdrawals();
+  }, [fetchWithdrawals]);
+
+  const handleOpenProcessModal = (req: any, action: "APPROVE" | "REJECT") => {
+    setSelectedReq(req);
+    setModalAction(action);
+    setBankTrackingCode("");
+    setAdminNote("");
+  };
+
+  const handleCloseModal = () => {
+    setSelectedReq(null);
+    setModalAction(null);
+    setBankTrackingCode("");
+    setAdminNote("");
+  };
+
+  const handleSubmitProcess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReq || !modalAction) return;
+
+    if (modalAction === "APPROVE" && !bankTrackingCode.trim()) {
+      showToast("error", "لطفاً کد رهگیری انتقال بانکی را وارد نمایید.");
+      return;
+    }
+
+    if (modalAction === "REJECT" && !adminNote.trim()) {
+      showToast("error", "لطفاً دلیل رد درخواست تسویه را جهت اطلاع کاربر ثبت نمایید.");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const res = await api.processWithdrawal(selectedReq.id, {
+        action: modalAction,
+        bankTrackingCode: bankTrackingCode.trim() || undefined,
+        adminNote: adminNote.trim() || undefined,
+        adminName: currentAdmin?.name || "مدیر مالی",
+      });
+
+      showToast("success", res?.message || (modalAction === "APPROVE" ? "درخواست تسویه تایید شد." : "درخواست تسویه رد شد."));
+      handleCloseModal();
+      fetchWithdrawals();
+    } catch (err: any) {
+      showToast("error", err?.message || "خطا در پردازش درخواست.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Filter by search
+  const filteredWithdrawals = withdrawals.filter((w) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    const matchName = w.user?.name && w.user.name.toLowerCase().includes(term);
+    const matchPhone = w.user?.phone && w.user.phone.includes(term);
+    const matchSheba = w.sheba && w.sheba.toLowerCase().includes(term);
+    const matchCard = w.cardNumber && w.cardNumber.includes(term);
+    return matchName || matchPhone || matchSheba || matchCard;
+  });
+
+  const totalCount = withdrawals.length;
+  const pendingCount = withdrawals.filter((w) => w.status === "PENDING").length;
+  const approvedCount = withdrawals.filter((w) => w.status === "APPROVED").length;
+  const rejectedCount = withdrawals.filter((w) => w.status === "REJECTED").length;
+  const approvedTotalToman = withdrawals
+    .filter((w) => w.status === "APPROVED")
+    .reduce((sum, w) => sum + (w.amountToman || 0), 0);
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold transition-all animate-slideDown ${
+            toast.type === "success"
+              ? "bg-emerald-600 text-white shadow-emerald-600/30"
+              : "bg-rose-600 text-white shadow-rose-600/30"
+          }`}
+        >
+          {toast.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-admin-text dark:text-white flex items-center gap-2.5">
+            <Wallet className="w-6 h-6 text-brand-primary dark:text-teal-400" />
+            <span>مدیریت درخواست‌های تسویه حساب و کیف پول</span>
+          </h1>
+          <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
+            بررسی و واریز مبالغ تسویه کاربران با نظارت بر تفکیک واریزی‌های مستقیم و بونوس‌های خرید کش‌بک
+          </p>
+        </div>
+        <button
+          onClick={fetchWithdrawals}
+          disabled={isLoading}
+          className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-xs"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <span>به‌روزرسانی لحظه‌ای</span>
+        </button>
+      </div>
+
+      {/* Overview Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-amber-500/5 hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">در انتظار بررسی</span>
+            <div className="text-xl font-black font-mono text-amber-600 dark:text-amber-400 mt-0.5 tracking-tight flex items-center gap-1.5">
+              <span>{pendingCount} مورد</span>
+              {pendingCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">واریز شده</span>
+            <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 tracking-tight">
+              {approvedCount} مورد
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+            <ArrowUpRight className="w-6 h-6" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">مجموع مبالغ تسویه شده</span>
+            <div className="text-lg font-black font-mono text-brand-primary dark:text-teal-300 mt-0.5 tracking-tight">
+              {formatPrice(approvedTotalToman)} تومان
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-5 shadow-card hover:shadow-xl hover:shadow-rose-500/5 hover:border-rose-400/40 dark:hover:border-rose-400/30 hover:-translate-y-1.5 transition-all duration-300 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+            <XCircle className="w-6 h-6" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">رد شده</span>
+            <div className="text-xl font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5 tracking-tight">
+              {rejectedCount} مورد
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rules Notice */}
+      <div className="p-4 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 text-xs text-teal-950 dark:text-teal-200 flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-brand-primary dark:text-teal-400" />
+        <div className="space-y-1">
+          <span className="font-bold">قانون کنترل سقف برداشت واریزی نقدی:</span>
+          <p className="leading-relaxed opacity-90">
+            کاربران تنها مجاز به برداشت مبالغی هستند که به عنوان <b>واریز مستقیم نقدی (Direct Deposit)</b> در حساب دارند.
+            اعتبارات <b>کش‌بک (Cashback Bonus)</b> صرفاً برای خرید محصولات و اشتراک‌های سایت قابل استفاده بوده و نباید تسویه ریالی شوند. سیستم به صورت خودکار سقف مجاز را اعتبارسنجی می‌کند.
+          </p>
+        </div>
+      </div>
+
+      {/* Search & Status Filters */}
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-4 shadow-card flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        {/* Status Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {[
+            { id: "all", label: "همه درخواست‌ها", count: totalCount },
+            { id: "PENDING", label: "در انتظار بررسی", count: pendingCount, color: "text-amber-600" },
+            { id: "APPROVED", label: "واریز شده", count: approvedCount, color: "text-emerald-600" },
+            { id: "REJECTED", label: "رد شده", count: rejectedCount, color: "text-rose-600" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 flex items-center gap-1.5 shrink-0 ${
+                statusFilter === tab.id
+                  ? "bg-brand-primary text-white shadow-xs"
+                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 hover:text-black dark:hover:text-white"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                  statusFilter === tab.id
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full md:w-72">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="جستجوی نام، تلفن، شبا یا کارت..."
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 pl-8 text-xs text-slate-800 dark:text-slate-100 outline-none"
+          />
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+        </div>
+      </div>
+
+      {/* Main Table */}
+      <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl shadow-card overflow-hidden">
+        {isLoading ? (
+          <div className="py-20 text-center text-slate-400 flex items-center justify-center gap-2 text-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-brand-primary" />
+            <span>در حال بارگذاری لیست درخواست‌های تسویه...</span>
+          </div>
+        ) : filteredWithdrawals.length === 0 ? (
+          <div className="py-20 text-center text-slate-400 dark:text-slate-500 space-y-2">
+            <Clock className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-700" />
+            <p className="text-sm font-bold">هیچ درخواستی با این مشخصات یافت نشد.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-admin-borderLight dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold">
+                  <th className="py-3.5 pr-4">شناسه و تاریخ</th>
+                  <th className="py-3.5">کاربر متقاضی</th>
+                  <th className="py-3.5">مبلغ درخواستی</th>
+                  <th className="py-3.5">تفکیک کیف پول کاربر</th>
+                  <th className="py-3.5">مشخصات حساب مقصد</th>
+                  <th className="py-3.5">وضعیت</th>
+                  <th className="py-3.5 pl-4 text-left">عملیات مالی</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                {filteredWithdrawals.map((req) => {
+                  const directDeposit = req.user?.directDepositBalance ?? 0;
+                  const cashbackBonus = req.user?.cashbackBonusBalance ?? 0;
+                  const totalWallet = req.user?.walletBalanceToman ?? 0;
+                  const isExceedingDirect = req.amountToman > directDeposit;
+
+                  return (
+                    <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      {/* ID & Date */}
+                      <td className="py-4 pr-4">
+                        <span className="font-mono text-slate-600 dark:text-slate-300 font-bold block">
+                          #{req.id.slice(-6).toUpperCase()}
+                        </span>
+                        <span className="text-[11px] text-slate-400 mt-0.5 block">
+                          {new Date(req.createdAt).toLocaleDateString("fa-IR")}
+                        </span>
+                      </td>
+
+                      {/* User Info */}
+                      <td className="py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center font-bold">
+                            {req.user?.name ? req.user.name.slice(0, 1) : "ک"}
+                          </div>
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white block">
+                              {req.user?.name || "کاربر ناشناس"}
+                            </span>
+                            <span className="font-mono text-[11px] text-slate-400 dir-ltr text-right block">
+                              {req.user?.phone}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Requested Amount */}
+                      <td className="py-4">
+                        <div className="font-black font-mono text-sm text-slate-900 dark:text-white">
+                          {formatPrice(req.amountToman)} تومان
+                        </div>
+                        {isExceedingDirect ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 font-bold mt-1">
+                            <ShieldAlert className="w-3 h-3" />
+                            <span>فراتر از واریز مستقیم!</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1">
+                            <ShieldCheck className="w-3 h-3" />
+                            <span>سقف مجاز تایید شده</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Wallet Breakdown Details */}
+                      <td className="py-4">
+                        <div className="space-y-1 text-[11px]">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-slate-500">واریز مستقیم (سقف تسویه):</span>
+                            <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                              {formatPrice(directDeposit)} ت
+                            </strong>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-slate-500">بونوس کش‌بک (خرید سایت):</span>
+                            <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                              {formatPrice(cashbackBonus)} ت
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-slate-100 dark:border-slate-800">
+                            <span className="text-slate-500">موجودی کل والت:</span>
+                            <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">
+                              {formatPrice(totalWallet)} ت
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Bank Account */}
+                      <td className="py-4">
+                        <div className="space-y-1">
+                          {req.sheba ? (
+                            <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 dir-ltr text-left">
+                              {req.sheba}
+                            </div>
+                          ) : req.cardNumber ? (
+                            <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 dir-ltr text-left">
+                              {req.cardNumber}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                          {req.accountOwnerName && (
+                            <span className="text-[10px] text-slate-500 block">
+                              به نام: {req.accountOwnerName}
+                            </span>
+                          )}
+                          {req.userNote && (
+                            <span className="text-[10px] text-slate-400 italic block mt-0.5">
+                              یادداشت کاربر: {req.userNote}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-4">
+                        {req.status === "PENDING" && (
+                          <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                            <Clock className="w-3 h-3" />
+                            <span>در انتظار بررسی</span>
+                          </span>
+                        )}
+                        {req.status === "APPROVED" && (
+                          <div>
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>واریز شد</span>
+                            </span>
+                            {req.bankTrackingCode && (
+                              <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold mt-1">
+                                پیگیری: {req.bankTrackingCode}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {req.status === "REJECTED" && (
+                          <div>
+                            <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                              <XCircle className="w-3 h-3" />
+                              <span>رد شده</span>
+                            </span>
+                            {req.adminNote && (
+                              <div className="text-[10px] text-rose-600 dark:text-rose-400 mt-1 max-w-xs">
+                                {req.adminNote}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-4 pl-4 text-left">
+                        {req.status === "PENDING" ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenProcessModal(req, "APPROVE")}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>تایید واریز</span>
+                            </button>
+                            <button
+                              onClick={() => handleOpenProcessModal(req, "REJECT")}
+                              className="bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>رد</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400">پردازش شده</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PROCESS MODAL (APPROVE / REJECT)                                          */}
+      {/* ========================================================================= */}
+      {selectedReq && modalAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                {modalAction === "APPROVE" ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">تایید و ثبت واریز تسویه</h3>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-5 h-5 text-rose-600" />
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">رد درخواست تسویه</h3>
+                  </>
+                )}
+              </div>
+              <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitProcess} className="space-y-4 text-xs">
+              {/* Summary Card */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">کاربر:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedReq.user?.name} ({selectedReq.user?.phone})</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">مبلغ درخواستی:</span>
+                  <strong className="font-mono text-sm font-black text-brand-primary dark:text-teal-400">
+                    {formatPrice(selectedReq.amountToman)} تومان
+                  </strong>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">سقف واریز مستقیم کاربر:</span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    {formatPrice(selectedReq.user?.directDepositBalance || 0)} تومان
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500">شماره شبا / کارت:</span>
+                  <span className="font-mono dir-ltr">{selectedReq.sheba || selectedReq.cardNumber || "—"}</span>
+                </div>
+              </div>
+
+              {modalAction === "APPROVE" ? (
+                <div>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    کد رهگیری / ارجاع بانکی (پایا یا ساتنا):
+                  </label>
+                  <input
+                    type="text"
+                    value={bankTrackingCode}
+                    onChange={(e) => setBankTrackingCode(e.target.value)}
+                    placeholder="مثلاً PAYA-9482017462"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr font-bold outline-none"
+                    required
+                  />
+                  <span className="text-[10px] text-neutral-400 mt-1 block">
+                    این کد در پنل کاربر و تاریخچه تراکنش‌های وی درج خواهد شد.
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    علت رد درخواست (جهت نمایش به کاربر):
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="لطفاً علت رد درخواست را بنویسید (مثلاً: عدم تطابق نام صاحب کارت، درخواست بیش از موجودی واریز نقدی و...)"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
+                    required
+                  />
+                </div>
+              )}
+
+              {modalAction === "APPROVE" && (
+                <div>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    یادداشت اختیاری مدیر:
+                  </label>
+                  <input
+                    type="text"
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="پیام یا توضیح تکمیلی در صورت نیاز..."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
+                  />
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100"
+                >
+                  انصراف
+                </button>
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 ${
+                    modalAction === "APPROVE" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                  }`}
+                >
+                  {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  <span>{modalAction === "APPROVE" ? "تایید و ثبت نهایی واریز" : "ثبت رد درخواست"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

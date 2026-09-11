@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { formatPrice, formatNumber } from "@/lib/format";
 import {
   PackageCheck,
+  Package,
   Search,
   Copy,
   Check,
@@ -15,9 +16,12 @@ import {
   AlertCircle,
   CheckCircle2,
   Key,
+  Undo2,
 } from "lucide-react";
 import Link from "next/link";
 import { toPersianDateTime } from "@/lib/date";
+import { CustomerRefundModal } from "@/components/store/CustomerRefundModal";
+import { Order } from "@/types";
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
@@ -26,6 +30,7 @@ function OrderTrackingContent() {
 
   const [query, setQuery] = useState(initialId);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [refundModalOrder, setRefundModalOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (initialId) setQuery(initialId);
@@ -60,8 +65,11 @@ function OrderTrackingContent() {
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Search Order Bar */}
-        <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card text-center max-w-2xl mx-auto">
-          <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center mx-auto mb-3 shadow-xs">
+        <div className="group/search relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 text-center max-w-2xl mx-auto">
+          {/* Corner Glow Orb */}
+          <div className="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover/search:scale-150 transition-all duration-500 pointer-events-none" />
+
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 flex items-center justify-center mx-auto mb-3 shadow-xs group-hover/search:rotate-6 group-hover/search:scale-110 transition-all duration-300">
             <PackageCheck className="w-6 h-6" />
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-brand-dark dark:text-white">
@@ -71,17 +79,17 @@ function OrderTrackingContent() {
             شماره سفارش (مثلاً <span className="font-mono font-bold text-brand-dark dark:text-white">ARZ-1049</span>) یا ایمیل ثبت‌شده هنگام خرید را وارد کنید.
           </p>
 
-          <div className="mt-6 flex gap-2 max-w-md mx-auto">
+          <div className="mt-6 flex gap-2 max-w-md mx-auto relative z-10">
             <input
               type="text"
               placeholder="کد سفارش یا ایمیل..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2.5 px-4 text-xs outline-none font-mono placeholder:text-neutral-400 dark:placeholder:text-slate-500"
+              className="flex-1 bg-brand-surfaceDim dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2.5 px-4 text-xs outline-none font-mono placeholder:text-neutral-400 dark:placeholder:text-slate-500 transition-all duration-200"
             />
             <button
               onClick={() => {}}
-              className="bg-brand-primary hover:bg-brand-primaryDark text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-colors shrink-0"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer"
             >
               جستجو
             </button>
@@ -90,7 +98,10 @@ function OrderTrackingContent() {
 
         {/* Found Order Card */}
         {searchedOrder ? (
-          <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card space-y-6">
+          <div className="group/order relative overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-6">
+            {/* Corner Glow Orb */}
+            <div className="absolute -top-14 -right-14 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover/order:scale-150 transition-all duration-500 pointer-events-none" />
+
             {/* Header info */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-brand-border dark:border-slate-800 gap-4">
               <div>
@@ -99,34 +110,68 @@ function OrderTrackingContent() {
                     #{searchedOrder.orderNumber}
                   </span>
                   {searchedOrder.status === "delivered" && (
-                    <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
+                    <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       تحویل داده شده
                     </span>
                   )}
                   {searchedOrder.status === "processing" && (
-                    <span className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
+                    <span className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs">
+                      <Clock className="w-3.5 h-3.5 animate-spin" />
                       در حال پردازش در سرور
                     </span>
                   )}
+                  {searchedOrder.status === "refund_requested" && (
+                    <span className="bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs">
+                      <Clock className="w-3.5 h-3.5" />
+                      درخواست استرداد وجه ثبت شده (در دست بررسی مالی)
+                    </span>
+                  )}
+                  {searchedOrder.status === "refunded" && (
+                    <span className="bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      وجه سفارش مسترد گردید
+                    </span>
+                  )}
                   {searchedOrder.status === "failed" && (
-                    <span className="bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
+                    <span className="bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/80 text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs">
                       <AlertCircle className="w-3.5 h-3.5" />
                       خطا در انجام
                     </span>
                   )}
                 </div>
+                {searchedOrder.refundRejectionReason && (
+                  <div className="mt-2 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl p-2.5 text-rose-700 dark:text-rose-300">
+                    <div className="font-bold flex items-center gap-1 mb-0.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>عدم تایید درخواست عودت وجه توسط کارشناس:</span>
+                    </div>
+                    <p className="opacity-90">{searchedOrder.refundRejectionReason}</p>
+                  </div>
+                )}
                 <span className="text-xs text-brand-muted dark:text-slate-400 block mt-1">
                   ثبت شده در: {toPersianDateTime(searchedOrder.createdAt)} | ایمیل خریدار: {searchedOrder.customerEmail}
                 </span>
               </div>
 
-              <div className="text-left">
-                <span className="text-xs text-brand-muted dark:text-slate-400 block">مبلغ کل سفارش:</span>
-                <span className="text-xl font-black text-brand-dark dark:text-white font-mono">
-                  {formatPrice(searchedOrder.totalPriceToman)} تومان
-                </span>
+              <div className="text-left flex flex-col sm:items-end gap-2">
+                <div>
+                  <span className="text-xs text-brand-muted dark:text-slate-400 block">مبلغ کل سفارش:</span>
+                  <span className="text-xl font-black text-brand-dark dark:text-white font-mono">
+                    {formatPrice(searchedOrder.totalPriceToman)} تومان
+                  </span>
+                </div>
+
+                {(searchedOrder.status === "delivered" || searchedOrder.status === "processing") && (
+                  <button
+                    type="button"
+                    onClick={() => setRefundModalOrder(searchedOrder)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 hover:scale-105 active:scale-95 text-xs font-bold transition-all duration-200 shadow-2xs cursor-pointer"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                    <span>درخواست عودت وجه</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -200,15 +245,15 @@ function OrderTrackingContent() {
               </div>
             </div>
           </div>
-        ) : (
-          /* Recent Demo Orders */
+        ) : orders.length > 0 ? (
+          /* Recent Orders */
           <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
             <h3 className="font-bold text-xs text-brand-dark dark:text-white pb-3 border-b border-brand-border dark:border-slate-800">
-              سفارشات نمونه در دسترس برای آزمایش رهگیری:
+              آخرین سفارش‌های ثبت‌شده شما:
             </h3>
 
             <div className="divide-y divide-brand-border dark:divide-slate-800">
-              {orders.slice(0, 4).map((o) => (
+              {orders.slice(0, 5).map((o) => (
                 <div
                   key={o.id}
                   onClick={() => setQuery(o.orderNumber)}
@@ -235,7 +280,18 @@ function OrderTrackingContent() {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-8 shadow-card text-center text-xs text-brand-muted dark:text-slate-400 space-y-2">
+            <Package className="w-8 h-8 mx-auto text-brand-muted/50 mb-2" />
+            <p>شماره سفارش یا ایمیل خرید خود را در کادر بالا وارد کرده و دکمه پیگیری را بزنید.</p>
+          </div>
         )}
+
+        <CustomerRefundModal
+          isOpen={!!refundModalOrder}
+          order={refundModalOrder}
+          onClose={() => setRefundModalOrder(null)}
+        />
       </main>
 
       <Footer />

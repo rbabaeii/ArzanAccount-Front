@@ -19,19 +19,29 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   Tag,
+  Gift,
+  Wallet,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import Pagination from "@/components/ui/Pagination";
 import { formatNumber } from "@/lib/format";
 
 export default function HomePage() {
-  const { activeProducts, categories, calculateProductPrice } = useStore();
+  const { activeProducts, categories, calculateProductPrice, settings } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [productSearch, setProductSearch] = useState("");
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price_asc" | "price_desc" | "rating" | "on_sale">("popular");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
+
+  // Mobile initial page size detection (fewer items per page on mobile as requested)
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPageSize(6);
+    }
+  }, []);
 
   const flashDeals = activeProducts.filter((p) => p.isFlashDeal);
 
@@ -49,6 +59,14 @@ export default function HomePage() {
       return matchCat && matchSearch && matchStock && matchSale;
     })
     .sort((a, b) => {
+      // 1. In-stock priority: products with available stock MUST appear first
+      const stockA = (a.inStock && (a.stockCount === undefined || a.stockCount > 0)) ? 1 : 0;
+      const stockB = (b.inStock && (b.stockCount === undefined || b.stockCount > 0)) ? 1 : 0;
+      if (stockA !== stockB) {
+        return stockB - stockA; // in-stock (1) first, out-of-stock (0) last
+      }
+
+      // 2. Secondary user-selected sorting
       const priceA = calculateProductPrice(a).toman;
       const priceB = calculateProductPrice(b).toman;
       if (sortBy === "price_asc") return priceA - priceB;
@@ -127,7 +145,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
                 href="#catalog-section"
-                className="bg-brand-accent hover:bg-brand-accentHover text-slate-950 font-black text-xs sm:text-sm px-7 py-3.5 rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-102"
+                className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs sm:text-sm px-7 py-3.5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl hover:shadow-amber-500/20 hover:scale-105"
               >
                 <span>مشاهده محصولات و خرید آنی</span>
                 <ArrowLeft className="w-4 h-4" />
@@ -135,7 +153,7 @@ export default function HomePage() {
 
               <Link
                 href="/orders"
-                className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition-all border border-white/15 flex items-center gap-2"
+                className="bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition-all duration-200 border border-white/15 flex items-center gap-2 hover:scale-105"
               >
                 <span>رهگیری سفارش و لایسنس</span>
               </Link>
@@ -148,21 +166,69 @@ export default function HomePage() {
       <section className="bg-white dark:bg-slate-900 border-b border-brand-border dark:border-slate-800 py-6 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x-reverse divide-x divide-brand-border dark:divide-slate-800">
-            <div className="space-y-1">
+            <div className="space-y-1 hover:scale-105 transition-transform duration-200">
               <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">+14,500</span>
               <p className="text-[11px] text-brand-muted dark:text-slate-400">سفارش موفق تحویل‌شده</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 hover:scale-105 transition-transform duration-200">
               <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">2 دقیقه</span>
               <p className="text-[11px] text-brand-muted dark:text-slate-400">میانگین زمان صدور لایسنس</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 hover:scale-105 transition-transform duration-200">
               <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">99.4%</span>
               <p className="text-[11px] text-brand-muted dark:text-slate-400">رضایت خریداران و دولوپرها</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 hover:scale-105 transition-transform duration-200">
               <span className="text-xl sm:text-2xl font-black text-brand-primary dark:text-teal-400 font-mono">24/7</span>
               <p className="text-[11px] text-brand-muted dark:text-slate-400">پشتیبانی تلگرام و آنلاین</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* REFERRAL & CASHBACK HERO BANNER (طرح دعوت از دوستان و پاداش کش‌بک)         */}
+      {/* ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#003847] via-[#004e63] to-[#005a71] border border-teal-500/30 p-6 sm:p-8 shadow-xl hover:shadow-2xl hover:shadow-teal-500/10 transition-all duration-300 text-white">
+          {/* Ambient Glows */}
+          <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-teal-400/20 blur-3xl pointer-events-none group-hover:scale-125 transition-all duration-500" />
+          <div className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none group-hover:scale-125 transition-all duration-500" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-right gap-5">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shadow-lg shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <Gift className="w-8 h-8 sm:w-10 sm:h-10 animate-bounce" />
+              </div>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-300/40 text-amber-300 px-3 py-1 rounded-full text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>طرح دعوت از دوستان و پاداش کش‌بک نقدی</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
+                  دوستانت رو دعوت کن، تا <span className="text-amber-300 font-mono">%{settings.orderCashbackPercent || 10}</span> از هر خریدشون کش‌بک بگیر!
+                </h2>
+                <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed max-w-2xl">
+                  کد معرف اختصاصی خودت رو با دوستان به اشتراک بذار. به ازای هر خرید موفقی که دوستانت انجام دهند، %{settings.orderCashbackPercent || 10} از مبلغ فاکتور به عنوان اعتبار پاداش کش‌بک مستقیماً به کیف پول شما واریز خواهد شد تا در خریدهای بعدی از آن استفاده کنید.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-3 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/profile"
+                className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                <span>دریافت کد معرف اختصاصی من</span>
+              </Link>
+              <Link
+                href="/profile"
+                className="w-full sm:w-auto bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <Wallet className="w-4 h-4 text-teal-300" />
+                <span>مشاهده کیف پول و پاداش‌ها</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -195,7 +261,7 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {flashDeals.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -227,12 +293,13 @@ export default function HomePage() {
             <Link
               key={cat.id}
               href={`/category/${cat.slug}`}
-              className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 hover:border-brand-primary dark:hover:border-teal-500 p-4 rounded-xl shadow-card hover:shadow-cardHover transition-all flex flex-col items-center text-center group"
+              className="group relative overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-brand-border dark:border-slate-800 hover:border-teal-400/40 dark:hover:border-teal-400/30 p-4 rounded-2xl shadow-card hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center text-center"
             >
-              <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-brand-primary dark:group-hover:bg-teal-600 group-hover:text-white transition-colors flex items-center justify-center mb-3 shadow-2xs">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-slate-800 text-brand-primary dark:text-teal-400 group-hover:bg-gradient-to-r group-hover:from-teal-600 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 flex items-center justify-center mb-3 shadow-2xs">
                 {getCategoryIcon(cat.icon)}
               </div>
-              <h3 className="font-bold text-xs text-brand-dark dark:text-white group-hover:text-brand-primary dark:group-hover:text-teal-400 transition-colors line-clamp-1">
+              <h3 className="font-bold text-xs text-brand-dark dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-1">
                 {cat.title}
               </h3>
               <span className="text-[10px] text-brand-muted dark:text-slate-400 mt-1 font-mono">
@@ -244,9 +311,10 @@ export default function HomePage() {
           {/* 6th Card: Link to /categories */}
           <Link
             href="/categories"
-            className="bg-gradient-to-br from-brand-primary to-teal-950 text-white p-4 rounded-xl shadow-card hover:shadow-cardHover transition-all flex flex-col items-center justify-center text-center group border border-teal-800 dark:border-teal-900"
+            className="group relative overflow-hidden bg-gradient-to-br from-brand-primary to-teal-950 text-white p-4 rounded-2xl shadow-card hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center justify-center text-center border border-teal-800 dark:border-teal-900"
           >
-            <div className="w-12 h-12 rounded-xl bg-white/10 text-brand-accent group-hover:bg-white group-hover:text-brand-primary transition-all flex items-center justify-center mb-3 shadow-2xs">
+            <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-400/20 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="w-12 h-12 rounded-xl bg-white/10 text-brand-accent group-hover:bg-white group-hover:text-brand-primary group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300 flex items-center justify-center mb-3 shadow-2xs">
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             </div>
             <h3 className="font-bold text-xs text-white">
@@ -287,9 +355,9 @@ export default function HomePage() {
               setSelectedCategory("all");
               setCurrentPage(1);
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-2 shadow-2xs ${
               selectedCategory === "all"
-                ? "bg-brand-primary dark:bg-teal-600 text-white shadow-sm"
+                ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
                 : "bg-white dark:bg-slate-900 text-brand-dark dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-slate-800 border border-brand-border dark:border-slate-800"
             }`}
           >
@@ -309,9 +377,9 @@ export default function HomePage() {
                   setSelectedCategory(cat.id);
                   setCurrentPage(1);
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-2 shadow-2xs ${
                   isSelected
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-sm"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-md shadow-teal-500/20"
                     : "bg-white dark:bg-slate-900 text-brand-dark dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-slate-800 border border-brand-border dark:border-slate-800"
                 }`}
               >
@@ -335,7 +403,7 @@ export default function HomePage() {
                     setSelectedCategory(currentCat.id);
                     setCurrentPage(1);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-2 bg-brand-primary dark:bg-teal-600 text-white shadow-sm"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/20"
                 >
                   {getCategoryIcon(currentCat.icon)}
                   <span>{currentCat.title}</span>
@@ -377,7 +445,7 @@ export default function HomePage() {
         </div>
 
         {/* Search, Sort, and In-Stock Toolbar */}
-        <div className="bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-800 rounded-2xl p-3.5 mb-8 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-brand-border dark:border-slate-800 rounded-2xl p-4 mb-8 shadow-card hover:shadow-lg transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Quick Search */}
           <div className="relative flex-1 max-w-md">
             <input
@@ -388,7 +456,7 @@ export default function HomePage() {
                 setProductSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-slate-50 dark:bg-slate-800/70 border border-brand-border dark:border-slate-700 rounded-xl py-2 pr-9 pl-3 text-xs outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:border-brand-primary dark:focus:border-teal-400 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800/70 border border-brand-border dark:border-slate-700 rounded-xl py-2.5 pr-9 pl-3 text-xs outline-none text-slate-800 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
             />
             <Search className="w-4 h-4 text-neutral-400 dark:text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
             {productSearch && (
@@ -397,7 +465,7 @@ export default function HomePage() {
                   setProductSearch("");
                   setCurrentPage(1);
                 }}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-neutral-200 dark:bg-slate-700 text-neutral-600 dark:text-slate-300 rounded px-1.5 py-0.5"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-neutral-200 dark:bg-slate-700 hover:bg-neutral-300 dark:hover:bg-slate-600 text-neutral-600 dark:text-slate-300 rounded px-1.5 py-0.5 transition-colors"
               >
                 پاک کردن
               </button>
@@ -412,9 +480,9 @@ export default function HomePage() {
                   setSortBy("popular");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap ${
                   sortBy === "popular"
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-2xs font-bold"
                     : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -425,9 +493,9 @@ export default function HomePage() {
                   setSortBy("newest");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap ${
                   sortBy === "newest"
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-2xs font-bold"
                     : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -438,9 +506,9 @@ export default function HomePage() {
                   setSortBy("price_asc");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap ${
                   sortBy === "price_asc"
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-2xs font-bold"
                     : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -451,9 +519,9 @@ export default function HomePage() {
                   setSortBy("price_desc");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap ${
                   sortBy === "price_desc"
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-2xs font-bold"
                     : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -464,9 +532,9 @@ export default function HomePage() {
                   setSortBy("rating");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap ${
                   sortBy === "rating"
-                    ? "bg-brand-primary dark:bg-teal-600 text-white shadow-2xs"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-2xs font-bold"
                     : "text-neutral-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -477,7 +545,7 @@ export default function HomePage() {
                   setSortBy("on_sale");
                   setCurrentPage(1);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all whitespace-nowrap flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-1 ${
                   sortBy === "on_sale"
                     ? "bg-amber-500 text-slate-950 font-black shadow-2xs"
                     : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
@@ -489,7 +557,7 @@ export default function HomePage() {
             </div>
 
             {/* In-Stock Toggle */}
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none group transition-all duration-200 hover:border-teal-400">
               <input
                 type="checkbox"
                 checked={inStockOnly}
@@ -497,17 +565,17 @@ export default function HomePage() {
                   setInStockOnly(e.target.checked);
                   setCurrentPage(1);
                 }}
-                className="w-3.5 h-3.5 accent-brand-primary rounded"
+                className="w-3.5 h-3.5 accent-teal-600 rounded transition-transform group-hover:scale-110"
               />
-              <span className="text-[11px]">فقط کالاهای موجود</span>
+              <span className="text-[11px] group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">فقط کالاهای موجود</span>
             </label>
           </div>
         </div>
 
         {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {paginatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -520,6 +588,11 @@ export default function HomePage() {
               totalItems={filteredProducts.length}
               itemsPerPage={pageSize}
               itemName="محصول"
+              pageSizeOptions={[6, 12, 24, 48]}
+              onItemsPerPageChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
               onPageChange={(p) => {
                 setCurrentPage(p);
                 const el = document.getElementById("catalog-section");
@@ -529,19 +602,19 @@ export default function HomePage() {
             />
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-dashed border-neutral-300 dark:border-slate-800 rounded-xl p-12 text-center my-8">
+          <div className="bg-white dark:bg-slate-900 border border-dashed border-neutral-300 dark:border-slate-800 rounded-2xl p-12 text-center my-8 shadow-card">
             <p className="text-sm font-semibold text-neutral-600 dark:text-slate-300">
-              هیچ محصول فعالی در این دسته‌بندی یافت نشد.
+              هیچ محصولی مطابق با فیلتر انتخاب شده یافت نشد.
             </p>
             <p className="text-xs text-neutral-400 dark:text-slate-500 mt-2">
-              شما می‌توانید با ورود به پنل ادمین، محصولات مورد نظر خود را در این دسته فعال کنید.
+              می‌توانید فیلترهای دیگر را انتخاب کرده یا تمامی محصولات کاتالوگ را مشاهده فرمایید.
             </p>
-            <Link
-              href="/admin/products"
-              className="inline-block mt-4 text-xs font-bold text-brand-primary dark:text-teal-400 underline"
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs font-bold hover:scale-105 active:scale-95 transition-all duration-200 shadow-md shadow-teal-500/20 inline-block"
             >
-              مدیریت محصولات در پنل ادمین
-            </Link>
+              مشاهده تمامی محصولات
+            </button>
           </div>
         )}
       </main>
@@ -555,9 +628,10 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-brand-surfaceDim dark:bg-slate-800/60 p-4 rounded-xl border border-brand-border dark:border-slate-700/60">
-              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0" />
+            <div className="group relative overflow-hidden bg-brand-surfaceDim dark:bg-slate-800/60 p-5 rounded-2xl border border-brand-border dark:border-slate-700/60 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/5 transition-all duration-200">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                 <span>اکانت‌ها چگونه تحویل داده می‌شوند؟</span>
               </h4>
               <p className="text-xs text-brand-muted dark:text-slate-300 mt-2 leading-relaxed pr-6">
@@ -565,9 +639,10 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-brand-surfaceDim dark:bg-slate-800/60 p-4 rounded-xl border border-brand-border dark:border-slate-700/60">
-              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0" />
+            <div className="group relative overflow-hidden bg-brand-surfaceDim dark:bg-slate-800/60 p-5 rounded-2xl border border-brand-border dark:border-slate-700/60 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/5 transition-all duration-200">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                 <span>آیا اشتراک‌ها دارای گارانتی هستند؟</span>
               </h4>
               <p className="text-xs text-brand-muted dark:text-slate-300 mt-2 leading-relaxed pr-6">
@@ -575,9 +650,10 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-brand-surfaceDim dark:bg-slate-800/60 p-4 rounded-xl border border-brand-border dark:border-slate-700/60">
-              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0" />
+            <div className="group relative overflow-hidden bg-brand-surfaceDim dark:bg-slate-800/60 p-5 rounded-2xl border border-brand-border dark:border-slate-700/60 hover:border-teal-400/40 dark:hover:border-teal-400/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/5 transition-all duration-200">
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-teal-500/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <h4 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white flex items-center gap-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                <HelpCircle className="w-4 h-4 text-brand-primary dark:text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                 <span>نحوه محاسبه قیمت‌ها در ارزان اکانت چگونه است؟</span>
               </h4>
               <p className="text-xs text-brand-muted dark:text-slate-300 mt-2 leading-relaxed pr-6">

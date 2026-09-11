@@ -48,6 +48,7 @@ interface StoreContextType {
   isBackendConnected: boolean;
 
   // Actions
+  createProduct: (product: Partial<Product>) => Promise<Product | undefined>;
   toggleProductActive: (id: string) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   addCategory: (category: Omit<Category, "id">) => Promise<void>;
@@ -57,6 +58,12 @@ interface StoreContextType {
   calculateProductPrice: (product: Product) => CalculatedPrice;
   syncWithIrMarket: () => Promise<void>;
   refreshFromBackend: () => Promise<void>;
+  syncCurrencyNow: () => Promise<any>;
+  updateCurrencySyncConfig: (config: {
+    apiKey?: string;
+    intervalMinutes?: number;
+    enableAutoSync?: boolean;
+  }) => Promise<any>;
 
   // Cart Actions
   addToCart: (product: Product, quantity?: number, email?: string, link?: string) => void;
@@ -66,17 +73,20 @@ interface StoreContextType {
   applyCoupon: (code: string) => { success: boolean; message: string };
   removeCoupon: () => void;
 
-  // Order Actions
-  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt">) => Order;
+  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string; id?: string }) => Order;
   updateOrderStatus: (
     orderId: string,
     status: Order["status"],
     accounts?: string[],
-    adminInfo?: { id?: string; name?: string; phone?: string }
-  ) => void;
+    adminInfo?: { id?: string; name?: string; phone?: string; role?: string }
+  ) => Promise<void> | void;
   addAdminAuditLog: (log: Omit<AuditLog, "id" | "timestamp">) => void;
+  getMaxAllowedPurchase: (product: Product) => number;
   addCoupon: (coupon: Omit<Coupon, "id">) => void;
   toggleCoupon: (couponId: string) => void;
+  requestRefund: (orderId: string, reason: string, cardNumber?: string, sheba?: string) => Promise<{ success: boolean; message: string }>;
+  processRefundOrder: (orderId: string, refundMethod: "bank_card" | "wallet", trackingCode?: string, receiptUrl?: string, adminName?: string) => void;
+  rejectRefundOrder: (orderId: string, rejectionReason: string, newStatus?: Order["status"]) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -108,6 +118,15 @@ function mapBackendProduct(bp: any): Product {
     persianDescription: bp.persianDescription || undefined,
     salePriceToman: bp.salePriceToman,
     discountPercent: bp.discountPercent,
+    tags: bp.tags
+      ? Array.isArray(bp.tags)
+        ? bp.tags
+        : typeof bp.tags === "string" && bp.tags.startsWith("[")
+        ? (() => { try { return JSON.parse(bp.tags); } catch { return []; } })()
+        : typeof bp.tags === "string"
+        ? bp.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+        : []
+      : [],
     badge: bp.isFlashDeal ? "تخفیف ویژه" : bp.isFeatured ? "ویژه" : undefined,
     image:
       bp.image ||
@@ -124,6 +143,89 @@ function mapBackendCategory(bc: any): Category {
     description: bc.description || "",
     icon: bc.icon || "Sparkles",
     orderIndex: bc.orderIndex ?? 0,
+  };
+}
+
+function mapBackendOrder(bo: any): Order {
+  let deliveredAccounts: string[] = [];
+  if (Array.isArray(bo.deliveredAccounts)) {
+    deliveredAccounts = bo.deliveredAccounts;
+  } else if (typeof bo.deliveredAccounts === "string") {
+    try {
+      if (bo.deliveredAccounts.startsWith("[")) {
+        deliveredAccounts = JSON.parse(bo.deliveredAccounts);
+      } else if (bo.deliveredAccounts.trim()) {
+        deliveredAccounts = [bo.deliveredAccounts];
+      }
+    } catch {
+      deliveredAccounts = [bo.deliveredAccounts];
+    }
+  }
+
+  let items: any[] = [];
+  if (Array.isArray(bo.items)) {
+    items = bo.items;
+  } else if (typeof bo.items === "string") {
+    try {
+      items = JSON.parse(bo.items);
+    } catch {
+      items = [];
+    }
+  }
+
+  return {
+    id: bo.id,
+    orderNumber: bo.orderNumber,
+    externalOrderId: bo.externalOrderId || undefined,
+    createdAt: toEnglishDigits(
+      new Intl.DateTimeFormat("fa-IR", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(new Date(bo.createdAt || Date.now()))
+    ),
+    customerEmail: bo.customerEmail,
+    customerPhone: bo.customerPhone || undefined,
+    customerLink: bo.customerLink || undefined,
+    totalPriceToman: bo.totalPriceToman,
+    totalPriceUsd: bo.totalPriceUsd || 0,
+    status: (bo.status as any) || "processing",
+    deliveredAccounts,
+    paymentGateway: bo.paymentGateway || bo.gateway || "zarinpal",
+    approvedByAdminId: bo.approvedByAdminId || undefined,
+    approvedByAdminName: bo.approvedByAdminName || undefined,
+    approvedByAdminPhone: bo.approvedByAdminPhone || undefined,
+    approvedAt: bo.approvedAt
+      ? toEnglishDigits(
+          new Intl.DateTimeFormat("fa-IR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          }).format(new Date(bo.approvedAt))
+        )
+      : undefined,
+    refundReason: bo.refundReason || undefined,
+    refundCardNumber: bo.refundCardNumber || undefined,
+    refundIban: bo.refundIban || undefined,
+    refundAmountToman: bo.refundAmountToman ?? bo.refundAmount ?? undefined,
+    refundReceiptUrl: bo.refundReceiptUrl || undefined,
+    refundTrackingCode: bo.refundTrackingCode || bo.refundTrackingNumber || undefined,
+    refundMethod: (bo.refundMethod as any) || undefined,
+    refundRejectionReason: bo.refundRejectionReason || undefined,
+    refundedByAdminName: bo.refundedByAdminName || undefined,
+    refundedAt: bo.refundedAt || bo.refundDate
+      ? toEnglishDigits(
+          new Intl.DateTimeFormat("fa-IR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          }).format(new Date(bo.refundedAt || bo.refundDate))
+        )
+      : undefined,
+    items: items.map((it: any) => ({
+      productId: it.productId || "prod-1",
+      productTitle: it.productTitle || "محصول دیجیتال",
+      quantity: it.quantity || 1,
+      priceToman: it.priceToman || 0,
+      priceUsd: it.priceUsd || 0,
+    })),
   };
 }
 
@@ -164,15 +266,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ]);
 
       if (backendSettings) {
-        setSettings((prev) => ({
-          ...prev,
-          usdToRialRate: backendSettings.usdToRialRate ?? prev.usdToRialRate,
-          defaultMarginPercent: backendSettings.defaultMarginPercent ?? prev.defaultMarginPercent,
-          walletBalanceUsd: backendSettings.walletBalanceUsd ?? prev.walletBalanceUsd,
-          lastSyncTime: backendSettings.lastSyncTime || prev.lastSyncTime,
-          siteName: backendSettings.siteName || prev.siteName,
-          supportTelegram: backendSettings.supportTelegram || prev.supportTelegram,
-        }));
+        setSettings((prev) => {
+          const next = {
+            ...prev,
+            usdToRialRate: backendSettings.usdToRialRate ?? prev.usdToRialRate,
+            defaultMarginPercent: backendSettings.defaultMarginPercent ?? prev.defaultMarginPercent,
+            walletBalanceUsd: backendSettings.walletBalanceUsd ?? prev.walletBalanceUsd,
+            lastSyncTime: backendSettings.lastSyncTime || prev.lastSyncTime,
+            siteName: backendSettings.siteName || prev.siteName,
+            supportTelegram: backendSettings.supportTelegram || prev.supportTelegram,
+            maxPurchaseRatioDenominator:
+              backendSettings.maxPurchaseRatioDenominator !== undefined && backendSettings.maxPurchaseRatioDenominator !== null
+                ? Number(backendSettings.maxPurchaseRatioDenominator)
+                : (prev.maxPurchaseRatioDenominator ?? 3),
+            purchaseRatioExemptionThreshold:
+              backendSettings.purchaseRatioExemptionThreshold !== undefined && backendSettings.purchaseRatioExemptionThreshold !== null
+                ? Number(backendSettings.purchaseRatioExemptionThreshold)
+                : (prev.purchaseRatioExemptionThreshold ?? 10),
+            currencyApiKey: backendSettings.currencyApiKey || prev.currencyApiKey,
+            currencySyncIntervalMinutes: backendSettings.currencySyncIntervalMinutes ?? prev.currencySyncIntervalMinutes,
+            enableCurrencyAutoSync: backendSettings.enableCurrencyAutoSync ?? prev.enableCurrencyAutoSync,
+            lastCurrencySyncTime: backendSettings.lastCurrencySyncTime || prev.lastCurrencySyncTime,
+            lastCurrencyPriceToman: backendSettings.lastCurrencyPriceToman ?? prev.lastCurrencyPriceToman,
+            lastCurrencyChangePercent: backendSettings.lastCurrencyChangePercent ?? prev.lastCurrencyChangePercent,
+            orderCashbackPercent:
+              backendSettings.orderCashbackPercent !== undefined && backendSettings.orderCashbackPercent !== null
+                ? Number(backendSettings.orderCashbackPercent)
+                : (prev.orderCashbackPercent ?? 10),
+            siteLogo: backendSettings.siteLogo ?? prev.siteLogo,
+            siteLogoDark: backendSettings.siteLogoDark ?? prev.siteLogoDark,
+            siteFavicon: backendSettings.siteFavicon ?? prev.siteFavicon,
+            siteTagline: backendSettings.siteTagline || prev.siteTagline,
+            siteDescription: backendSettings.siteDescription || prev.siteDescription,
+            sitePhone: backendSettings.sitePhone || prev.sitePhone,
+            siteEmail: backendSettings.siteEmail || prev.siteEmail,
+            siteInstagram: backendSettings.siteInstagram || prev.siteInstagram,
+            siteEnamad: backendSettings.siteEnamad ?? prev.siteEnamad,
+          };
+          try {
+            localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
+          } catch (e) {
+            console.warn(e);
+          }
+          return next;
+        });
         setIsBackendConnected(true);
       }
 
@@ -201,6 +338,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }))
         );
       }
+
+      // Fetch live real database orders (No mock data)
+      const backendOrdersData = await api.getBackendOrders({ limit: 100 }).catch((e) => {
+        console.warn("Failed to fetch orders from backend", e);
+        return null;
+      });
+
+      if (backendOrdersData && Array.isArray(backendOrdersData.orders)) {
+        const mappedOrders = backendOrdersData.orders.map(mapBackendOrder);
+        setOrders(mappedOrders);
+        try {
+          localStorage.setItem("arzan_orders_v2", JSON.stringify(mappedOrders));
+        } catch (e) {
+          console.warn(e);
+        }
+      }
     } catch (err) {
       console.warn("Could not connect to NestJS backend, falling back to local state", err);
       setIsBackendConnected(false);
@@ -216,10 +369,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const so = localStorage.getItem("arzan_orders_v2");
       const scoup = localStorage.getItem("arzan_coupons_v2");
       const scart = localStorage.getItem("arzan_cart_v2");
+      const ssettings = localStorage.getItem("arzan_settings_v2");
 
       if (so) setOrders(JSON.parse(so));
       if (scoup) setCoupons(JSON.parse(scoup));
       if (scart) setCart(JSON.parse(scart));
+      if (ssettings) setSettings((prev) => ({ ...prev, ...JSON.parse(ssettings) }));
     } catch (e) {
       console.warn("Could not restore localStorage", e);
     }
@@ -293,6 +448,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Create new Product
+  const createProduct = async (productData: Partial<Product>) => {
+    try {
+      const created = await api.createProduct(productData, "مدیر فروشگاه");
+      if (created) {
+        const mapped = mapBackendProduct(created);
+        setProducts((prev) => [mapped, ...prev]);
+        return mapped;
+      }
+    } catch (error) {
+      console.error("Error creating product on backend:", error);
+      throw error;
+    }
+  };
+
   // Update Product details (Title, Margin, Category)
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     setProducts((prev) =>
@@ -353,23 +523,110 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Update Settings (USD Rate & Margin)
   const updateSettings = async (updates: Partial<SystemSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+    setSettings((prev) => {
+      const next = { ...prev, ...updates };
+      try {
+        localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
+      } catch (e) {
+        console.warn(e);
+      }
+      return next;
+    });
 
     try {
       if (
         updates.usdToRialRate !== undefined ||
-        updates.defaultMarginPercent !== undefined
+        updates.defaultMarginPercent !== undefined ||
+        updates.maxPurchaseRatioDenominator !== undefined ||
+        updates.purchaseRatioExemptionThreshold !== undefined ||
+        updates.orderCashbackPercent !== undefined
       ) {
         await api.updateCurrency({
           rate: updates.usdToRialRate,
           margin: updates.defaultMarginPercent,
+          maxPurchaseRatioDenominator: updates.maxPurchaseRatioDenominator,
+          purchaseRatioExemptionThreshold: updates.purchaseRatioExemptionThreshold,
+          orderCashbackPercent: updates.orderCashbackPercent,
           user: "مدیر سیستم (پنل ادمین)",
         });
         // Refresh logs & products with new calculations
         refreshFromBackend();
       }
+
+      if (
+        updates.siteLogo !== undefined ||
+        updates.siteLogoDark !== undefined ||
+        updates.siteFavicon !== undefined ||
+        updates.siteName !== undefined ||
+        updates.siteTagline !== undefined ||
+        updates.siteDescription !== undefined ||
+        updates.sitePhone !== undefined ||
+        updates.siteEmail !== undefined ||
+        updates.supportTelegram !== undefined ||
+        updates.siteInstagram !== undefined ||
+        updates.siteEnamad !== undefined
+      ) {
+        await api.updateBrandingSettings({
+          siteLogo: updates.siteLogo,
+          siteLogoDark: updates.siteLogoDark,
+          siteFavicon: updates.siteFavicon,
+          siteName: updates.siteName,
+          siteTagline: updates.siteTagline,
+          siteDescription: updates.siteDescription,
+          sitePhone: updates.sitePhone,
+          siteEmail: updates.siteEmail,
+          supportTelegram: updates.supportTelegram,
+          siteInstagram: updates.siteInstagram,
+          siteEnamad: updates.siteEnamad,
+          user: "مدیر سیستم (پنل تنظیمات)",
+        });
+      }
     } catch (error) {
-      console.error("Error updating currency settings on backend:", error);
+      console.error("Error updating settings on backend:", error);
+    }
+  };
+
+  // Immediate manual currency sync from BrsApi
+  const syncCurrencyNow = async () => {
+    try {
+      const res = await api.syncCurrencyNow("مدیر سیستم (استعلام دستی از پنل)");
+      if (res && res.settings) {
+        setSettings((prev) => ({ ...prev, ...res.settings }));
+      } else if (res && res.usdToRialRate) {
+        setSettings((prev) => ({
+          ...prev,
+          usdToRialRate: res.usdToRialRate,
+          lastCurrencyPriceToman: res.priceToman,
+          lastCurrencySyncTime: res.syncTime,
+          lastCurrencyChangePercent: res.changePercent,
+        }));
+      }
+      await refreshFromBackend();
+      return res;
+    } catch (err) {
+      console.error("Failed to sync currency now:", err);
+      throw err;
+    }
+  };
+
+  // Update BrsApi currency sync configurations (interval, apiKey, enableAutoSync)
+  const updateCurrencySyncConfig = async (config: {
+    apiKey?: string;
+    intervalMinutes?: number;
+    enableAutoSync?: boolean;
+  }) => {
+    try {
+      const res = await api.updateCurrencySyncConfig({
+        ...config,
+        user: "مدیر سیستم (پنل تنظیمات ارز)",
+      });
+      if (res && res.settings) {
+        setSettings((prev) => ({ ...prev, ...res.settings }));
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to update currency sync config:", err);
+      throw err;
     }
   };
 
@@ -456,24 +713,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
+  // Dynamic stock limit and purchase ratio calculation (Priority 4)
+  const getMaxAllowedPurchase = useCallback((product: Product): number => {
+    const stock = product.stockCount !== null && product.stockCount !== undefined ? product.stockCount : 100;
+    if (stock <= 0 || product.inStock === false) return 0;
+
+    const denom = settings.maxPurchaseRatioDenominator && settings.maxPurchaseRatioDenominator > 0
+      ? settings.maxPurchaseRatioDenominator
+      : 3;
+    const threshold = settings.purchaseRatioExemptionThreshold !== undefined
+      ? settings.purchaseRatioExemptionThreshold
+      : 10;
+
+    // If stock is less than or equal to threshold (e.g. 10), allow purchasing all remaining stock
+    if (stock <= threshold) {
+      return stock;
+    }
+    // Otherwise, fraction of total stock: floor(stock / denom)
+    return Math.min(stock, Math.max(1, Math.floor(stock / denom)));
+  }, [settings.maxPurchaseRatioDenominator, settings.purchaseRatioExemptionThreshold]);
+
   // Cart operations
   const addToCart = (product: Product, quantity = 1, email?: string, link?: string) => {
+    const maxAllowed = getMaxAllowedPurchase(product);
+    if (maxAllowed <= 0) return;
+
     const existingIndex = cart.findIndex((item) => item.product.id === product.id);
     let updatedCart: CartItem[] = [];
 
     if (existingIndex > -1) {
+      const currentQty = cart[existingIndex].quantity;
+      const targetQty = Math.min(maxAllowed, currentQty + quantity);
       updatedCart = cart.map((item, idx) =>
         idx === existingIndex
           ? {
               ...item,
-              quantity: item.quantity + quantity,
+              quantity: targetQty,
               customerEmail: email || item.customerEmail,
               customerLink: link || item.customerLink,
             }
           : item
       );
     } else {
-      updatedCart = [...cart, { product, quantity, customerEmail: email, customerLink: link }];
+      const targetQty = Math.min(maxAllowed, Math.max(1, quantity));
+      updatedCart = [...cart, { product, quantity: targetQty, customerEmail: email, customerLink: link }];
     }
     saveCart(updatedCart);
   };
@@ -487,9 +770,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeFromCart(productId);
       return;
     }
+    const cartItem = cart.find((item) => item.product.id === productId);
+    const product = products.find((p) => p.id === productId) || cartItem?.product;
+    const maxAllowed = product ? getMaxAllowedPurchase(product) : quantity;
+    const finalQuantity = Math.min(quantity, maxAllowed);
+
     saveCart(
       cart.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product.id === productId ? { ...item, quantity: finalQuantity } : item
       )
     );
   };
@@ -528,17 +816,56 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Orders
-  const createOrder = (orderData: Omit<Order, "id" | "orderNumber" | "createdAt">): Order => {
+  const createOrder = (
+    orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { id?: string; orderNumber?: string }
+  ): Order => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newOrder: Order = {
       ...orderData,
-      id: `ord-${Date.now()}`,
-      orderNumber: `ARZ-${randomSuffix}`,
+      id: orderData.id || `ord-${Date.now()}`,
+      orderNumber: orderData.orderNumber || `ARZ-${randomSuffix}`,
       createdAt: "هم‌اکنون",
     };
     const updated = [newOrder, ...orders];
     saveOrders(updated);
     clearCart();
+
+    // Persist real order to NestJS backend database ONLY if not already persisted by checkout
+    if (!orderData.orderNumber) {
+      api
+        .createBackendOrder({
+          orderNumber: newOrder.orderNumber,
+          customerEmail: newOrder.customerEmail,
+          customerPhone: newOrder.customerPhone,
+          customerLink: newOrder.customerLink,
+          totalPriceToman: newOrder.totalPriceToman,
+          totalPriceUsd: newOrder.totalPriceUsd,
+          gateway: newOrder.paymentGateway,
+          deliveryType: newOrder.deliveryType || "link",
+          targetAccountEmail: newOrder.targetAccountEmail,
+          targetAccountPassword: newOrder.targetAccountPassword,
+          isHybridOrder: newOrder.isHybridOrder,
+          items: newOrder.items.map((it) => ({
+            productId: it.productId,
+            productTitle: it.productTitle,
+            quantity: it.quantity,
+            priceToman: it.priceToman,
+            priceUsd: it.priceUsd,
+          })),
+        })
+        .then((created) => {
+          if (created && created.id) {
+            setOrders((prev) =>
+              prev.map((o) =>
+                o.orderNumber === newOrder.orderNumber ? { ...o, id: created.id } : o
+              )
+            );
+          }
+        })
+        .catch((err) => {
+          console.warn("Backend order save notice:", err);
+        });
+    }
 
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
@@ -553,14 +880,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return newOrder;
   };
 
-  const updateOrderStatus = (
+  const updateOrderStatus = async (
     orderId: string,
     status: Order["status"],
     accounts?: string[],
-    adminInfo?: { id?: string; name?: string; phone?: string }
+    adminInfo?: { id?: string; name?: string; phone?: string; role?: string }
   ) => {
+    // 1. Optimistically update local state & localStorage
     const updated = orders.map((o) => {
-      if (o.id === orderId) {
+      if (o.id === orderId || o.orderNumber === orderId) {
         const isNowDelivered = status === "delivered" && o.status !== "delivered";
         return {
           ...o,
@@ -576,9 +904,48 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
     saveOrders(updated);
 
-    const order = orders.find((o) => o.id === orderId);
+    const order = orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+
+    // 2. Persist to Backend API / PostgreSQL Database
+    const backendTargetId = order?.id || order?.orderNumber || orderId;
+    let effectiveRole = adminInfo?.role || "SUPER_ADMIN";
+    if (!adminInfo?.role && typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("arzan_cached_user");
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u.role) effectiveRole = u.role;
+        }
+      } catch {}
+    }
+
+    try {
+      await api.updateOrderStatus(backendTargetId, {
+        status,
+        adminName: adminInfo?.name || "مدیر سیستم",
+        adminId: adminInfo?.id,
+        adminPhone: adminInfo?.phone,
+        deliveredAccounts: accounts || order?.deliveredAccounts,
+        role: effectiveRole,
+      });
+    } catch (err) {
+      console.warn("Backend updateOrderStatus notice for", backendTargetId, err);
+      if (order?.orderNumber && order.orderNumber !== backendTargetId) {
+        try {
+          await api.updateOrderStatus(order.orderNumber, {
+            status,
+            adminName: adminInfo?.name || "مدیر سیستم",
+            adminId: adminInfo?.id,
+            adminPhone: adminInfo?.phone,
+            deliveredAccounts: accounts || order?.deliveredAccounts,
+            role: effectiveRole,
+          });
+        } catch {}
+      }
+    }
+
+    // 3. Automatically send order delivery email with credentials
     if (order && (status === "delivered" || (accounts && accounts.length > 0))) {
-      // Automatically send order delivery email with credentials
       api.sendOrderReceiptEmail({
         orderNumber: order.orderNumber,
         customerName: order.customerEmail.split("@")[0],
@@ -596,6 +963,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         totalPriceUsd: order.totalPriceUsd,
       }).catch((err) => console.warn("Could not dispatch receipt email:", err));
     }
+
+    // 4. Audit Log
     if (order && adminInfo?.name) {
       const isDelivered = status === "delivered";
       const newLog: AuditLog = {
@@ -612,6 +981,82 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       };
       setAuditLogs((prev) => [newLog, ...prev]);
     }
+  };
+
+  const requestRefund = async (
+    orderId: string,
+    reason: string,
+    cardNumber?: string,
+    sheba?: string
+  ): Promise<{ success: boolean; message: string }> => {
+    const targetOrder = orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+    const backendTargetId = targetOrder?.orderNumber || orderId;
+
+    try {
+      await api.requestRefund(backendTargetId, reason, cardNumber, sheba);
+    } catch (err) {
+      console.warn("Backend requestRefund notice:", err);
+      if (targetOrder?.id && targetOrder.id !== backendTargetId) {
+        try {
+          await api.requestRefund(targetOrder.id, reason, cardNumber, sheba);
+        } catch {}
+      }
+    }
+
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: "refund_requested" as const,
+            refundReason: reason,
+            refundCardNumber: cardNumber,
+            refundIban: sheba,
+            refundRejectionReason: undefined,
+          }
+        : o
+    );
+    saveOrders(updated);
+    return { success: true, message: "درخواست عودت وجه با موفقیت ثبت گردید و در صف بررسی مالی قرار گرفت." };
+  };
+
+  const processRefundOrder = (
+    orderId: string,
+    refundMethod: "bank_card" | "wallet",
+    trackingCode?: string,
+    receiptUrl?: string,
+    adminName?: string
+  ) => {
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: "refunded" as const,
+            refundMethod,
+            refundTrackingCode: trackingCode,
+            refundReceiptUrl: receiptUrl,
+            refundedAt: new Date().toISOString(),
+            refundedByAdminName: adminName,
+          }
+        : o
+    );
+    saveOrders(updated);
+  };
+
+  const rejectRefundOrder = (
+    orderId: string,
+    rejectionReason: string,
+    newStatus: Order["status"] = "delivered"
+  ) => {
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: newStatus,
+            refundRejectionReason: rejectionReason,
+          }
+        : o
+    );
+    saveOrders(updated);
   };
 
   const addAdminAuditLog = (log: Omit<AuditLog, "id" | "timestamp">) => {
@@ -667,6 +1112,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         isLoadingSync,
         isLoadingInitial,
         isBackendConnected,
+        createProduct,
         toggleProductActive,
         updateProduct,
         addCategory,
@@ -676,6 +1122,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         calculateProductPrice,
         syncWithIrMarket,
         refreshFromBackend,
+        syncCurrencyNow,
+        updateCurrencySyncConfig,
         addToCart,
         removeFromCart,
         updateCartQuantity,
@@ -685,8 +1133,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         createOrder,
         updateOrderStatus,
         addAdminAuditLog,
+        getMaxAllowedPurchase,
         addCoupon,
         toggleCoupon,
+        requestRefund,
+        processRefundOrder,
+        rejectRefundOrder,
       }}
     >
       {children}

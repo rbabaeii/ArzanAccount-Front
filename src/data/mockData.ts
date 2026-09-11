@@ -261,104 +261,7 @@ export const initialProducts: Product[] = [
   },
 ];
 
-export const initialOrders: Order[] = [
-  {
-    id: "ord-1049",
-    orderNumber: "ARZ-1049",
-    externalOrderId: 5130,
-    createdAt: "امروز - ۱۴:۲۵",
-    customerEmail: "reza.dev@gmail.com",
-    customerPhone: "09123456789",
-    items: [
-      {
-        productId: "prod-2",
-        productTitle: "اشتراک اختصاصی ChatGPT Plus یک ماهه",
-        quantity: 1,
-        priceToman: 1610000,
-        priceUsd: 19.50,
-      },
-    ],
-    totalPriceToman: 1610000,
-    totalPriceUsd: 19.50,
-    status: "delivered",
-    deliveredAccounts: [
-      "user-openai-842@arzan.me : SecPass$2026! (کد تایید ورود به ایمیل خریدار ارسال شد)",
-    ],
-    paymentGateway: "zarinpal",
-    approvedByAdminId: "mock-support-admin",
-    approvedByAdminName: "علی صادقی (پشتیبان سفارشات)",
-    approvedByAdminPhone: "09120000001",
-    approvedAt: "امروز - ۱۴:۳۰",
-  },
-  {
-    id: "ord-1048",
-    orderNumber: "ARZ-1048",
-    externalOrderId: 5128,
-    createdAt: "امروز - ۱۱:۱۰",
-    customerEmail: "sara.karimi@yahoo.com",
-    customerPhone: "09351112233",
-    items: [
-      {
-        productId: "prod-1",
-        productTitle: "اکانت گوگل جمینای ادونسد (Gemini Advanced) ۱۸ ماهه",
-        quantity: 1,
-        priceToman: 765000,
-        priceUsd: 9.00,
-      },
-    ],
-    totalPriceToman: 765000,
-    totalPriceUsd: 9.00,
-    status: "delivered",
-    deliveredAccounts: [
-      "gemini-prem-991@arzan.me : Google$Gemini99# (دعوتنامه گوگل وان به جیمیل شما ارسال شد)",
-    ],
-    paymentGateway: "zarinpal",
-    approvedByAdminId: "mock-super-admin",
-    approvedByAdminName: "رضا بابایی (مدیر ارشد سامانه)",
-    approvedByAdminPhone: "09181111111",
-    approvedAt: "امروز - ۱۱:۲۵",
-  },
-  {
-    id: "ord-1047",
-    orderNumber: "ARZ-1047",
-    externalOrderId: 11702,
-    createdAt: "دیروز - ۲۱:۴۵",
-    customerEmail: "telegram.boss@gmail.com",
-    customerLink: "https://t.me/tech_daily_ir",
-    items: [
-      {
-        productId: "prod-7",
-        productTitle: "ممبر واقعی کانال تلگرام",
-        quantity: 5000,
-        priceToman: 275000,
-        priceUsd: 3.25,
-      },
-    ],
-    totalPriceToman: 275000,
-    totalPriceUsd: 3.25,
-    status: "processing",
-    paymentGateway: "nextpay",
-  },
-  {
-    id: "ord-1046",
-    orderNumber: "ARZ-1046",
-    createdAt: "دیروز - ۱۶:۳۰",
-    customerEmail: "fail.test@gmail.com",
-    items: [
-      {
-        productId: "prod-4",
-        productTitle: "اشتراک تلگرام پرمیوم ۳ ماهه",
-        quantity: 1,
-        priceToman: 990000,
-        priceUsd: 11.50,
-      },
-    ],
-    totalPriceToman: 990000,
-    totalPriceUsd: 11.50,
-    status: "failed",
-    paymentGateway: "crypto",
-  },
-];
+export const initialOrders: Order[] = [];
 
 export const initialCoupons: Coupon[] = [
   {
@@ -481,4 +384,15 @@ export const initialSettings: SystemSettings = {
   supportTelegram: "@arzan_support",
   supportPhone: "۰۲۱-۸۸۸۸۸۸۸۸",
   enableAutomaticSync: true,
+  maxPurchaseRatioDenominator: 3,
+  purchaseRatioExemptionThreshold: 10,
+  siteLogo: "",
+  siteLogoDark: "",
+  siteFavicon: "",
+  siteTagline: "مرجع تخصصی خرید انواع اکانت و اشتراک‌های بین‌المللی با تحویل فوری",
+  siteDescription: "خرید اشتراک پریمیوم اسپاتیفای، چت جی پی تی، نتفلیکس، اپل موزیک و سرویس‌های هوش مصنوعی با کمترین قیمت و ضمانت رسمی.",
+  sitePhone: "۰۲۱-۸۸۸۸۴۳۲۱",
+  siteEmail: "support@arzanaccount.com",
+  siteInstagram: "arzanaccount_official",
+  siteEnamad: "",
 };

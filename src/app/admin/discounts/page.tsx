@@ -43,8 +43,9 @@ export default function AdminDiscountsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-admin-text dark:text-white">
-          مدیریت تخفیف‌ها، کوپن‌ها و جشنواره‌ها
+        <h1 className="text-2xl font-black text-admin-text dark:text-white flex items-center gap-2">
+          <Tag className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+          <span>مدیریت تخفیف‌ها، کوپن‌ها و جشنواره‌ها</span>
         </h1>
         <p className="text-xs text-admin-textMuted dark:text-slate-400 mt-1">
           تعریف کدهای تخفیف درصدی و ریالی با امکان محدودسازی به دسته‌بندی خاص، تقویم شمسی، سقف استفاده و زمان انقضا
@@ -53,9 +54,11 @@ export default function AdminDiscountsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Create Coupon Form (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
+        <div className="lg:col-span-5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-xl hover:border-teal-400/40 dark:hover:border-teal-400/30 transition-all duration-300 space-y-4">
           <h3 className="font-bold text-sm text-admin-text dark:text-white flex items-center gap-2 pb-3 border-b border-admin-borderLight dark:border-slate-800">
-            <Plus className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shadow-2xs">
+              <Plus className="w-4 h-4" />
+            </div>
             <span>ایجاد کد تخفیف جدید</span>
           </h3>
 
@@ -69,7 +72,7 @@ export default function AdminDiscountsPage() {
                 placeholder="مثلاً: NOROOZ1404"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none font-mono font-bold uppercase dir-ltr text-left text-slate-800 dark:text-slate-100"
+                className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2.5 px-3 outline-none font-mono font-bold uppercase dir-ltr text-left text-slate-800 dark:text-slate-100 transition-all duration-200"
                 required
               />
             </div>
@@ -82,7 +85,7 @@ export default function AdminDiscountsPage() {
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none text-slate-800 dark:text-slate-100 font-sans"
+                className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 outline-none text-slate-800 dark:text-slate-100 font-sans transition-all duration-200"
               >
                 <option value="">همه دسته‌بندی‌ها (بدون محدودیت)</option>
                 {categories.map((cat) => (
@@ -108,7 +111,7 @@ export default function AdminDiscountsPage() {
                     max="90"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                    className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100"
+                    className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100 transition-all duration-200"
                     required
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-slate-500 font-mono">٪</span>
@@ -124,7 +127,7 @@ export default function AdminDiscountsPage() {
                   step="10000"
                   value={maxDiscountToman}
                   onChange={(e) => setMaxDiscountToman(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100 transition-all duration-200"
                   required
                 />
               </div>
@@ -140,7 +143,7 @@ export default function AdminDiscountsPage() {
                   step="50000"
                   value={minOrderToman}
                   onChange={(e) => setMinOrderToman(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100 transition-all duration-200"
                   required
                 />
               </div>
@@ -153,7 +156,7 @@ export default function AdminDiscountsPage() {
                   type="number"
                   value={maxUsage}
                   onChange={(e) => setMaxUsage(Number(e.target.value))}
-                  className="w-full bg-admin-bg dark:bg-slate-800 border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100"
+                  className="w-full bg-admin-bg dark:bg-slate-800/90 border border-admin-borderLight dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20 rounded-xl py-2 px-3 outline-none font-mono text-slate-800 dark:text-slate-100 transition-all duration-200"
                   required
                 />
               </div>
@@ -174,14 +177,14 @@ export default function AdminDiscountsPage() {
 
             <button
               type="submit"
-              className="w-full bg-brand-primary hover:bg-brand-primaryDark dark:bg-teal-600 dark:hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
+              className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               <span>ثبت و انتشار کد تخفیف</span>
             </button>
 
             {toast && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 animate-fadeIn border border-emerald-200 dark:border-emerald-800">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 animate-fadeIn border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>کد تخفیف با موفقیت ایجاد و فعال شد!</span>
               </div>
@@ -190,10 +193,10 @@ export default function AdminDiscountsPage() {
         </div>
 
         {/* Coupons List (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 rounded-2xl p-6 shadow-card space-y-4">
+        <div className="lg:col-span-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-admin-borderLight dark:border-slate-800/80 rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight dark:border-slate-800">
             <h3 className="font-bold text-sm text-admin-text dark:text-white flex items-center gap-2">
-              <Tag className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+              <Tag className="w-4 h-4 text-teal-600 dark:text-teal-400" />
               <span>کدهای تخفیف تعریف‌شده ({coupons.length})</span>
             </h3>
             <span className="text-[11px] text-neutral-400 dark:text-slate-500">اعتبار لحظه‌ای در سبد خرید</span>
@@ -204,10 +207,10 @@ export default function AdminDiscountsPage() {
               const matchedCategory = c.categoryId ? categories.find((cat) => cat.id === c.categoryId) : null;
 
               return (
-                <div key={c.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                <div key={c.id} className="py-3 px-3 rounded-xl hover:bg-teal-50/40 dark:hover:bg-slate-800/60 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs group">
                   <div>
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="font-mono font-black text-sm bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2.5 py-1 rounded-lg">
+                      <span className="font-mono font-black text-sm bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2.5 py-1 rounded-lg group-hover:scale-105 transition-transform duration-200 shadow-2xs">
                         {c.code}
                       </span>
                       <span className="font-bold text-brand-dark dark:text-white">
@@ -216,8 +219,8 @@ export default function AdminDiscountsPage() {
                       <span
                         className={
                           c.isActive
-                            ? "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400"
-                            : "text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400"
+                            ? "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                            : "text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-slate-800 text-neutral-500 dark:text-slate-400 border border-neutral-200 dark:border-slate-700"
                         }
                       >
                         {c.isActive ? "فعال" : "منقضی / غیرفعال"}
@@ -225,7 +228,7 @@ export default function AdminDiscountsPage() {
 
                       {/* Category Badge */}
                       {matchedCategory ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-1">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-1 shadow-2xs">
                           <Layers className="w-3 h-3" />
                           <span>مخصوص دسته: {matchedCategory.title}</span>
                         </span>
@@ -236,7 +239,7 @@ export default function AdminDiscountsPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-admin-textMuted dark:text-slate-400 mt-2">
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-admin-textMuted dark:text-slate-400 mt-2 font-mono">
                       <span>سقف: {formatNumber(c.maxDiscountToman)} ت</span>
                       <span>•</span>
                       <span>حداقل سفارش: {formatPrice(c.minOrderToman)} ت</span>
@@ -256,7 +259,7 @@ export default function AdminDiscountsPage() {
                     <button
                       onClick={() => toggleCoupon(c.id)}
                       className={
-                        "px-3 py-1.5 rounded-lg font-semibold text-xs border transition-colors " +
+                        "px-3 py-1.5 rounded-lg font-semibold text-xs border transition-all duration-150 hover:scale-105 active:scale-95 shadow-2xs " +
                         (c.isActive
                           ? "border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40"
                           : "border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40")

@@ -38,10 +38,12 @@ import {
   DollarSign,
   BadgeCheck,
   ArrowRight,
+  Lock,
 } from "lucide-react";
 
 import { toPersianDateTime } from "@/lib/date";
 import Pagination from "@/components/ui/Pagination";
+import { OrderInvoiceModal } from "@/components/admin/OrderInvoiceModal";
 
 export default function AdminOrdersPage() {
   const { orders, updateOrderStatus, settings } = useStore();
@@ -55,6 +57,7 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // Pagination state
@@ -186,6 +189,7 @@ export default function AdminOrdersPage() {
       id: user?.id,
       name: user?.name,
       phone: user?.phone,
+      role: user?.role || "SUPER_ADMIN",
     };
 
     updateOrderStatus(selectedOrder.id, selectedOrder.status, accounts, adminInfo);
@@ -207,6 +211,7 @@ export default function AdminOrdersPage() {
       id: user?.id,
       name: user?.name,
       phone: user?.phone,
+      role: user?.role || "SUPER_ADMIN",
     };
     updateOrderStatus(selectedOrder.id, status, undefined, adminInfo);
     setSelectedOrder({
@@ -249,32 +254,31 @@ export default function AdminOrdersPage() {
           </p>
         </div>
 
-        <div className="text-xs bg-white dark:bg-slate-900 border border-admin-borderLight dark:border-slate-800 text-admin-text dark:text-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-2xs">
-          <span>
-            کل سفارشات: <strong className="font-mono text-black dark:text-white">{orders.length}</strong>
+        <div className="flex flex-wrap items-center gap-2 text-xs bg-white/80 dark:bg-slate-900/80 backdrop-blur-xs p-1.5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+          <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+            کل سفارشات: <strong className="font-mono text-black dark:text-white mr-1">{orders.length}</strong>
           </span>
-          <span className="text-neutral-300">|</span>
-          <span className="text-emerald-700 font-bold">
+          <span className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200/50 dark:border-emerald-800/40">
             موفق: {deliveredCount}
           </span>
-          <span className="text-neutral-300">|</span>
-          <span className="text-amber-700 font-bold">
+          <span className="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-bold border border-amber-200/50 dark:border-amber-800/40 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             در انتظار: {processingCount}
           </span>
         </div>
       </div>
 
       {/* Main Mode Tabs */}
-      <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-admin-borderLight dark:border-slate-800 pb-3">
         <button
           onClick={() => {
             setActiveTab("all");
             setCurrentPage(1);
           }}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 ${
             activeTab === "all"
-              ? "bg-brand-primary text-white shadow-md shadow-teal-500/20"
-              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+              ? "bg-gradient-to-r from-brand-primary to-teal-700 text-white shadow-md shadow-teal-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800 hover:border-teal-300 dark:hover:border-teal-700"
           }`}
         >
           <ShoppingCart className="w-4 h-4" />
@@ -291,10 +295,10 @@ export default function AdminOrdersPage() {
             setActiveTab("my_approved");
             setCurrentPage(1);
           }}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 ${
             activeTab === "my_approved"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
-              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800"
+              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20"
+              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-admin-borderLight dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700"
           }`}
         >
           <BadgeCheck className="w-4 h-4" />
@@ -562,7 +566,7 @@ export default function AdminOrdersPage() {
                       <select
                         value={order.status}
                         onChange={(e) => {
-                          const adminInfo = { id: user?.id, name: user?.name, phone: user?.phone };
+                          const adminInfo = { id: user?.id, name: user?.name, phone: user?.phone, role: user?.role || "SUPER_ADMIN" };
                           updateOrderStatus(order.id, e.target.value as Order["status"], undefined, adminInfo);
                         }}
                         className={`text-xs font-bold py-1 px-2.5 rounded-lg border outline-none cursor-pointer ${
@@ -570,13 +574,25 @@ export default function AdminOrdersPage() {
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : order.status === "processing"
                             ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : order.status === "refund_requested" || order.status === "cancelled"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : order.status === "refunded"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
                             : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
                         <option value="delivered">تحویل شده</option>
                         <option value="processing">در حال پردازش</option>
-                        <option value="failed">ناموفق / لغو</option>
+                        <option value="cancelled">لغو شده (ناموفق)</option>
+                        <option value="refund_requested">درخواست عودت وجه</option>
+                        <option value="refunded">عودت داده شده</option>
+                        <option value="failed">ناموفق / خطا</option>
                       </select>
+                      {order.refundReason && (
+                        <div className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/60 line-clamp-1">
+                          دلیل لغو: {order.refundReason}
+                        </div>
+                      )}
                       {order.approvedByAdminName && (
                         <div className="text-[10px] text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
@@ -587,13 +603,23 @@ export default function AdminOrdersPage() {
                   </td>
 
                   <td className="py-3.5 px-4 text-center">
-                    <button
-                      onClick={() => openOrderDetails(order)}
-                      className="p-1.5 text-brand-primary hover:bg-teal-100/50 rounded-lg border border-teal-200 transition-colors inline-flex items-center gap-1 font-semibold text-[11px]"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>مشاهده کامل</span>
-                    </button>
+                    <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => openOrderDetails(order)}
+                        className="px-2.5 py-1.5 text-brand-primary dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/60 rounded-xl border border-teal-200 dark:border-teal-800 hover:border-teal-400 dark:hover:border-teal-600 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs inline-flex items-center gap-1.5 font-bold text-[11px]"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>مشاهده کامل</span>
+                      </button>
+                      <button
+                        onClick={() => setInvoiceOrder(order)}
+                        className="px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs inline-flex items-center gap-1.5 font-bold text-[11px]"
+                        title="صدور و چاپ فاکتور رسمی"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>فاکتور</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -629,36 +655,36 @@ export default function AdminOrdersPage() {
       {/* ADVANCED ORDER DETAILS & WORKFLOW MODAL (HypeStore Stitch Screen Synchronized) */}
       {/* ========================================================================= */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-admin-bg dark:bg-slate-950 text-admin-text dark:text-slate-100 rounded-2xl shadow-2xl border border-admin-borderLight dark:border-slate-800 max-w-5xl w-full my-auto overflow-hidden animate-fadeIn flex flex-col max-h-[92vh]">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl shadow-2xl border border-neutral-200 dark:border-slate-800 max-w-5xl w-full my-auto overflow-hidden animate-fadeIn flex flex-col max-h-[92vh]">
             
             {/* Modal Top Bar */}
-            <div className="bg-white dark:bg-slate-900 px-6 py-4 border-b border-admin-borderLight dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+            <div className="bg-neutral-50/80 dark:bg-slate-900/90 px-6 py-4 border-b border-neutral-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-primary text-white flex items-center justify-center font-bold font-mono text-sm shadow-sm">
                   ARZ
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-black text-base text-admin-text dark:text-white">
+                    <h2 className="font-black text-base text-slate-900 dark:text-white">
                       سفارش #{selectedOrder.orderNumber}
                     </h2>
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                         selectedOrder.status === "delivered"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border dark:border-emerald-800/80"
                           : selectedOrder.status === "processing"
-                          ? "bg-amber-100 text-amber-800 animate-pulse"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 dark:border dark:border-amber-800/80 animate-pulse"
+                          : "bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 dark:border dark:border-red-800/80"
                       }`}
                     >
                       <span
                         className={`w-2 h-2 rounded-full ${
                           selectedOrder.status === "delivered"
-                            ? "bg-emerald-600"
+                            ? "bg-emerald-600 dark:bg-emerald-400"
                             : selectedOrder.status === "processing"
-                            ? "bg-amber-600"
-                            : "bg-red-600"
+                            ? "bg-amber-600 dark:bg-amber-400"
+                            : "bg-red-600 dark:bg-red-400"
                         }`}
                       ></span>
                       <span>
@@ -669,18 +695,18 @@ export default function AdminOrdersPage() {
                           : "خطا در صدور یا لغو شده"}
                       </span>
                     </span>
-                    <span className="text-[11px] bg-teal-50 text-brand-primary border border-teal-200 px-2 py-0.5 rounded-md font-mono">
+                    <span className="text-[11px] bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 border border-teal-200 dark:border-teal-800/70 px-2 py-0.5 rounded-md font-mono">
                       irMarket: {selectedOrder.externalOrderId ? `#${selectedOrder.externalOrderId}` : "شبیه‌سازی ماک امن"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-[11px] text-neutral-400 mt-1">
+                  <div className="flex items-center gap-3 text-[11px] text-neutral-500 dark:text-slate-400 mt-1">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
+                      <Calendar className="w-3.5 h-3.5 text-neutral-400 dark:text-slate-500" />
                       <span>{toPersianDateTime(selectedOrder.createdAt)}</span>
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <CreditCard className="w-3.5 h-3.5" />
+                      <CreditCard className="w-3.5 h-3.5 text-neutral-400 dark:text-slate-500" />
                       <span>درگاه {selectedOrder.paymentGateway === "zarinpal" ? "زرین‌پال" : "نکست‌پی"}</span>
                     </span>
                   </div>
@@ -698,15 +724,16 @@ export default function AdminOrdersPage() {
                   <span>{isResendingEmail ? "در حال ارسال..." : "ارسال مجدد ایمیل"}</span>
                 </button>
                 <button
-                  onClick={() => window.print()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-100 dark:hover:bg-slate-800 dark:bg-slate-800 text-xs font-semibold transition-colors"
+                  onClick={() => setInvoiceOrder(selectedOrder)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors"
+                  title="مشاهده و چاپ فاکتور رسمی"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>چاپ فاکتور</span>
                 </button>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white dark:text-white hover:bg-neutral-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-colors"
+                  className="p-1.5 text-neutral-400 hover:text-black dark:text-slate-400 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -752,39 +779,39 @@ export default function AdminOrdersPage() {
               )}
 
               {/* 1. Interactive Workflow Stepper (Lifecycle) */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs">
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-5 bg-brand-primary rounded-full"></span>
-                    <h3 className="font-bold text-xs text-admin-text dark:text-white">گردش کار و چرخه پردازش سفارش</h3>
+                    <h3 className="font-bold text-xs text-slate-900 dark:text-white">گردش کار و چرخه پردازش سفارش</h3>
                   </div>
-                  <span className="text-[11px] bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 px-2 py-0.5 rounded-md font-medium">
+                  <span className="text-[11px] bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-300 px-2 py-0.5 rounded-md font-medium border border-teal-200 dark:border-teal-800/70">
                     {selectedOrder.status === "delivered" ? "چرخه ۱۰۰٪ تکمیل شده" : "در حال اجرای فرآیند خودکار"}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative">
                   {/* Step 1: Payment */}
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60">
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60">
                     <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                       <Check className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col">
                       <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">۱. ثبت و پرداخت ریالی</span>
-                      <span className="text-[10px] text-emerald-700 mt-0.5">تایید شتاب بانکی</span>
-                      <span className="text-[10px] text-emerald-600 font-mono mt-1 font-semibold">موفق</span>
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-300 mt-0.5">تایید شتاب بانکی</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-1 font-semibold">موفق</span>
                     </div>
                   </div>
 
                   {/* Step 2: Validation */}
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60">
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60">
                     <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                       <Check className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col">
                       <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">۲. اعتبارسنجی شرایط</span>
-                      <span className="text-[10px] text-emerald-700 mt-0.5">تطبیق ایمیل و شروط</span>
-                      <span className="text-[10px] text-emerald-600 font-mono mt-1 font-semibold">تایید پارامترها</span>
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-300 mt-0.5">تطبیق ایمیل و شروط</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-1 font-semibold">تایید پارامترها</span>
                     </div>
                   </div>
 
@@ -792,10 +819,10 @@ export default function AdminOrdersPage() {
                   <div
                     className={`flex items-start gap-3 p-3 rounded-xl border ${
                       selectedOrder.status === "delivered"
-                        ? "bg-emerald-50/60 border-emerald-100"
+                        ? "bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60"
                         : selectedOrder.status === "processing"
-                        ? "bg-amber-50/80 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 ring-2 ring-amber-300/40"
-                        : "bg-red-50/60 border-red-100"
+                        ? "bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/60 ring-2 ring-amber-300/40 dark:ring-amber-800/40"
+                        : "bg-red-50/70 dark:bg-red-950/40 border-red-200 dark:border-red-800/60"
                     }`}
                   >
                     <div
@@ -816,17 +843,17 @@ export default function AdminOrdersPage() {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-bold text-xs text-admin-text">۳. اتصال به irMarket API</span>
-                      <span className="text-[10px] text-neutral-500 mt-0.5">
+                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100">۳. اتصال به irMarket API</span>
+                      <span className="text-[10px] text-neutral-500 dark:text-slate-400 mt-0.5">
                         {selectedOrder.externalOrderId ? `سفارش #${selectedOrder.externalOrderId}` : "شبیه‌ساز Mock"}
                       </span>
                       <span
                         className={`text-[10px] font-mono mt-1 font-semibold ${
                           selectedOrder.status === "delivered"
-                            ? "text-emerald-700"
+                            ? "text-emerald-700 dark:text-emerald-300"
                             : selectedOrder.status === "processing"
-                            ? "text-amber-700"
-                            : "text-red-700"
+                            ? "text-amber-700 dark:text-amber-300"
+                            : "text-red-700 dark:text-red-300"
                         }`}
                       >
                         {selectedOrder.status === "delivered" ? "پاسخ موفق دریافت شد" : selectedOrder.status === "processing" ? "در صف تبادل API" : "خطای تأمین‌کننده"}
@@ -838,7 +865,7 @@ export default function AdminOrdersPage() {
                   <div
                     className={`flex items-start gap-3 p-3 rounded-xl border ${
                       selectedOrder.status === "delivered"
-                        ? "bg-emerald-50/60 border-emerald-100"
+                        ? "bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60"
                         : "bg-neutral-50 dark:bg-slate-800/60 border-neutral-200 dark:border-slate-700 opacity-80"
                     }`}
                   >
@@ -850,11 +877,11 @@ export default function AdminOrdersPage() {
                       <Key className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-bold text-xs text-admin-text">۴. صدور و تحویل اکانت</span>
-                      <span className="text-[10px] text-neutral-500 mt-0.5">ارسال ایمیل/پیامک</span>
+                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100">۴. صدور و تحویل اکانت</span>
+                      <span className="text-[10px] text-neutral-500 dark:text-slate-400 mt-0.5">ارسال ایمیل/پیامک</span>
                       <span
                         className={`text-[10px] font-mono mt-1 font-semibold ${
-                          selectedOrder.status === "delivered" ? "text-emerald-700" : "text-neutral-500"
+                          selectedOrder.status === "delivered" ? "text-emerald-700 dark:text-emerald-300" : "text-neutral-500 dark:text-slate-400"
                         }`}
                       >
                         {selectedOrder.status === "delivered" ? "تحویل به خریدار" : "در انتظار صدور"}
@@ -871,13 +898,13 @@ export default function AdminOrdersPage() {
                 <div className="lg:col-span-8 space-y-6">
 
                   {/* Ordered Items Card */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
+                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <ShoppingCart className="w-4 h-4 text-brand-primary" />
-                        <h4 className="font-bold text-xs text-admin-text dark:text-white">اقلام و اشتراک‌های خریداری‌شده</h4>
+                        <ShoppingCart className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                        <h4 className="font-bold text-xs text-slate-900 dark:text-white">اقلام و اشتراک‌های خریداری‌شده</h4>
                       </div>
-                      <span className="text-[11px] text-neutral-500">
+                      <span className="text-[11px] text-neutral-500 dark:text-slate-400">
                         {selectedOrder.items.length} آیتم
                       </span>
                     </div>
@@ -886,16 +913,16 @@ export default function AdminOrdersPage() {
                       {selectedOrder.items.map((item, idx) => (
                         <div
                           key={idx}
-                          className="bg-admin-bg dark:bg-slate-800/80 p-3.5 rounded-xl border border-admin-borderLight dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="bg-neutral-50/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-neutral-200 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-teal-100 text-brand-primary flex items-center justify-center font-bold text-xs shrink-0">
+                            <div className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-950/80 text-brand-primary dark:text-teal-300 flex items-center justify-center font-bold text-xs shrink-0 border border-teal-200 dark:border-teal-800/60">
                               {idx + 1}
                             </div>
                             <div>
-                              <span className="font-bold text-xs text-admin-text block">{item.productTitle}</span>
-                              <div className="flex items-center gap-2 text-[11px] text-neutral-500 mt-1">
-                                <span>تعداد: <strong className="font-mono text-black dark:text-white">{item.quantity}</strong></span>
+                              <span className="font-bold text-xs text-slate-900 dark:text-white block">{item.productTitle}</span>
+                              <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-slate-400 mt-1">
+                                <span>تعداد: <strong className="font-mono text-slate-900 dark:text-white">{item.quantity}</strong></span>
                                 <span>•</span>
                                 <span className="font-mono">${item.priceUsd.toFixed(2)} USD</span>
                               </div>
@@ -903,7 +930,7 @@ export default function AdminOrdersPage() {
                           </div>
 
                           <div className="text-left sm:text-right">
-                            <span className="font-mono font-bold text-xs text-brand-primary block">
+                            <span className="font-mono font-bold text-xs text-brand-primary dark:text-teal-400 block">
                               {formatPrice(item.priceToman)} تومان
                             </span>
                           </div>
@@ -911,25 +938,87 @@ export default function AdminOrdersPage() {
                       ))}
                     </div>
 
-                    {/* Customer Inputs (Link, Email, Notes) */}
-                    {(selectedOrder.customerLink || selectedOrder.customerEmail) && (
-                      <div className="bg-teal-50/50 dark:bg-slate-800/80 p-3.5 rounded-xl border border-teal-100 dark:border-slate-700 text-xs space-y-2 mt-2">
-                        <span className="font-bold text-[11px] text-teal-900 dark:text-teal-300 block">فیلدهای تکمیلی ارسالی خریدار:</span>
+                    {/* Multi-Account Credentials List (From N Quantities) */}
+                    {selectedOrder.accountCredentials && selectedOrder.accountCredentials.length > 0 && (
+                      <div className="bg-purple-50/60 dark:bg-purple-950/30 p-4 rounded-xl border border-purple-200 dark:border-purple-800/60 space-y-3 mt-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[11px] text-purple-950 dark:text-purple-200 flex items-center gap-1.5">
+                            <Key className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                            <span>اکانت‌های ارسالی خریدار جهت فعال‌سازی ({selectedOrder.accountCredentials.length} مورد):</span>
+                          </span>
+                          <span className="text-[10px] text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded font-mono">
+                            Multi-Account Info
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {selectedOrder.accountCredentials.map((acc, accIdx) => (
+                            <div
+                              key={accIdx}
+                              className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-200/80 dark:border-purple-800/50 space-y-1.5 text-xs"
+                            >
+                              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-slate-800 pb-1">
+                                <span className="font-bold text-purple-900 dark:text-purple-300 text-[11px]">
+                                  اکانت شماره {acc.index || accIdx + 1}
+                                </span>
+                                {acc.productTitle && (
+                                  <span className="text-[10px] text-neutral-500 dark:text-slate-400 truncate max-w-[130px]">
+                                    {acc.productTitle}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between gap-1 text-[11px]">
+                                <span className="text-neutral-500 dark:text-slate-400">ایمیل:</span>
+                                <span className="font-mono text-slate-900 dark:text-slate-100 font-semibold dir-ltr select-all">
+                                  {acc.email}
+                                </span>
+                              </div>
+                              {acc.password && (
+                                <div className="flex items-center justify-between gap-1 text-[11px]">
+                                  <span className="text-neutral-500 dark:text-slate-400">رمز عبور:</span>
+                                  <span className="font-mono text-amber-700 dark:text-amber-300 font-semibold dir-ltr select-all bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800/50">
+                                    {acc.password}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Single Customer Inputs (Link, Email, Notes) */}
+                    {(!selectedOrder.accountCredentials || selectedOrder.accountCredentials.length === 0) &&
+                      (selectedOrder.customerLink || selectedOrder.customerEmail || selectedOrder.targetAccountEmail) && (
+                      <div className="bg-teal-50/60 dark:bg-slate-800/80 p-3.5 rounded-xl border border-teal-200 dark:border-slate-700 text-xs space-y-2 mt-2">
+                        <span className="font-bold text-[11px] text-teal-950 dark:text-teal-300 block">فیلدهای تکمیلی ارسالی خریدار:</span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                          <div className="flex items-center gap-2 text-neutral-700 dark:text-slate-300">
-                            <Mail className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                            <span>ایمیل مقصد:</span>
-                            <span className="font-mono font-semibold text-black dark:text-white dir-ltr select-all">{selectedOrder.customerEmail}</span>
-                          </div>
+                          {(selectedOrder.targetAccountEmail || selectedOrder.customerEmail) && (
+                            <div className="flex items-center gap-2 text-neutral-700 dark:text-slate-300">
+                              <Mail className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
+                              <span>ایمیل مقصد:</span>
+                              <span className="font-mono font-semibold text-slate-900 dark:text-white dir-ltr select-all">
+                                {selectedOrder.targetAccountEmail || selectedOrder.customerEmail}
+                              </span>
+                            </div>
+                          )}
+                          {selectedOrder.targetAccountPassword && (
+                            <div className="flex items-center gap-2 text-neutral-700 dark:text-slate-300">
+                              <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                              <span>رمز عبور اکانت:</span>
+                              <span className="font-mono font-semibold text-amber-800 dark:text-amber-300 dir-ltr select-all bg-amber-50 dark:bg-amber-950/50 px-1 rounded">
+                                {selectedOrder.targetAccountPassword}
+                              </span>
+                            </div>
+                          )}
                           {selectedOrder.customerLink && (
                             <div className="flex items-center gap-2 text-neutral-700 dark:text-slate-300">
-                              <LinkIcon className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                              <LinkIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
                               <span>لینک کانال/پیج:</span>
                               <a
                                 href={selectedOrder.customerLink}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-brand-primary underline truncate font-mono"
+                                className="text-brand-primary dark:text-teal-300 underline truncate font-mono"
                               >
                                 {selectedOrder.customerLink}
                               </a>
@@ -941,11 +1030,11 @@ export default function AdminOrdersPage() {
                   </div>
 
                   {/* Delivered Credentials Box */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
+                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <Key className="w-4 h-4 text-brand-primary" />
-                        <h4 className="font-bold text-xs text-admin-text dark:text-white">مشخصات اکانت و لایسنس تحویل‌شده به خریدار</h4>
+                        <Key className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                        <h4 className="font-bold text-xs text-slate-900 dark:text-white">مشخصات اکانت و لایسنس تحویل‌شده به خریدار</h4>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -960,7 +1049,7 @@ export default function AdminOrdersPage() {
                         ) : (
                           <button
                             onClick={() => setIsEditingCredentials(true)}
-                            className="flex items-center gap-1 text-[11px] text-brand-primary hover:bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors font-semibold"
+                            className="flex items-center gap-1 text-[11px] text-brand-primary dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800 transition-colors font-semibold"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                             <span>ویرایش / ثبت دستی</span>
@@ -971,14 +1060,14 @@ export default function AdminOrdersPage() {
 
                     {isEditingCredentials ? (
                       <div className="space-y-2">
-                        <label className="text-[11px] text-neutral-600 font-medium block">
+                        <label className="text-[11px] text-neutral-600 dark:text-slate-300 font-medium block">
                           هر خط نمایانگر یک اکانت یا لایسنس است (فرمت پیشنهادی: Username:Password یا LicenseKey):
                         </label>
                         <textarea
                           rows={4}
                           value={editCredentialsText}
                           onChange={(e) => setEditCredentialsText(e.target.value)}
-                          className="w-full font-mono text-xs p-3 rounded-xl border border-admin-borderLight dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 bg-admin-bg dark:bg-slate-800 outline-none dir-ltr text-left text-slate-800 dark:text-slate-100"
+                          className="w-full font-mono text-xs p-3 rounded-xl border border-neutral-200 dark:border-slate-700 focus:border-brand-primary dark:focus:border-teal-400 bg-neutral-50 dark:bg-slate-800 outline-none dir-ltr text-left text-slate-800 dark:text-slate-100"
                           placeholder="user@domain.com : Pass1234&#10;KEY-XXXX-YYYY-ZZZZ"
                         />
                       </div>
@@ -1007,7 +1096,7 @@ export default function AdminOrdersPage() {
                             </div>
                           ))
                         ) : (
-                          <div className="p-4 rounded-xl bg-neutral-50 border border-dashed border-neutral-200 text-center text-xs text-neutral-500">
+                          <div className="p-4 rounded-xl bg-neutral-50 dark:bg-slate-800/50 border border-dashed border-neutral-200 dark:border-slate-700 text-center text-xs text-neutral-500 dark:text-slate-400">
                             <span>هنوز لایسنسی برای این سفارش صادر نشده است. می‌توانید از دکمه «ویرایش / ثبت دستی» برای ثبت لایسنس استفاده کنید.</span>
                           </div>
                         )}
@@ -1015,8 +1104,8 @@ export default function AdminOrdersPage() {
                     )}
 
                     {/* Mock Purchase Guard Notice */}
-                    <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900">
-                      <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-900 dark:text-amber-200">
+                      <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                       <span>
                         <strong>محافظ ماک ایمن (Mock Guard):</strong> سیستم در حالت آزمایشی ایمن کار می‌کند تا موجودی کیف پول irMarket شما (${settings.walletBalanceUsd}) کسر نگردد.
                       </span>
@@ -1028,73 +1117,73 @@ export default function AdminOrdersPage() {
                 <div className="lg:col-span-4 space-y-6">
 
                   {/* Customer Information Card */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs space-y-3">
-                    <div className="flex items-center justify-between pb-3 border-b border-admin-borderLight">
+                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-brand-primary" />
-                        <h4 className="font-bold text-xs text-admin-text dark:text-white">مشخصات خریدار</h4>
+                        <User className="w-4 h-4 text-brand-primary dark:text-teal-400" />
+                        <h4 className="font-bold text-xs text-slate-900 dark:text-white">مشخصات خریدار</h4>
                       </div>
-                      <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-[10px] bg-teal-100 dark:bg-teal-900/60 text-brand-primary dark:text-teal-300 px-2 py-0.5 rounded-full font-bold">
                         خریدار فروشگاه
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 p-2 bg-admin-bg dark:bg-slate-800 rounded-xl">
-                      <div className="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-sm">
-                        {selectedOrder.customerEmail.charAt(0).toUpperCase()}
+                    <div className="flex items-center gap-3 p-2.5 bg-neutral-50/80 dark:bg-slate-800 rounded-xl border border-neutral-100 dark:border-slate-700/60">
+                      <div className="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        {selectedOrder.customerEmail ? selectedOrder.customerEmail.charAt(0).toUpperCase() : "U"}
                       </div>
                       <div className="min-w-0">
-                        <span className="font-bold text-xs text-admin-text block truncate select-all">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white block truncate select-all">
                           {selectedOrder.customerEmail}
                         </span>
-                        <span className="text-[10px] text-neutral-400 font-mono">
+                        <span className="text-[10px] text-neutral-500 dark:text-slate-400 font-mono">
                           {selectedOrder.customerPhone || "شماره ثبت نشده"}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-2 text-[11px] pt-1">
-                      <div className="flex justify-between items-center text-neutral-600">
+                      <div className="flex justify-between items-center text-neutral-600 dark:text-slate-400">
                         <span>روش پرداخت:</span>
-                        <span className="font-semibold text-black dark:text-white">
+                        <span className="font-semibold text-slate-900 dark:text-white">
                           {selectedOrder.paymentGateway === "zarinpal" ? "زرین‌پال (شتاب)" : "نکست‌پی"}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-neutral-600">
+                      <div className="flex justify-between items-center text-neutral-600 dark:text-slate-400">
                         <span>وضعیت دسترسی:</span>
-                        <span className="font-semibold text-emerald-700">تایید شده و فعال</span>
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">تایید شده و فعال</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Financial Summary */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs space-y-3">
-                    <h4 className="font-bold text-xs text-admin-text dark:text-white pb-2 border-b border-admin-borderLight dark:border-slate-800">
+                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs space-y-3">
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-white pb-2 border-b border-neutral-200 dark:border-slate-800">
                       خلاصه مالی و فاکتور
                     </h4>
 
                     <div className="space-y-2 text-xs">
-                      <div className="flex justify-between text-neutral-600">
+                      <div className="flex justify-between text-neutral-600 dark:text-slate-400">
                         <span>مبلغ اقلام (USD):</span>
-                        <span className="font-mono font-bold">${selectedOrder.totalPriceUsd.toFixed(2)}</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">${selectedOrder.totalPriceUsd.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-neutral-600">
+                      <div className="flex justify-between text-neutral-600 dark:text-slate-400">
                         <span>نرخ مبنای محاسبه:</span>
-                        <span className="font-mono font-bold">
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
                           {formatPrice(Math.round(settings.usdToRialRate / 10))} تومان
                         </span>
                       </div>
                       {selectedOrder.discountAppliedToman ? (
-                        <div className="flex justify-between text-emerald-600 font-semibold">
+                        <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
                           <span>تخفیف کوپن:</span>
                           <span className="font-mono">
                             -{formatNumber(selectedOrder.discountAppliedToman)} تومان
                           </span>
                         </div>
                       ) : null}
-                      <div className="pt-2 border-t border-admin-borderLight flex justify-between items-center font-bold">
-                        <span className="text-admin-text">مبلغ نهایی دریافتی:</span>
-                        <span className="text-brand-primary text-sm font-mono">
+                      <div className="pt-2 border-t border-neutral-200 dark:border-slate-800 flex justify-between items-center font-bold">
+                        <span className="text-slate-900 dark:text-white">مبلغ نهایی دریافتی:</span>
+                        <span className="text-brand-primary dark:text-teal-400 text-sm font-mono">
                           {formatPrice(selectedOrder.totalPriceToman)} تومان
                         </span>
                       </div>
@@ -1102,8 +1191,8 @@ export default function AdminOrdersPage() {
                   </div>
 
                   {/* Quick Admin Actions */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-admin-borderLight dark:border-slate-800 shadow-2xs space-y-3">
-                    <h4 className="font-bold text-xs text-admin-text dark:text-white pb-2 border-b border-admin-borderLight dark:border-slate-800">
+                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-2xs space-y-3">
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-white pb-2 border-b border-neutral-200 dark:border-slate-800">
                       اقدام سریع و تغییر وضعیت
                     </h4>
 
@@ -1155,8 +1244,8 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-white dark:bg-slate-900 px-6 py-3 border-t border-admin-borderLight dark:border-slate-800 flex items-center justify-between shrink-0">
-              <span className="text-[11px] text-neutral-400">
+            <div className="bg-neutral-50/80 dark:bg-slate-900 px-6 py-3 border-t border-neutral-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-neutral-500 dark:text-slate-400">
                 سیستم اتوماسیون ارزان اکانت • همگام با پنل HypeStore Control Center
               </span>
               <button
@@ -1169,6 +1258,14 @@ export default function AdminOrdersPage() {
 
           </div>
         </div>
+      )}
+
+      {/* Official Iranian Printable Invoice Modal */}
+      {invoiceOrder && (
+        <OrderInvoiceModal
+          order={invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+        />
       )}
     </div>
   );
