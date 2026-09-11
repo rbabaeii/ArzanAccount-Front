@@ -152,14 +152,39 @@ export default function Header() {
           </button>
 
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 bg-brand-primary text-white flex items-center justify-center font-black text-base sm:text-xl rounded-xl shadow-sm group-hover:bg-brand-primaryDark transition-colors shrink-0">
-              ار
-            </div>
+            {settings.siteLogo || settings.siteLogoDark ? (
+              <div className="relative flex items-center shrink-0">
+                {settings.siteLogo && (
+                  <img
+                    src={settings.siteLogo}
+                    alt={settings.siteName || "ارزان اکانت"}
+                    className={`h-9 sm:h-11 w-auto max-w-[140px] object-contain ${
+                      settings.siteLogoDark ? "dark:hidden" : ""
+                    }`}
+                  />
+                )}
+                {settings.siteLogoDark ? (
+                  <img
+                    src={settings.siteLogoDark}
+                    alt={settings.siteName || "ارزان اکانت"}
+                    className={`h-9 sm:h-11 w-auto max-w-[140px] object-contain ${
+                      settings.siteLogo ? "hidden dark:block" : ""
+                    }`}
+                  />
+                ) : null}
+              </div>
+            ) : (
+              <div className="w-9 h-9 sm:w-11 sm:h-11 bg-brand-primary text-white flex items-center justify-center font-black text-base sm:text-xl rounded-xl shadow-sm group-hover:bg-brand-primaryDark transition-colors shrink-0">
+                {settings.siteName ? settings.siteName.substring(0, 2) : "ار"}
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-base sm:text-xl font-black tracking-tight text-brand-dark dark:text-white whitespace-nowrap">
-                ارزان اکانت
+                {settings.siteName || "ارزان اکانت"}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-brand-muted dark:text-slate-400 font-medium hidden sm:block">مرجع خرید مطمئن اشتراک‌های دیجیتال</span>
+              <span className="text-[10px] sm:text-[11px] text-brand-muted dark:text-slate-400 font-medium hidden sm:block">
+                {settings.siteTagline || "مرجع خرید مطمئن اشتراک‌های دیجیتال"}
+              </span>
             </div>
           </Link>
         </div>

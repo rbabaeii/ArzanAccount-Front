@@ -386,4 +386,13 @@ export const initialSettings: SystemSettings = {
   enableAutomaticSync: true,
   maxPurchaseRatioDenominator: 3,
   purchaseRatioExemptionThreshold: 10,
+  siteLogo: "",
+  siteLogoDark: "",
+  siteFavicon: "",
+  siteTagline: "مرجع تخصصی خرید انواع اکانت و اشتراک‌های بین‌المللی با تحویل فوری",
+  siteDescription: "خرید اشتراک پریمیوم اسپاتیفای، چت جی پی تی، نتفلیکس، اپل موزیک و سرویس‌های هوش مصنوعی با کمترین قیمت و ضمانت رسمی.",
+  sitePhone: "۰۲۱-۸۸۸۸۴۳۲۱",
+  siteEmail: "support@arzanaccount.com",
+  siteInstagram: "arzanaccount_official",
+  siteEnamad: "",
 };

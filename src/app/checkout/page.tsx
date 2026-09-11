@@ -290,10 +290,11 @@ export default function CheckoutPage() {
     });
 
     let backendOrderNumber: string | undefined;
+    let backendRes: any;
 
     // Backend registration (creates DB order & dispatches hybrid or standard receipt email in background)
     try {
-      const backendRes = await api.createBackendOrder({
+      backendRes = await api.createBackendOrder({
         customerEmail: email,
         customerPhone: phone,
         customerLink: targetAccountLink || undefined,
@@ -324,6 +325,7 @@ export default function CheckoutPage() {
 
     // Local context sync
     const newOrder = createOrder({
+      id: backendRes?.id,
       orderNumber: backendOrderNumber,
       customerEmail: email,
       customerPhone: phone,

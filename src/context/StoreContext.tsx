@@ -73,8 +73,7 @@ interface StoreContextType {
   applyCoupon: (code: string) => { success: boolean; message: string };
   removeCoupon: () => void;
 
-  // Order Actions
-  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string }) => Order;
+  createOrder: (orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string; id?: string }) => Order;
   updateOrderStatus: (
     orderId: string,
     status: Order["status"],
@@ -264,6 +263,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               backendSettings.orderCashbackPercent !== undefined && backendSettings.orderCashbackPercent !== null
                 ? Number(backendSettings.orderCashbackPercent)
                 : (prev.orderCashbackPercent ?? 10),
+            siteLogo: backendSettings.siteLogo ?? prev.siteLogo,
+            siteLogoDark: backendSettings.siteLogoDark ?? prev.siteLogoDark,
+            siteFavicon: backendSettings.siteFavicon ?? prev.siteFavicon,
+            siteTagline: backendSettings.siteTagline || prev.siteTagline,
+            siteDescription: backendSettings.siteDescription || prev.siteDescription,
+            sitePhone: backendSettings.sitePhone || prev.sitePhone,
+            siteEmail: backendSettings.siteEmail || prev.siteEmail,
+            siteInstagram: backendSettings.siteInstagram || prev.siteInstagram,
+            siteEnamad: backendSettings.siteEnamad ?? prev.siteEnamad,
           };
           try {
             localStorage.setItem("arzan_settings_v2", JSON.stringify(next));
@@ -514,8 +522,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         // Refresh logs & products with new calculations
         refreshFromBackend();
       }
+
+      if (
+        updates.siteLogo !== undefined ||
+        updates.siteLogoDark !== undefined ||
+        updates.siteFavicon !== undefined ||
+        updates.siteName !== undefined ||
+        updates.siteTagline !== undefined ||
+        updates.siteDescription !== undefined ||
+        updates.sitePhone !== undefined ||
+        updates.siteEmail !== undefined ||
+        updates.supportTelegram !== undefined ||
+        updates.siteInstagram !== undefined ||
+        updates.siteEnamad !== undefined
+      ) {
+        await api.updateBrandingSettings({
+          siteLogo: updates.siteLogo,
+          siteLogoDark: updates.siteLogoDark,
+          siteFavicon: updates.siteFavicon,
+          siteName: updates.siteName,
+          siteTagline: updates.siteTagline,
+          siteDescription: updates.siteDescription,
+          sitePhone: updates.sitePhone,
+          siteEmail: updates.siteEmail,
+          supportTelegram: updates.supportTelegram,
+          siteInstagram: updates.siteInstagram,
+          siteEnamad: updates.siteEnamad,
+          user: "مدیر سیستم (پنل تنظیمات)",
+        });
+      }
     } catch (error) {
-      console.error("Error updating currency and stock quota settings on backend:", error);
+      console.error("Error updating settings on backend:", error);
     }
   };
 
@@ -750,12 +787,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Orders
   const createOrder = (
-    orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { orderNumber?: string }
+    orderData: Omit<Order, "id" | "orderNumber" | "createdAt"> & { id?: string; orderNumber?: string }
   ): Order => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newOrder: Order = {
       ...orderData,
-      id: `ord-${Date.now()}`,
+      id: orderData.id || `ord-${Date.now()}`,
       orderNumber: orderData.orderNumber || `ARZ-${randomSuffix}`,
       createdAt: "هم‌اکنون",
     };
@@ -880,17 +917,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     cardNumber?: string,
     sheba?: string
   ): Promise<{ success: boolean; message: string }> => {
+    const targetOrder = orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+    const backendTargetId = targetOrder?.orderNumber || orderId;
+
     try {
-      await api.requestRefund(orderId, reason, cardNumber, sheba);
+      await api.requestRefund(backendTargetId, reason, cardNumber, sheba);
     } catch (err) {
       console.warn("Backend requestRefund notice:", err);
+      if (targetOrder?.id && targetOrder.id !== backendTargetId) {
+        try {
+          await api.requestRefund(targetOrder.id, reason, cardNumber, sheba);
+        } catch {}
+      }
     }
 
     const updated = orders.map((o) =>
       o.id === orderId || o.orderNumber === orderId
         ? {
             ...o,
-            status: "refund_requested" as const,
+            status: "cancelled" as const,
             refundReason: reason,
             refundCardNumber: cardNumber,
             refundIban: sheba,

@@ -572,13 +572,25 @@ export default function AdminOrdersPage() {
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : order.status === "processing"
                             ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : order.status === "refund_requested" || order.status === "cancelled"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : order.status === "refunded"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
                             : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
                         <option value="delivered">تحویل شده</option>
                         <option value="processing">در حال پردازش</option>
-                        <option value="failed">ناموفق / لغو</option>
+                        <option value="cancelled">لغو شده (ناموفق)</option>
+                        <option value="refund_requested">درخواست عودت وجه</option>
+                        <option value="refunded">عودت داده شده</option>
+                        <option value="failed">ناموفق / خطا</option>
                       </select>
+                      {order.refundReason && (
+                        <div className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/60 line-clamp-1">
+                          دلیل لغو: {order.refundReason}
+                        </div>
+                      )}
                       {order.approvedByAdminName && (
                         <div className="text-[10px] text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />

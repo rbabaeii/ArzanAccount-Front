@@ -16,9 +16,12 @@ interface ApiResponse<T> {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const defaultHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const defaultHeaders: Record<string, string> = {};
+  if (typeof FormData !== "undefined" && !(options.body instanceof FormData)) {
+    defaultHeaders["Content-Type"] = "application/json";
+  } else if (typeof FormData === "undefined") {
+    defaultHeaders["Content-Type"] = "application/json";
+  }
 
   // Attach JWT token from localStorage if present
   if (typeof window !== "undefined") {
@@ -75,8 +78,26 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
-  // Settings & System
   getSettings: () => request<any>("/settings"),
+
+  updateBrandingSettings: (data: {
+    siteLogo?: string;
+    siteLogoDark?: string;
+    siteFavicon?: string;
+    siteName?: string;
+    siteTagline?: string;
+    siteDescription?: string;
+    sitePhone?: string;
+    siteEmail?: string;
+    supportTelegram?: string;
+    siteInstagram?: string;
+    siteEnamad?: string;
+    user?: string;
+  }) =>
+    request<any>("/settings/branding", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 
   updateCurrency: (params: {
     rate?: number;

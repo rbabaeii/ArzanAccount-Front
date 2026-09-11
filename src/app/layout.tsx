@@ -4,6 +4,7 @@ import { StoreProvider } from "@/context/StoreContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import LoginModal from "@/components/auth/LoginModal";
+import DynamicBrandHead from "@/components/common/DynamicBrandHead";
 
 export const metadata: Metadata = {
   title: "ارزان اکانت | خرید ارزان و آنی انواع اکانت و اشتراک دیجیتال",
@@ -45,6 +46,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <StoreProvider>
+              <DynamicBrandHead />
               {children}
               <LoginModal />
             </StoreProvider>

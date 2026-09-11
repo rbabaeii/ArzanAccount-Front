@@ -141,5 +141,16 @@ export interface SystemSettings {
   lastCurrencySyncTime?: string;
   lastCurrencyPriceToman?: number;
   lastCurrencyChangePercent?: number;
+
+  // Visual Branding & Store Identity
+  siteLogo?: string;
+  siteLogoDark?: string;
+  siteFavicon?: string;
+  siteTagline?: string;
+  siteDescription?: string;
+  sitePhone?: string;
+  siteEmail?: string;
+  siteInstagram?: string;
+  siteEnamad?: string;
 }
 

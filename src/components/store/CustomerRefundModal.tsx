@@ -71,7 +71,7 @@ export const CustomerRefundModal: React.FC<CustomerRefundModalProps> = ({
 
     try {
       const res = await requestRefund(
-        order.id,
+        order.orderNumber || order.id,
         reason.trim(),
         cleanCard,
         iban.trim() || undefined

@@ -54,9 +54,9 @@ export default function AdminRefundsPage() {
       const res = await api.getRefundRequests(user?.role);
       const serverRefunds = Array.isArray(res) ? res : [];
 
-      // Combine with local mock orders if any are marked as refund_requested or refunded
+      // Combine with local mock orders if any are marked as refund_requested or refunded or cancelled with reason
       const localRefundOrders = orders.filter(
-        (o) => o.status === "refund_requested" || o.status === "refunded" || o.refundReason
+        (o) => o.status === "refund_requested" || o.status === "refunded" || (o.status === "cancelled" && o.refundReason) || o.refundReason
       );
 
       const mergedMap = new Map();
@@ -72,7 +72,7 @@ export default function AdminRefundsPage() {
       console.warn("Failed to load backend refund requests:", err);
       // Fallback to local store
       const localRefundOrders = orders.filter(
-        (o) => o.status === "refund_requested" || o.status === "refunded" || o.refundReason
+        (o) => o.status === "refund_requested" || o.status === "refunded" || (o.status === "cancelled" && o.refundReason) || o.refundReason
       );
       setRefunds(localRefundOrders);
     } finally {
