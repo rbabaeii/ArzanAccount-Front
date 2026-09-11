@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { formatPrice } from "@/lib/format";
+import { validateIranianCardNumber, validateIranianSheba, formatCardNumber, formatSheba } from "@/lib/iranian-banks";
 import {
   Wallet,
   ArrowUpRight,
@@ -23,6 +24,8 @@ import {
   FileText,
   X,
   Check,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 
 export default function AdminWithdrawalsPage() {
@@ -37,8 +40,16 @@ export default function AdminWithdrawalsPage() {
   const [selectedReq, setSelectedReq] = useState<any | null>(null);
   const [modalAction, setModalAction] = useState<"APPROVE" | "REJECT" | null>(null);
   const [bankTrackingCode, setBankTrackingCode] = useState("");
+  const [bankReceiptUrl, setBankReceiptUrl] = useState("");
   const [adminNote, setAdminNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const copyToClipboard = (text: string, label: string) => {
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text);
+      showToast("success", `${label} با موفقیت کپی شد: ${text}`);
+    }
+  };
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -70,6 +81,7 @@ export default function AdminWithdrawalsPage() {
     setSelectedReq(req);
     setModalAction(action);
     setBankTrackingCode("");
+    setBankReceiptUrl("");
     setAdminNote("");
   };
 
@@ -99,8 +111,11 @@ export default function AdminWithdrawalsPage() {
       const res = await api.processWithdrawal(selectedReq.id, {
         action: modalAction,
         bankTrackingCode: bankTrackingCode.trim() || undefined,
+        bankReceiptUrl: bankReceiptUrl.trim() || undefined,
         adminNote: adminNote.trim() || undefined,
         adminName: currentAdmin?.name || "مدیر مالی",
+        adminId: currentAdmin?.id,
+        role: currentAdmin?.role || "SUPER_ADMIN",
       });
 
       showToast("success", res?.message || (modalAction === "APPROVE" ? "درخواست تسویه تایید شد." : "درخواست تسویه رد شد."));
@@ -316,6 +331,10 @@ export default function AdminWithdrawalsPage() {
                   const totalWallet = req.user?.walletBalanceToman ?? 0;
                   const isExceedingDirect = req.amountToman > directDeposit;
 
+                  const detectedBank = req.bankName || (req.sheba ? validateIranianSheba(req.sheba).bankName : (req.cardNumber ? validateIranianCardNumber(req.cardNumber).bankName : null));
+                  const cleanSheba = req.sheba ? req.sheba.replace(/[\s-]/g, '').toUpperCase() : '';
+                  const cleanCard = req.cardNumber ? req.cardNumber.replace(/\D/g, '') : '';
+
                   return (
                     <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       {/* ID & Date */}
@@ -367,13 +386,13 @@ export default function AdminWithdrawalsPage() {
                       <td className="py-4">
                         <div className="space-y-1 text-[11px]">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-slate-500">واریز مستقیم (سقف تسویه):</span>
+                            <span className="text-slate-500">واریز مستقیم:</span>
                             <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                               {formatPrice(directDeposit)} ت
                             </strong>
                           </div>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-slate-500">بونوس کش‌بک (خرید سایت):</span>
+                            <span className="text-slate-500">بونوس کش‌بک:</span>
                             <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">
                               {formatPrice(cashbackBonus)} ت
                             </span>
@@ -387,22 +406,43 @@ export default function AdminWithdrawalsPage() {
                         </div>
                       </td>
 
-                      {/* Bank Account */}
+                      {/* Destination Bank Account */}
                       <td className="py-4">
                         <div className="space-y-1">
-                          {req.sheba ? (
-                            <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 dir-ltr text-left">
-                              {req.sheba}
+                          {detectedBank && (
+                            <div className="inline-flex items-center gap-1 text-[10px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800/60 mb-0.5">
+                              <CreditCard className="w-3 h-3" />
+                              <span>{detectedBank}</span>
                             </div>
-                          ) : req.cardNumber ? (
-                            <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 dir-ltr text-left">
-                              {req.cardNumber}
+                          )}
+                          {req.sheba && (
+                            <div className="flex items-center gap-1 font-mono text-xs font-bold text-slate-800 dark:text-slate-200 dir-ltr text-left">
+                              <span>{req.sheba}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(cleanSheba, "شماره شبا")}
+                                className="text-slate-400 hover:text-teal-600 dark:hover:text-teal-300 p-0.5 transition-colors cursor-pointer"
+                                title="کپی شماره شبا جهت پایا/ساتنا"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
                             </div>
-                          ) : (
-                            <span className="text-slate-400">—</span>
+                          )}
+                          {req.cardNumber && (
+                            <div className="flex items-center gap-1 font-mono text-xs text-slate-700 dark:text-slate-300 dir-ltr text-left">
+                              <span>{formatCardNumber(req.cardNumber)}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(cleanCard, "شماره کارت")}
+                                className="text-slate-400 hover:text-teal-600 dark:hover:text-teal-300 p-0.5 transition-colors cursor-pointer"
+                                title="کپی شماره کارت ۱۶ رقمی"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
                           )}
                           {req.accountOwnerName && (
-                            <span className="text-[10px] text-slate-500 block">
+                            <span className="text-[10px] text-slate-500 block font-medium">
                               به نام: {req.accountOwnerName}
                             </span>
                           )}
@@ -423,26 +463,45 @@ export default function AdminWithdrawalsPage() {
                           </span>
                         )}
                         {req.status === "APPROVED" && (
-                          <div>
+                          <div className="space-y-1">
                             <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
                               <CheckCircle2 className="w-3 h-3" />
                               <span>واریز شد</span>
                             </span>
                             {req.bankTrackingCode && (
-                              <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold mt-1">
-                                پیگیری: {req.bankTrackingCode}
+                              <div className="flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                                <span>پیگیری: {req.bankTrackingCode}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(req.bankTrackingCode, "کد رهگیری")}
+                                  className="text-emerald-600 hover:text-emerald-800 p-0.5 cursor-pointer"
+                                  title="کپی کد رهگیری"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </button>
                               </div>
+                            )}
+                            {req.bankReceiptUrl && (
+                              <a
+                                href={req.bankReceiptUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] text-teal-600 dark:text-teal-400 hover:underline"
+                              >
+                                <ExternalLink className="w-2.5 h-2.5" />
+                                <span>مشاهده رسید</span>
+                              </a>
                             )}
                           </div>
                         )}
                         {req.status === "REJECTED" && (
-                          <div>
+                          <div className="space-y-1">
                             <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full text-[10px] font-bold">
                               <XCircle className="w-3 h-3" />
-                              <span>رد شده</span>
+                              <span>رد شده (وجه عودت یافت)</span>
                             </span>
                             {req.adminNote && (
-                              <div className="text-[10px] text-rose-600 dark:text-rose-400 mt-1 max-w-xs">
+                              <div className="text-[10px] text-rose-600 dark:text-rose-400 max-w-xs leading-relaxed">
                                 {req.adminNote}
                               </div>
                             )}
@@ -456,14 +515,14 @@ export default function AdminWithdrawalsPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleOpenProcessModal(req, "APPROVE")}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <Check className="w-3.5 h-3.5" />
                               <span>تایید واریز</span>
                             </button>
                             <button
                               onClick={() => handleOpenProcessModal(req, "REJECT")}
-                              className="bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
+                              className="bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <X className="w-3.5 h-3.5" />
                               <span>رد</span>
@@ -521,82 +580,129 @@ export default function AdminWithdrawalsPage() {
                   </strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">سقف واریز مستقیم کاربر:</span>
-                  <span className="font-mono font-bold text-emerald-600">
-                    {formatPrice(selectedReq.user?.directDepositBalance || 0)} تومان
+                  <span className="text-slate-500">بانک مقصد:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    {selectedReq.bankName || (selectedReq.sheba ? validateIranianSheba(selectedReq.sheba).bankName : (selectedReq.cardNumber ? validateIranianCardNumber(selectedReq.cardNumber).bankName : "بانک شتاب"))}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200 dark:border-slate-700">
                   <span className="text-slate-500">شماره شبا / کارت:</span>
-                  <span className="font-mono dir-ltr">{selectedReq.sheba || selectedReq.cardNumber || "—"}</span>
+                  <div className="flex items-center gap-1 font-mono dir-ltr">
+                    <span>{selectedReq.sheba || selectedReq.cardNumber || "—"}</span>
+                    {(selectedReq.sheba || selectedReq.cardNumber) && (
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selectedReq.sheba?.replace(/[\s-]/g, '') || selectedReq.cardNumber?.replace(/\D/g, ''), "حساب مقصد")}
+                        className="text-teal-600 hover:text-teal-700 p-0.5 cursor-pointer"
+                        title="کپی"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+                {selectedReq.accountOwnerName && (
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">صاحب حساب:</span>
+                    <span>{selectedReq.accountOwnerName}</span>
+                  </div>
+                )}
               </div>
 
               {modalAction === "APPROVE" ? (
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    کد رهگیری / ارجاع بانکی (پایا یا ساتنا):
-                  </label>
-                  <input
-                    type="text"
-                    value={bankTrackingCode}
-                    onChange={(e) => setBankTrackingCode(e.target.value)}
-                    placeholder="مثلاً PAYA-9482017462"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr font-bold outline-none"
-                    required
-                  />
-                  <span className="text-[10px] text-neutral-400 mt-1 block">
-                    این کد در پنل کاربر و تاریخچه تراکنش‌های وی درج خواهد شد.
-                  </span>
-                </div>
-              ) : (
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    علت رد درخواست (جهت نمایش به کاربر):
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={adminNote}
-                    onChange={(e) => setAdminNote(e.target.value)}
-                    placeholder="لطفاً علت رد درخواست را بنویسید (مثلاً: عدم تطابق نام صاحب کارت، درخواست بیش از موجودی واریز نقدی و...)"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
-                    required
-                  />
-                </div>
-              )}
+                <>
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                    با تایید این درخواست، وضعیت تسویه نهایی شده و ایمیل رسمی حاوی کد رهگیری بانکی برای کاربر ارسال می‌شود.
+                  </div>
 
-              {modalAction === "APPROVE" && (
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    یادداشت اختیاری مدیر:
-                  </label>
-                  <input
-                    type="text"
-                    value={adminNote}
-                    onChange={(e) => setAdminNote(e.target.value)}
-                    placeholder="پیام یا توضیح تکمیلی در صورت نیاز..."
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
-                  />
-                </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      کد رهگیری / شماره ارجاع بانکی (الزامی):
+                    </label>
+                    <input
+                      type="text"
+                      value={bankTrackingCode}
+                      onChange={(e) => setBankTrackingCode(e.target.value)}
+                      placeholder="مثلاً PAYA-9482017462 یا شماره ارجاع پایا"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2.5 px-3 font-mono text-left dir-ltr font-bold outline-none"
+                      required
+                    />
+                    <span className="text-[10px] text-neutral-400 mt-1 block">
+                      این کد در رسید مشتری و سامانه رهگیری بانک مرکزی نمایش داده خواهد شد.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      لینک رسید یا تصویر فیش واریزی (اختیاری):
+                    </label>
+                    <input
+                      type="url"
+                      value={bankReceiptUrl}
+                      onChange={(e) => setBankReceiptUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 font-mono text-left dir-ltr outline-none text-[11px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      یادداشت اختیاری مدیر:
+                    </label>
+                    <input
+                      type="text"
+                      value={adminNote}
+                      onChange={(e) => setAdminNote(e.target.value)}
+                      placeholder="پیام یا توضیح تکمیلی در صورت نیاز..."
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-[11px] text-rose-800 dark:text-rose-200 space-y-1">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>عودت آنی وجه به کیف پول کاربر</span>
+                    </div>
+                    <p className="leading-relaxed opacity-95">
+                      با ثبت رد این درخواست، مبلغ <b>{formatPrice(selectedReq.amountToman)} تومان</b> به صورت خودکار و اتمیک به موجودی قابل تسویه و کیف پول کاربر بازگردانده شده و ایمیل رسمی دلیل رد برای کاربر ارسال می‌گردد.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      علت رد درخواست (الزامی - جهت نمایش و ایمیل به کاربر):
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={adminNote}
+                      onChange={(e) => setAdminNote(e.target.value)}
+                      placeholder="لطفاً علت رد درخواست را بنویسید (مثلاً: عدم تطابق شماره شبا با نام دارنده حساب، درخواست خارج از سقف مجاز، مسدودی حساب مقصد و...)"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl py-2 px-3 outline-none"
+                      required
+                    />
+                  </div>
+                </>
               )}
 
               <div className="pt-2 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 cursor-pointer"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 ${
+                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer ${
                     modalAction === "APPROVE" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                   }`}
                 >
                   {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  <span>{modalAction === "APPROVE" ? "تایید و ثبت نهایی واریز" : "ثبت رد درخواست"}</span>
+                  <span>{modalAction === "APPROVE" ? "تایید و ثبت نهایی واریز" : "ثبت رد و عودت وجه"}</span>
                 </button>
               </div>
             </form>

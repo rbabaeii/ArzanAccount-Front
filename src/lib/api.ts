@@ -515,11 +515,12 @@ export const api = {
   getUserWithdrawals: (userId: string) =>
     request<any[]>(`/users/${userId}/withdrawals`),
 
-  getAdminWithdrawals: (params?: { status?: string; limit?: number; offset?: number }) => {
+  getAdminWithdrawals: (params?: { status?: string; limit?: number; offset?: number; role?: string }) => {
     const q = new URLSearchParams();
     if (params?.status && params.status !== "all") q.set("status", params.status);
     if (params?.limit) q.set("limit", String(params.limit));
     if (params?.offset) q.set("offset", String(params.offset));
+    if (params?.role) q.set("role", params.role);
     const qs = q.toString();
     return request<{ requests: any[]; totalCount: number }>(`/users/admin/withdrawals-list${qs ? `?${qs}` : ""}`);
   },
@@ -530,7 +531,10 @@ export const api = {
       action: "APPROVE" | "REJECT";
       adminNote?: string;
       bankTrackingCode?: string;
+      bankReceiptUrl?: string;
       adminName?: string;
+      adminId?: string;
+      role?: string;
     }
   ) =>
     request<any>(`/users/admin/withdrawals/${id}/process`, {
