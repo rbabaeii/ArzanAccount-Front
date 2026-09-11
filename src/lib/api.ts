@@ -603,11 +603,41 @@ export const api = {
       body: JSON.stringify({ refundReason, refundCardNumber, refundIban }),
     }),
 
-  updateOrderStatus: (orderId: string, status: string, adminName = "مدیر سیستم", role = "SUPER_ADMIN") =>
-    request<any>(`/orders/${orderId}/status`, {
+  updateOrderStatus: (
+    orderId: string,
+    dataOrStatus:
+      | string
+      | {
+          status: string;
+          adminName?: string;
+          adminId?: string;
+          adminPhone?: string;
+          deliveredAccounts?: string[];
+          role?: string;
+          notes?: string;
+        },
+    adminName = "مدیر سیستم",
+    role = "SUPER_ADMIN"
+  ) => {
+    let body: any;
+    if (typeof dataOrStatus === "string") {
+      body = { status: dataOrStatus, adminName, role };
+    } else {
+      body = {
+        status: dataOrStatus.status,
+        adminName: dataOrStatus.adminName || adminName,
+        adminId: dataOrStatus.adminId,
+        adminPhone: dataOrStatus.adminPhone,
+        deliveredAccounts: dataOrStatus.deliveredAccounts,
+        notes: dataOrStatus.notes,
+        role: dataOrStatus.role || role,
+      };
+    }
+    return request<any>(`/orders/${orderId}/status`, {
       method: "PUT",
-      body: JSON.stringify({ status, adminName, role }),
-    }),
+      body: JSON.stringify(body),
+    });
+  },
 
   reindexSearch: () =>
     request<any>("/search/reindex", {

@@ -150,6 +150,7 @@ export default function AdminRefundsPage() {
           refundReceiptUrl: receiptUrl.trim() || undefined,
           refundCardNumber: selectedOrder.refundCardNumber,
           refundIban: selectedOrder.refundIban,
+          customerEmail: selectedOrder.customerEmail,
           adminId: user?.id,
           adminName: user?.name || "مدیر مالی",
         },
@@ -165,7 +166,7 @@ export default function AdminRefundsPage() {
       );
 
       const methodLabel = refundMethod === "wallet" ? "شارژ کیف پول سایت" : "واریز به کارت بانکی";
-      showToast("success", `تسویه عودت وجه (${methodLabel}) برای سفارش ${selectedOrder.orderNumber} با موفقیت ثبت شد.`);
+      showToast("success", `تسویه عودت وجه (${methodLabel}) برای سفارش ${selectedOrder.orderNumber} با موفقیت ثبت شد و ایمیل اطلاع‌رسانی برای خریدار ارسال گردید.`);
       setSelectedOrder(null);
       fetchRefunds();
     } catch (err: any) {

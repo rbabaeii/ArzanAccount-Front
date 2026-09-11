@@ -78,8 +78,8 @@ interface StoreContextType {
     orderId: string,
     status: Order["status"],
     accounts?: string[],
-    adminInfo?: { id?: string; name?: string; phone?: string }
-  ) => void;
+    adminInfo?: { id?: string; name?: string; phone?: string; role?: string }
+  ) => Promise<void> | void;
   addAdminAuditLog: (log: Omit<AuditLog, "id" | "timestamp">) => void;
   getMaxAllowedPurchase: (product: Product) => number;
   addCoupon: (coupon: Omit<Coupon, "id">) => void;
@@ -147,6 +147,32 @@ function mapBackendCategory(bc: any): Category {
 }
 
 function mapBackendOrder(bo: any): Order {
+  let deliveredAccounts: string[] = [];
+  if (Array.isArray(bo.deliveredAccounts)) {
+    deliveredAccounts = bo.deliveredAccounts;
+  } else if (typeof bo.deliveredAccounts === "string") {
+    try {
+      if (bo.deliveredAccounts.startsWith("[")) {
+        deliveredAccounts = JSON.parse(bo.deliveredAccounts);
+      } else if (bo.deliveredAccounts.trim()) {
+        deliveredAccounts = [bo.deliveredAccounts];
+      }
+    } catch {
+      deliveredAccounts = [bo.deliveredAccounts];
+    }
+  }
+
+  let items: any[] = [];
+  if (Array.isArray(bo.items)) {
+    items = bo.items;
+  } else if (typeof bo.items === "string") {
+    try {
+      items = JSON.parse(bo.items);
+    } catch {
+      items = [];
+    }
+  }
+
   return {
     id: bo.id,
     orderNumber: bo.orderNumber,
@@ -163,8 +189,8 @@ function mapBackendOrder(bo: any): Order {
     totalPriceToman: bo.totalPriceToman,
     totalPriceUsd: bo.totalPriceUsd || 0,
     status: (bo.status as any) || "processing",
-    deliveredAccounts: Array.isArray(bo.deliveredAccounts) ? bo.deliveredAccounts : [],
-    paymentGateway: bo.gateway || "zarinpal",
+    deliveredAccounts,
+    paymentGateway: bo.paymentGateway || bo.gateway || "zarinpal",
     approvedByAdminId: bo.approvedByAdminId || undefined,
     approvedByAdminName: bo.approvedByAdminName || undefined,
     approvedByAdminPhone: bo.approvedByAdminPhone || undefined,
@@ -179,25 +205,27 @@ function mapBackendOrder(bo: any): Order {
     refundReason: bo.refundReason || undefined,
     refundCardNumber: bo.refundCardNumber || undefined,
     refundIban: bo.refundIban || undefined,
-    refundAmountToman: bo.refundAmount || undefined,
-    refundTrackingCode: bo.refundTrackingNumber || undefined,
-    refundedAt: bo.refundDate
+    refundAmountToman: bo.refundAmountToman ?? bo.refundAmount ?? undefined,
+    refundReceiptUrl: bo.refundReceiptUrl || undefined,
+    refundTrackingCode: bo.refundTrackingCode || bo.refundTrackingNumber || undefined,
+    refundMethod: (bo.refundMethod as any) || undefined,
+    refundRejectionReason: bo.refundRejectionReason || undefined,
+    refundedByAdminName: bo.refundedByAdminName || undefined,
+    refundedAt: bo.refundedAt || bo.refundDate
       ? toEnglishDigits(
           new Intl.DateTimeFormat("fa-IR", {
             dateStyle: "short",
             timeStyle: "short",
-          }).format(new Date(bo.refundDate))
+          }).format(new Date(bo.refundedAt || bo.refundDate))
         )
       : undefined,
-    items: Array.isArray(bo.items)
-      ? bo.items.map((it: any) => ({
-          productId: it.productId || "prod-1",
-          productTitle: it.productTitle || "محصول دیجیتال",
-          quantity: it.quantity || 1,
-          priceToman: it.priceToman || 0,
-          priceUsd: it.priceUsd || 0,
-        }))
-      : [],
+    items: items.map((it: any) => ({
+      productId: it.productId || "prod-1",
+      productTitle: it.productTitle || "محصول دیجیتال",
+      quantity: it.quantity || 1,
+      priceToman: it.priceToman || 0,
+      priceUsd: it.priceUsd || 0,
+    })),
   };
 }
 
@@ -852,14 +880,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return newOrder;
   };
 
-  const updateOrderStatus = (
+  const updateOrderStatus = async (
     orderId: string,
     status: Order["status"],
     accounts?: string[],
-    adminInfo?: { id?: string; name?: string; phone?: string }
+    adminInfo?: { id?: string; name?: string; phone?: string; role?: string }
   ) => {
+    // 1. Optimistically update local state & localStorage
     const updated = orders.map((o) => {
-      if (o.id === orderId) {
+      if (o.id === orderId || o.orderNumber === orderId) {
         const isNowDelivered = status === "delivered" && o.status !== "delivered";
         return {
           ...o,
@@ -875,9 +904,48 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
     saveOrders(updated);
 
-    const order = orders.find((o) => o.id === orderId);
+    const order = orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+
+    // 2. Persist to Backend API / PostgreSQL Database
+    const backendTargetId = order?.id || order?.orderNumber || orderId;
+    let effectiveRole = adminInfo?.role || "SUPER_ADMIN";
+    if (!adminInfo?.role && typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("arzan_cached_user");
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u.role) effectiveRole = u.role;
+        }
+      } catch {}
+    }
+
+    try {
+      await api.updateOrderStatus(backendTargetId, {
+        status,
+        adminName: adminInfo?.name || "مدیر سیستم",
+        adminId: adminInfo?.id,
+        adminPhone: adminInfo?.phone,
+        deliveredAccounts: accounts || order?.deliveredAccounts,
+        role: effectiveRole,
+      });
+    } catch (err) {
+      console.warn("Backend updateOrderStatus notice for", backendTargetId, err);
+      if (order?.orderNumber && order.orderNumber !== backendTargetId) {
+        try {
+          await api.updateOrderStatus(order.orderNumber, {
+            status,
+            adminName: adminInfo?.name || "مدیر سیستم",
+            adminId: adminInfo?.id,
+            adminPhone: adminInfo?.phone,
+            deliveredAccounts: accounts || order?.deliveredAccounts,
+            role: effectiveRole,
+          });
+        } catch {}
+      }
+    }
+
+    // 3. Automatically send order delivery email with credentials
     if (order && (status === "delivered" || (accounts && accounts.length > 0))) {
-      // Automatically send order delivery email with credentials
       api.sendOrderReceiptEmail({
         orderNumber: order.orderNumber,
         customerName: order.customerEmail.split("@")[0],
@@ -895,6 +963,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         totalPriceUsd: order.totalPriceUsd,
       }).catch((err) => console.warn("Could not dispatch receipt email:", err));
     }
+
+    // 4. Audit Log
     if (order && adminInfo?.name) {
       const isDelivered = status === "delivered";
       const newLog: AuditLog = {

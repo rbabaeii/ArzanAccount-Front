@@ -189,6 +189,7 @@ export default function AdminOrdersPage() {
       id: user?.id,
       name: user?.name,
       phone: user?.phone,
+      role: user?.role || "SUPER_ADMIN",
     };
 
     updateOrderStatus(selectedOrder.id, selectedOrder.status, accounts, adminInfo);
@@ -210,6 +211,7 @@ export default function AdminOrdersPage() {
       id: user?.id,
       name: user?.name,
       phone: user?.phone,
+      role: user?.role || "SUPER_ADMIN",
     };
     updateOrderStatus(selectedOrder.id, status, undefined, adminInfo);
     setSelectedOrder({
@@ -564,7 +566,7 @@ export default function AdminOrdersPage() {
                       <select
                         value={order.status}
                         onChange={(e) => {
-                          const adminInfo = { id: user?.id, name: user?.name, phone: user?.phone };
+                          const adminInfo = { id: user?.id, name: user?.name, phone: user?.phone, role: user?.role || "SUPER_ADMIN" };
                           updateOrderStatus(order.id, e.target.value as Order["status"], undefined, adminInfo);
                         }}
                         className={`text-xs font-bold py-1 px-2.5 rounded-lg border outline-none cursor-pointer ${
