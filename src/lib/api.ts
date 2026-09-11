@@ -338,6 +338,29 @@ export const api = {
       body: JSON.stringify({ referralCode }),
     }),
 
+  getUserReferrals: (userId: string) =>
+    request<{
+      referralCode: string;
+      cashbackPercent: number;
+      stats: {
+        totalReferred: number;
+        activeBuyers: number;
+        totalOrdersCount: number;
+        totalEarnedToman: number;
+        totalSpentByReferrals: number;
+      };
+      referrals: {
+        id: string;
+        name: string;
+        phoneMasked: string;
+        emailMasked: string;
+        joinedAt: string;
+        ordersCount: number;
+        totalSpentToman: number;
+        earnedFromUserToman: number;
+      }[];
+    }>(`/users/${userId}/referrals`),
+
   getMe: () => request<any>("/auth/me"),
 
   // Live ElasticSearch

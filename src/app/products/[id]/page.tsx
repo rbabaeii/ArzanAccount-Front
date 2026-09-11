@@ -123,24 +123,31 @@ export default function ProductDetailPage() {
   const [addedToast, setAddedToast] = useState(false);
 
   const relatedProducts = React.useMemo(() => {
-    if (apiRelated && apiRelated.length > 0) return apiRelated;
-    if (!product) return [];
+    let list: any[] = [];
+    if (apiRelated && apiRelated.length > 0) {
+      list = apiRelated;
+    } else if (product) {
+      list = products
+        .filter((p) => p.id !== product.id && p.isActive)
+        .map((p) => {
+          let score = 0;
+          if (p.categoryId === product.categoryId) score += 20;
+          const pTags = Array.isArray(p.tags) ? p.tags : [];
+          if (pTags.length > 0 && productTags.length > 0) {
+            const common = pTags.filter((t) => productTags.includes(t));
+            score += common.length * 40;
+          }
+          return { product: p, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map((item) => item.product);
+    }
 
-    return products
-      .filter((p) => p.id !== product.id && p.isActive)
-      .map((p) => {
-        let score = 0;
-        if (p.categoryId === product.categoryId) score += 20;
-        const pTags = Array.isArray(p.tags) ? p.tags : [];
-        if (pTags.length > 0 && productTags.length > 0) {
-          const common = pTags.filter((t) => productTags.includes(t));
-          score += common.length * 40;
-        }
-        return { product: p, score };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 4)
-      .map((item) => item.product);
+    // Exclude any out-of-stock products from related recommendations
+    return list
+      .filter((p) => p && p.inStock && (p.stockCount === undefined || p.stockCount > 0))
+      .slice(0, 4);
   }, [apiRelated, product, products, productTags]);
 
   if (!product) {

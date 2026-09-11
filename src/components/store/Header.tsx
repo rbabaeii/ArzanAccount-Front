@@ -34,6 +34,43 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const lastScrollY = React.useRef(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Keep header visible if any menu/dropdown is open
+      if (mobileMenuOpen || userDropdownOpen || categoryDropdownOpen) {
+        setIsVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      if (currentScrollY > 70) {
+        setIsScrolled(true);
+        // Scrolling down by more than 6px -> slide header up
+        if (currentScrollY > lastScrollY.current + 6) {
+          setIsVisible(false);
+        }
+        // Scrolling up by more than 6px -> smoothly slide header back in
+        else if (currentScrollY < lastScrollY.current - 6) {
+          setIsVisible(true);
+        }
+      } else {
+        // Near top of page -> always show
+        setIsScrolled(false);
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [mobileMenuOpen, userDropdownOpen, categoryDropdownOpen]);
 
   const formattedUsdRate = formatPrice(
     Math.round(settings.usdToRialRate / 10)
@@ -66,7 +103,11 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-brand-border dark:border-slate-800 transition-colors">
+    <header
+      className={`sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-brand-border dark:border-slate-800 transition-all duration-300 ease-in-out ${
+        isVisible ? "translate-y-0" : "-translate-y-full pointer-events-none"
+      } ${isScrolled ? "shadow-md shadow-slate-900/5 dark:shadow-black/20" : ""}`}
+    >
       {/* Top Banner */}
       <div className="bg-brand-primaryDark dark:bg-slate-950 text-white text-xs py-1.5 sm:py-2 px-3 sm:px-4 border-b border-white/10">
         <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-2">

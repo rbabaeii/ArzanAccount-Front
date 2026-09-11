@@ -94,6 +94,7 @@ export default function LoginModal() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -172,7 +173,7 @@ export default function LoginModal() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    const res = await verifyOtp(phone.trim(), otp.trim());
+    const res = await verifyOtp(phone.trim(), otp.trim(), referralCode.trim() || undefined);
     setIsLoading(false);
 
     if (res.success && res.user) {
@@ -459,6 +460,30 @@ export default function LoginModal() {
                       autoFocus
                       className="w-full bg-brand-surfaceDim dark:bg-slate-800 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-900 rounded-xl py-3 px-4 text-center font-mono font-black text-xl tracking-widest outline-none text-slate-800 dark:text-slate-100 transition-all duration-200"
                     />
+                  </div>
+
+                  {/* Optional Referral Code (New Users Only) */}
+                  <div className="p-3 bg-teal-50/50 dark:bg-slate-800/40 border border-teal-100 dark:border-slate-700/60 rounded-2xl space-y-1.5 text-right">
+                    <div className="flex items-center justify-between text-xs">
+                      <label className="font-bold text-slate-700 dark:text-slate-300">
+                        کد معرف دوست یا معرف:
+                      </label>
+                      <span className="text-[10px] text-teal-700 dark:text-teal-400 font-bold bg-teal-100/70 dark:bg-teal-950/60 px-2 py-0.5 rounded-full">
+                        اختیاری
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="مثلاً: ARZAN-1234"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      dir="ltr"
+                      maxLength={20}
+                      className="w-full bg-white dark:bg-slate-900 border border-brand-border dark:border-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 rounded-xl py-2 px-3 text-center font-mono font-bold text-xs uppercase outline-none text-slate-800 dark:text-slate-100 transition-all duration-200 placeholder:normal-case placeholder:font-sans placeholder:text-neutral-400"
+                    />
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight">
+                      در صورت ثبت‌نام نخست، پاداش عضویت و کش‌بک به حساب معرف شما منظور خواهد شد.
+                    </p>
                   </div>
 
                   {/* Actions */}

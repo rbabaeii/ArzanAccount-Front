@@ -48,7 +48,7 @@ import { Order } from "@/types";
 import { CustomerRefundModal } from "@/components/store/CustomerRefundModal";
 import { api } from "@/lib/api";
 
-type ProfileTab = "personal" | "wallet" | "cards" | "addresses" | "orders" | "password";
+type ProfileTab = "personal" | "wallet" | "referrals" | "cards" | "addresses" | "orders" | "password";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -102,6 +102,52 @@ export default function ProfilePage() {
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [isLoadingWithdrawals, setIsLoadingWithdrawals] = useState(false);
+
+  // Referral Network State
+  const [referralNetwork, setReferralNetwork] = useState<{
+    referralCode: string;
+    cashbackPercent: number;
+    stats: {
+      totalReferred: number;
+      activeBuyers: number;
+      totalOrdersCount: number;
+      totalEarnedToman: number;
+      totalSpentByReferrals: number;
+    };
+    referrals: {
+      id: string;
+      name: string;
+      phoneMasked: string;
+      emailMasked: string;
+      joinedAt: string;
+      ordersCount: number;
+      totalSpentToman: number;
+      earnedFromUserToman: number;
+    }[];
+  } | null>(null);
+  const [isLoadingReferrals, setIsLoadingReferrals] = useState(false);
+  const [referralSearch, setReferralSearch] = useState("");
+
+  const fetchReferralNetwork = async () => {
+    if (!user?.id) return;
+    setIsLoadingReferrals(true);
+    try {
+      const res = await api.getUserReferrals(user.id);
+      if (res) {
+        setReferralNetwork(res);
+      }
+    } catch (err) {
+      console.error("Failed to load referral network:", err);
+    } finally {
+      setIsLoadingReferrals(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "referrals" && user?.id) {
+      fetchReferralNetwork();
+    }
+  }, [activeTab, user?.id]);
 
   // Add Bank Card Modal State
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
@@ -704,6 +750,31 @@ export default function ProfilePage() {
           </button>
 
           <button
+            onClick={() => {
+              setActiveTab("referrals");
+              fetchReferralNetwork();
+            }}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
+              activeTab === "referrals"
+                ? "bg-gradient-to-r from-teal-700 to-[#005a71] text-white shadow-md shadow-teal-700/25"
+                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-[#e2edf1] dark:border-slate-800"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="sm:hidden">زیرمجموعه‌ها</span>
+            <span className="hidden sm:inline">شبکه و زیرمجموعه‌ها</span>
+            {referralNetwork && referralNetwork.stats.totalReferred > 0 ? (
+              <span className="bg-teal-100 dark:bg-teal-950/80 text-brand-primary dark:text-teal-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold">
+                {referralNetwork.stats.totalReferred}
+              </span>
+            ) : (
+              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold">
+                ۱۰٪ سود
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveTab("cards")}
             className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold transition-all duration-200 shrink-0 snap-start hover:scale-105 active:scale-95 cursor-pointer ${
               activeTab === "cards"
@@ -886,36 +957,53 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Referral Code & Inviter Box */}
+                {/* Referral Code & Network Hub */}
                 <div className="space-y-3">
-                  {/* Your Referral Code */}
-                  <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <Gift className="w-5 h-5 text-brand-primary dark:text-teal-400" />
+                  <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/50 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-brand-primary dark:text-teal-400 flex items-center justify-center shrink-0">
+                        <Gift className="w-5 h-5" />
+                      </div>
                       <div>
-                        <span className="font-bold text-slate-900 dark:text-white">کد معرف اختصاصی شما (طرح دعوت از دوستان):</span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          این کد را با دوستانتان به اشتراک بگذارید؛ با هر خرید موفق آن‌ها، پاداش کش‌بک مستقیماً به کیف پول هدیه شما افزوده می‌شود.
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-slate-900 dark:text-white text-sm">کد معرف اختصاصی شما (۱۰٪ سود نقدی خریدها):</span>
+                          <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            فعال
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-xl leading-relaxed">
+                          این کد را با دوستانتان به اشتراک بگذارید؛ با هر خرید موفق آن‌ها در سایت، ۱۰٪ مبلغ سفارش مستقیماً به عنوان کش‌بک نقدی به کیف پول شما واریز می‌شود.
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <span className="bg-white dark:bg-slate-900 border border-teal-200 dark:border-slate-700 px-3 py-1.5 rounded-xl font-mono font-black text-brand-primary dark:text-teal-300 text-sm">
+                    <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+                      <span className="bg-white dark:bg-slate-900 border border-teal-200 dark:border-slate-700 px-3.5 py-2 rounded-xl font-mono font-black text-brand-primary dark:text-teal-300 text-sm tracking-wider">
                         {user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}
                       </span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`, "کد معرف اختصاصی")}
-                        className="bg-brand-primary hover:bg-teal-700 text-white p-2 rounded-xl hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
+                        className="bg-brand-primary hover:bg-teal-700 text-white p-2.5 rounded-xl hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
                         title="کپی کد معرف"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab("referrals");
+                          fetchReferralNetwork();
+                        }}
+                        className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        <span>مشاهده زیرمجموعه‌ها</span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* Inviter Info or Bind Form */}
-                  {user.referredByCode ? (
+                  {/* Inviter Info (Readonly Badge if registered with inviter) */}
+                  {user.referredByCode && (
                     <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                         <Users className="w-4 h-4 text-emerald-500" />
@@ -927,34 +1015,6 @@ export default function ProfilePage() {
                       <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full font-bold">
                         ثبت‌شده در شبکه دوستان
                       </span>
-                    </div>
-                  ) : (
-                    <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300">
-                        <Gift className="w-4 h-4 text-amber-500 shrink-0" />
-                        <div>
-                          <span className="font-bold">ثبت کد معرف دوست یا معرف:</span>
-                          <span className="text-[11px] block opacity-85">اگر توسط فردی دعوت شده‌اید، کد معرف ایشان را ثبت کنید (هر کاربر حداکثر زیرمجموعه یک نفر می‌شود).</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <input
-                          type="text"
-                          placeholder="مثلاً: ARZAN-1234"
-                          value={inviterInput}
-                          onChange={(e) => setInviterInput(e.target.value.toUpperCase())}
-                          dir="ltr"
-                          className="w-full sm:w-36 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl px-2.5 py-1.5 font-mono text-xs outline-none uppercase"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleBindInviter}
-                          disabled={isBindingInviter || !inviterInput.trim()}
-                          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer"
-                        >
-                          {isBindingInviter ? "در حال ثبت..." : "ثبت معرف"}
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1309,6 +1369,312 @@ export default function ProfilePage() {
                     </table>
                   </div>
                 </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: REFERRAL NETWORK & SUB-ACCOUNTS DASHBOARD                            */}
+        {/* ========================================================================= */}
+        {activeTab === "referrals" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Top Hero Banner: Invitation Link & Code */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-teal-900 via-[#004d61] to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-teal-500/20">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10 space-y-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold border border-teal-500/30">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>طرح مشارکت و درآمدزایی اختصاصی ارزون‌حساب</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+                      شبکه معرفین و زیرمجموعه‌ها
+                    </h2>
+                    <p className="text-xs sm:text-sm text-teal-100/80 max-w-2xl leading-relaxed">
+                      با اشتراک‌گذاری کد یا لینک اختصاصی خود با دوستان و همکاران، با هر خرید موفق آن‌ها <span className="font-bold text-amber-300">۱۰٪ از مبلغ کل خرید</span> به عنوان کمیسیون نقدی به کیف پول شما واریز می‌شود. این سود مستقیماً قابل برداشت بانکی است.
+                    </p>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={fetchReferralNetwork}
+                    disabled={isLoadingReferrals}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold backdrop-blur-xs border border-white/15 transition-all duration-200 cursor-pointer self-end md:self-auto shrink-0"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingReferrals ? "animate-spin" : ""}`} />
+                    <span>بروزرسانی آمار</span>
+                  </button>
+                </div>
+
+                {/* Referral Code & Share Link Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {/* Card A: Referral Code */}
+                  <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-teal-500/30 flex flex-col justify-between gap-3">
+                    <div>
+                      <span className="text-[11px] text-teal-200 block font-medium">کد معرف اختصاصی شما:</span>
+                      <p className="text-[11px] text-slate-400 mt-0.5">دوستان شما می‌توانند هنگام ثبت نام در بخش کد پیامکی این کد را وارد کنند.</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 bg-slate-950/80 border border-teal-500/40 rounded-xl p-2.5">
+                      <span className="font-mono text-base sm:text-lg font-black tracking-wider text-teal-300 px-2">
+                        {user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`, "کد معرف")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>کپی کد</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card B: Direct Share Link */}
+                  <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-teal-500/30 flex flex-col justify-between gap-3">
+                    <div>
+                      <span className="text-[11px] text-teal-200 block font-medium">لینک دعوت مستقیم:</span>
+                      <p className="text-[11px] text-slate-400 mt-0.5">با کلیک روی این لینک، کد معرف به صورت هوشمند برای ثبت نام کاربر اعمال می‌شود.</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 bg-slate-950/80 border border-teal-500/40 rounded-xl p-2.5">
+                      <span className="font-mono text-xs text-slate-300 truncate dir-ltr text-left px-2 select-all">
+                        {typeof window !== "undefined" ? `${window.location.origin}/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}` : `https://arzanaccount.com/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}`}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const link = typeof window !== "undefined" ? `${window.location.origin}/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}` : `https://arzanaccount.com/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}`;
+                            copyToClipboard(link, "لینک دعوت");
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>کپی لینک</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Metric Bento Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+              {/* Card 1: Total Referred */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-5 shadow-card hover:shadow-lg transition-all space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 text-brand-primary dark:text-teal-300">
+                    کل شبکه
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">کل دوستان دعوت‌شده</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white">
+                      {referralNetwork?.stats ? new Intl.NumberFormat("fa-IR").format(referralNetwork.stats.totalReferred) : "۰"}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">نفر</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Active Buyers */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-5 shadow-card hover:shadow-lg transition-all space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                    <PackageCheck className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300">
+                    فعال
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">خریداران فعال</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white">
+                      {referralNetwork?.stats ? new Intl.NumberFormat("fa-IR").format(referralNetwork.stats.activeBuyers) : "۰"}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">نفر</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Total Orders */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-5 shadow-card hover:shadow-lg transition-all space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
+                    سفارش‌ها
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">تعداد خرید‌های شبکه</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white">
+                      {referralNetwork?.stats ? new Intl.NumberFormat("fa-IR").format(referralNetwork.stats.totalOrdersCount) : "۰"}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">خرید</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Total Earned Toman */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-emerald-200 dark:border-emerald-800/60 rounded-3xl p-5 shadow-card hover:shadow-lg transition-all space-y-3 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none" />
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <Wallet className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
+                    کمیسیون نقدی
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">مجموع درآمد شما</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      {referralNetwork?.stats ? new Intl.NumberFormat("fa-IR").format(referralNetwork.stats.totalEarnedToman) : "۰"}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">تومان</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Referrals Detailed List / Table */}
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-[#e2edf1] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                    <Users className="w-5 h-5 text-brand-primary dark:text-teal-400" />
+                    <span>لیست زیرمجموعه‌ها و محاسبه سود هر کاربر</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    جزئیات ثبت‌نام و درآمد اختصاصی تعلق گرفته به شما از خرید هر یک از افراد دعوت‌شده
+                  </p>
+                </div>
+
+                {/* Search in referrals */}
+                {referralNetwork && referralNetwork.referrals.length > 0 && (
+                  <div className="w-full sm:w-64">
+                    <input
+                      type="text"
+                      placeholder="جستجو در زیرمجموعه‌ها..."
+                      value={referralSearch}
+                      onChange={(e) => setReferralSearch(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-teal-500"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {isLoadingReferrals ? (
+                <div className="py-16 text-center space-y-3">
+                  <RefreshCw className="w-8 h-8 text-teal-600 animate-spin mx-auto" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">در حال بارگذاری لیست زیرمجموعه‌ها و محاسبه کمیسیون‌ها...</p>
+                </div>
+              ) : !referralNetwork || referralNetwork.referrals.length === 0 ? (
+                /* Empty state */
+                <div className="py-16 text-center space-y-4 max-w-md mx-auto">
+                  <div className="w-16 h-16 rounded-3xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center mx-auto border border-teal-200 dark:border-teal-800/50">
+                    <Users className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-base text-slate-900 dark:text-white">هنوز زیرمجموعه‌ای ثبت نشده است</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      لینک اختصاصی خود را در گروه‌ها، کانال‌ها یا برای دوستانتان ارسال کنید. با اولین خرید هر فرد، ۱۰٪ سود مستقیماً به حساب شما اضافه می‌شود.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const link = typeof window !== "undefined" ? `${window.location.origin}/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}` : `https://arzanaccount.com/login?ref=${user.referralCode || `ARZAN-${user.id.slice(-4).toUpperCase()}`}`;
+                      copyToClipboard(link, "لینک اختصاصی دعوت");
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold shadow-md hover:shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>کپی لینک دعوت دوستان</span>
+                  </button>
+                </div>
+              ) : (
+                /* Referrals Table */
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold">
+                        <th className="pb-3 pr-2">کاربر زیرمجموعه</th>
+                        <th className="pb-3 px-3">شماره تماس / ایمیل</th>
+                        <th className="pb-3 px-3">تاریخ پیوستن</th>
+                        <th className="pb-3 px-3 text-center">تعداد خرید</th>
+                        <th className="pb-3 px-3 text-left">مجموع خرید کاربر</th>
+                        <th className="pb-3 pl-2 text-left">درآمد شما (۱۰٪ سود)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                      {referralNetwork.referrals
+                        .filter((ref) => {
+                          if (!referralSearch.trim()) return true;
+                          const q = referralSearch.trim().toLowerCase();
+                          return (
+                            ref.name.toLowerCase().includes(q) ||
+                            ref.phoneMasked.toLowerCase().includes(q) ||
+                            ref.emailMasked.toLowerCase().includes(q)
+                          );
+                        })
+                        .map((ref) => (
+                          <tr key={ref.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                            <td className="py-4 pr-2 font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-primary dark:text-teal-400 flex items-center justify-center font-black text-xs shrink-0">
+                                {ref.name.slice(0, 1) || "ک"}
+                              </div>
+                              <span>{ref.name}</span>
+                            </td>
+                            <td className="py-4 px-3 font-mono text-slate-600 dark:text-slate-300 dir-ltr text-right">
+                              <div>{ref.phoneMasked}</div>
+                              {ref.emailMasked !== "بدون ایمیل" && (
+                                <div className="text-[10px] text-slate-400">{ref.emailMasked}</div>
+                              )}
+                            </td>
+                            <td className="py-4 px-3 text-slate-500 dark:text-slate-400">
+                              {new Date(ref.joinedAt).toLocaleDateString("fa-IR")}
+                            </td>
+                            <td className="py-4 px-3 text-center">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
+                                ref.ordersCount > 0
+                                  ? "bg-teal-100 dark:bg-teal-950/80 text-brand-primary dark:text-teal-300"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                              }`}>
+                                {ref.ordersCount} سفارش
+                              </span>
+                            </td>
+                            <td className="py-4 px-3 text-left font-mono font-bold text-slate-800 dark:text-slate-200">
+                              {new Intl.NumberFormat("fa-IR").format(ref.totalSpentToman)} تومان
+                            </td>
+                            <td className="py-4 pl-2 text-left">
+                              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-mono font-bold ${
+                                ref.earnedFromUserToman > 0
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                              }`}>
+                                {ref.earnedFromUserToman > 0 ? "+" : ""}
+                                {new Intl.NumberFormat("fa-IR").format(ref.earnedFromUserToman)} تومان
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

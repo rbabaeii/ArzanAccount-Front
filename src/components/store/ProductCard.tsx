@@ -18,6 +18,17 @@ export default function ProductCard({ product }: { product: Product }) {
     addToCart(product, product.pricingUnit === "per_1000" ? (product.minQty || 1000) : 1);
   };
 
+  const cleanExcerpt = React.useMemo(() => {
+    const raw = product.persianDescription || product.description;
+    if (!raw) return "";
+    const cleaned = raw
+      .replace(/https?:\/\/\S+/gi, "")
+      .replace(/[*#_~`>-]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return cleaned.slice(0, 110);
+  }, [product.description, product.persianDescription]);
+
   return (
     <article
       className={`group relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border rounded-2xl overflow-hidden shadow-card hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full ${
@@ -108,15 +119,22 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
 
           <Link href={`/products/${product.id}`}>
-            <h3 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white group-hover:text-brand-primary dark:group-hover:text-teal-400 transition-colors line-clamp-2 leading-snug sm:leading-relaxed">
+            <h3 className="font-bold text-xs sm:text-sm text-brand-dark dark:text-white group-hover:text-brand-primary dark:group-hover:text-teal-400 transition-colors line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] leading-snug sm:leading-relaxed">
               {product.customTitle}
             </h3>
           </Link>
 
-          {/* Description shown on sm screens and above to keep mobile 2-col cards compact and uniform */}
-          <p className="hidden sm:block text-xs text-brand-muted dark:text-slate-400 mt-1.5 sm:mt-2 line-clamp-2 leading-relaxed">
-            {product.description}
-          </p>
+          {/* Clean clamped description (strictly limited to at most 2 lines, prevents stretching) */}
+          {cleanExcerpt ? (
+            <p
+              className="text-[11px] text-brand-muted dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed overflow-hidden max-h-9 break-words"
+              title={cleanExcerpt}
+            >
+              {cleanExcerpt}
+            </p>
+          ) : (
+            <div className="mt-1 h-4" />
+          )}
         </div>
 
         {/* Price & CTA */}
