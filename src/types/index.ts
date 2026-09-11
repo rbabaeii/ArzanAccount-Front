@@ -86,6 +86,8 @@ export interface Order {
   refundAmountToman?: number;
   refundReceiptUrl?: string;
   refundTrackingCode?: string;
+  refundMethod?: "bank_card" | "wallet";
+  refundRejectionReason?: string;
   refundedAt?: string;
   refundedByAdminName?: string;
   approvedByAdminId?: string;

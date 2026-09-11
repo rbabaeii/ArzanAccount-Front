@@ -85,6 +85,8 @@ interface StoreContextType {
   addCoupon: (coupon: Omit<Coupon, "id">) => void;
   toggleCoupon: (couponId: string) => void;
   requestRefund: (orderId: string, reason: string, cardNumber?: string, sheba?: string) => Promise<{ success: boolean; message: string }>;
+  processRefundOrder: (orderId: string, refundMethod: "bank_card" | "wallet", trackingCode?: string, receiptUrl?: string, adminName?: string) => void;
+  rejectRefundOrder: (orderId: string, rejectionReason: string, newStatus?: Order["status"]) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -935,15 +937,56 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       o.id === orderId || o.orderNumber === orderId
         ? {
             ...o,
-            status: "cancelled" as const,
+            status: "refund_requested" as const,
             refundReason: reason,
             refundCardNumber: cardNumber,
             refundIban: sheba,
+            refundRejectionReason: undefined,
           }
         : o
     );
     saveOrders(updated);
     return { success: true, message: "درخواست عودت وجه با موفقیت ثبت گردید و در صف بررسی مالی قرار گرفت." };
+  };
+
+  const processRefundOrder = (
+    orderId: string,
+    refundMethod: "bank_card" | "wallet",
+    trackingCode?: string,
+    receiptUrl?: string,
+    adminName?: string
+  ) => {
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: "refunded" as const,
+            refundMethod,
+            refundTrackingCode: trackingCode,
+            refundReceiptUrl: receiptUrl,
+            refundedAt: new Date().toISOString(),
+            refundedByAdminName: adminName,
+          }
+        : o
+    );
+    saveOrders(updated);
+  };
+
+  const rejectRefundOrder = (
+    orderId: string,
+    rejectionReason: string,
+    newStatus: Order["status"] = "delivered"
+  ) => {
+    const updated = orders.map((o) =>
+      o.id === orderId || o.orderNumber === orderId
+        ? {
+            ...o,
+            status: newStatus,
+            refundRejectionReason: rejectionReason,
+          }
+        : o
+    );
+    saveOrders(updated);
   };
 
   const addAdminAuditLog = (log: Omit<AuditLog, "id" | "timestamp">) => {
@@ -1024,6 +1067,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addCoupon,
         toggleCoupon,
         requestRefund,
+        processRefundOrder,
+        rejectRefundOrder,
       }}
     >
       {children}

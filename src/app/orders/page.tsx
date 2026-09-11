@@ -140,6 +140,15 @@ function OrderTrackingContent() {
                     </span>
                   )}
                 </div>
+                {searchedOrder.refundRejectionReason && (
+                  <div className="mt-2 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl p-2.5 text-rose-700 dark:text-rose-300">
+                    <div className="font-bold flex items-center gap-1 mb-0.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>عدم تایید درخواست عودت وجه توسط کارشناس:</span>
+                    </div>
+                    <p className="opacity-90">{searchedOrder.refundRejectionReason}</p>
+                  </div>
+                )}
                 <span className="text-xs text-brand-muted dark:text-slate-400 block mt-1">
                   ثبت شده در: {toPersianDateTime(searchedOrder.createdAt)} | ایمیل خریدار: {searchedOrder.customerEmail}
                 </span>

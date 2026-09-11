@@ -116,8 +116,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (me) {
-              setUser(me);
-              localStorage.setItem("arzan_cached_user", JSON.stringify(me));
+              const localWalletStr = localStorage.getItem("arzan_wallet_" + me.id);
+              const localWallet = localWalletStr ? Number(localWalletStr) : undefined;
+              const effectiveWallet =
+                localWallet !== undefined && !isNaN(localWallet)
+                  ? Math.max(localWallet, me.walletBalanceToman ?? 0)
+                  : (me.walletBalanceToman ?? 0);
+
+              const mergedUser: AuthUser = {
+                ...me,
+                walletBalanceToman: effectiveWallet,
+                directDepositBalance: me.directDepositBalance ?? effectiveWallet,
+              };
+
+              setUser(mergedUser);
+              localStorage.setItem("arzan_cached_user", JSON.stringify(mergedUser));
             } else {
               localStorage.removeItem("arzan_auth_token");
               localStorage.removeItem("arzan_cached_user");
@@ -179,13 +192,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       const adminFallback = ADMIN_FALLBACKS[phone];
       if ((adminFallback || phone === "09180000000") && code === "11111") {
+        const fallbackUserId = adminFallback ? `mock-${adminFallback.role.toLowerCase()}` : "mock-regular-user";
+        const storedWallet = typeof window !== "undefined" ? localStorage.getItem("arzan_wallet_" + fallbackUserId) : null;
+        const initialWallet = storedWallet ? Number(storedWallet) : (adminFallback ? 1000000 : 0);
+
         const fallbackUser: AuthUser = {
-          id: adminFallback ? `mock-${adminFallback.role.toLowerCase()}` : "mock-regular-user",
+          id: fallbackUserId,
           phone,
           name: adminFallback ? adminFallback.name : "کاربر عادی",
           role: adminFallback ? adminFallback.role : "USER",
           status: "ACTIVE",
-          walletBalanceToman: adminFallback ? 1000000 : 0,
+          walletBalanceToman: initialWallet,
+          directDepositBalance: initialWallet,
           isTwoFactorEnabled: Boolean(adminFallback),
           referralCode: `ARZAN-${phone.slice(-4)}`,
         };
@@ -323,18 +341,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await api.topUpWallet(user.id, amountToman);
       const newBalance = res.walletBalanceToman ?? ((user.walletBalanceToman || 0) + amountToman);
-      const updatedUser: AuthUser = { ...user, walletBalanceToman: newBalance };
+      const newDirect = res.directDepositBalance ?? ((user.directDepositBalance || 0) + amountToman);
+      const updatedUser: AuthUser = {
+        ...user,
+        walletBalanceToman: newBalance,
+        directDepositBalance: newDirect,
+      };
       setUser(updatedUser);
       if (typeof window !== "undefined") {
         localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+        localStorage.setItem("arzan_wallet_" + user.id, String(newBalance));
       }
       return { success: true, newBalance };
     } catch {
       const newBalance = (user.walletBalanceToman || 0) + amountToman;
-      const updatedUser: AuthUser = { ...user, walletBalanceToman: newBalance };
+      const newDirect = (user.directDepositBalance || 0) + amountToman;
+      const updatedUser: AuthUser = {
+        ...user,
+        walletBalanceToman: newBalance,
+        directDepositBalance: newDirect,
+      };
       setUser(updatedUser);
       if (typeof window !== "undefined") {
         localStorage.setItem("arzan_cached_user", JSON.stringify(updatedUser));
+        localStorage.setItem("arzan_wallet_" + user.id, String(newBalance));
       }
       return { success: true, newBalance };
     }

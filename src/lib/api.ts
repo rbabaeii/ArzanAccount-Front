@@ -582,6 +582,21 @@ export const api = {
       body: JSON.stringify({ ...dto, role }),
     }),
 
+  rejectRefund: (
+    orderId: string,
+    data: {
+      rejectionReason: string;
+      newStatus?: string;
+      adminId?: string;
+      adminName?: string;
+    },
+    role = "SUPER_ADMIN"
+  ) =>
+    request<any>(`/orders/${orderId}/reject-refund`, {
+      method: "POST",
+      body: JSON.stringify({ ...data, role }),
+    }),
+
   requestRefund: (orderId: string, refundReason: string, refundCardNumber?: string, refundIban?: string) =>
     request<any>(`/orders/${orderId}/request-refund`, {
       method: "POST",

@@ -1915,7 +1915,7 @@ export default function ProfilePage() {
                             : order.status === "processing"
                             ? "در حال پردازش / آماده‌سازی"
                             : order.status === "refund_requested"
-                            ? "درخواست استرداد ثبت شده (در دست بررسی)"
+                            ? "درخواست عودت داده شده (در دست بررسی)"
                             : order.status === "refunded"
                             ? "مسترد شده"
                             : "ناموفق"}
@@ -1937,6 +1937,13 @@ export default function ProfilePage() {
                         )}
                       </div>
                     </div>
+
+                    {order.refundRejectionReason && (
+                      <div className="text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl p-2.5 text-rose-700 dark:text-rose-300">
+                        <span className="font-bold">عدم موافقت با عودت وجه: </span>
+                        <span>{order.refundRejectionReason}</span>
+                      </div>
+                    )}
 
                     {/* Order Items */}
                     <div className="space-y-2">
